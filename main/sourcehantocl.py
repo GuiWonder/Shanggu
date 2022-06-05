@@ -1,7 +1,7 @@
 import os, json, subprocess, platform
 from collections import defaultdict
 
-pydir = os.path.abspath(os.path.dirname(__file__))+'/..'
+pydir = os.path.abspath(os.path.dirname(__file__))
 otfccdump = os.path.join(pydir, 'otfcc/otfccdump')
 otfccbuild = os.path.join(pydir, 'otfcc/otfccbuild')
 if platform.system() == 'Mac':
