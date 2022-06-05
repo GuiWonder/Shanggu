@@ -149,6 +149,28 @@ if rmun=='y':
 				pass
 			del font['glyf'][v1]
 
+print('正在设置字体名称...')
+nname=list()
+for nj in font['name']:
+	if nj['languageID']==1041:
+		nk=dict(nj)
+		ns=dict(nj)
+		nt=dict(nj)
+		nh=dict(nj)
+		nk['languageID']=1042
+		nk['nameString']=nk['nameString'].replace('源ノ明朝', '본명조').replace('源ノ角ゴシック', '본고딕').replace('源ノ等幅', '본모노')
+		ns['languageID']=2052
+		ns['nameString']=ns['nameString'].replace('源ノ明朝', '思源宋体').replace('源ノ角ゴシック', '思源黑体').replace('源ノ等幅', '思源等宽')
+		nt['languageID']=1028
+		nt['nameString']=nt['nameString'].replace('源ノ明朝', '思源宋體').replace('源ノ角ゴシック', '思源黑體').replace('源ノ等幅', '思源等寬')
+		nh['languageID']=3076
+		nh['nameString']=nh['nameString'].replace('源ノ明朝', '思源宋體 香港').replace('源ノ角ゴシック', '思源黑體 香港').replace('源ノ等幅', '思源等寬 香港')
+		nname.append(nk)
+		nname.append(ns)
+		nname.append(nt)
+		nname.append(nh)
+font['name']=font['name']+nname
+
 del glyph_codes
 del tbs
 del exch
