@@ -126,6 +126,8 @@ for k in font['cmap_uvs'].keys():
 tv=dict()
 with open('tv.txt', 'r', encoding='utf-8') as f:
 	for line in f.readlines():
+		if line.startswith('#'):
+			continue
 		a, b=line.strip().split(' ')
 		tv[str(ord(a))]=str(int(b, 16))
 
