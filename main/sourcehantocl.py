@@ -124,12 +124,14 @@ for k in font['cmap_uvs'].keys():
 	dv[c][v]=font['cmap_uvs'][k]
 
 tv=dict()
-with open('tv.txt', 'r', encoding='utf-8') as f:
+with open('uvs-get-jp1-MARK.txt', 'r', encoding='utf-8') as f:
 	for line in f.readlines():
 		if line.startswith('#'):
 			continue
-		a, b=line.strip().split(' ')
-		tv[str(ord(a))]=str(int(b, 16))
+		line=line.strip()
+		if line.endswith('X'):
+			a=line.split(' ')
+			tv[str(ord(a[0]))]=str(int(a[3].strip('X'), 16))
 
 for k in dv.keys():
 	if k in tv:
