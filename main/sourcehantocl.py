@@ -57,10 +57,12 @@ while not os.path.isfile(inf):
 		print('文件不存在，请重新选择！\n')
 while not outf.strip():
 	outf=input('请输入输出文件：\n')
+mch=str()
+while mch not in {'y', 'n'}:
+	mch=input('是否合并多个编码的汉字，例如：青-靑 尚-尙 兑-兌 温-溫等？(输入Y/N)：\n').lower()
 rmun=str()
 while rmun not in {'y', 'n'}:
 	rmun=input('是否移除未使用的字形(输入Y/N)：\n').lower()
-
 
 print('正在载入字体...')
 font = json.loads(subprocess.check_output((otfccdump, '--no-bom', inf)).decode("utf-8", "ignore"))
@@ -122,7 +124,6 @@ for k in font['cmap_uvs'].keys():
 	if c not in dv:
 		dv[c]=dict()
 	dv[c][v]=font['cmap_uvs'][k]
-
 tv=dict()
 with open('uvs-get-jp1-MARK.txt', 'r', encoding='utf-8') as f:
 	for line in f.readlines():
@@ -139,7 +140,24 @@ for k in dv.keys():
 			print('处理', chr(int(k)))
 			tch=dv[k][tv[k]]
 			font['cmap'][k]=tch
-
+if mch=='y':
+	print('正在合并多编码汉字...')
+	vartab=list()
+	with open('mulcodechar.txt', 'r', encoding='utf-8') as f:
+		for line in f.readlines():
+			line = line.strip()
+			if line.startswith('#') or '\t' not in line:
+				continue
+			s, t = line.strip().split('\t')
+			if s and t and s != t:
+				vartab.append((s, t))
+	for chs in vartab:
+		unis=str(ord(chs[0]))
+		unit=str(ord(chs[1]))
+		if unit in font['cmap']:
+			print('处理 '+chs[0]+'-'+chs[1])
+			gn=font['cmap'][unit]
+			font['cmap'][unis] = gn
 if rmun=='y':
 	print('正在移除字形...')
 	glyph_codes = build_glyph_codes()
