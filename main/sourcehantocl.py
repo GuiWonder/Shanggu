@@ -16,7 +16,7 @@ def build_glyph_codes():
 	for codepoint, glyph_name in font['cmap'].items():
 		glyph_codes[glyph_name].append(codepoint)
 	return glyph_codes
-def gettbs(chtat):
+def gettbs(chtat, tbg, isin):
 	tb1=set()
 	ftype=font['GSUB']['lookups'][chtat]['type']
 	for subtable in font['GSUB']['lookups'][chtat]['subtables']:
@@ -27,7 +27,7 @@ def gettbs(chtat):
 				cht=t[0]
 			else:
 				continue
-			if not j in exgl:
+			if (isin and j in tbg) or ((not isin) and (j not in tbg)):
 				tb1.add((j, cht))
 	return tb1
 def gettrch(j, t):
@@ -38,6 +38,14 @@ def gettrch(j, t):
 		font['cmap'][str(cod)] = t
 		glyph_codes[t].append(cod)
 	glyph_codes[j].clear()
+def getgname(s):
+	gn=set()
+	for ch in s:
+		cod=str(ord(ch))
+		if cod in font['cmap']:
+			gn.add(font['cmap'][cod])
+	return gn
+
 def ckfile(f):
 	f=f.strip()
 	if not os.path.isfile(f):
@@ -60,6 +68,12 @@ while not outf.strip():
 mch=str()
 while mch not in {'y', 'n'}:
 	mch=input('是否合并多个编码的汉字，例如：青-靑 尚-尙 兑-兌 温-溫等？(输入Y/N)：\n').lower()
+pun=str()
+while pun not in {'1', '2', '3'}:
+	pun=input('请选择标点：\n\t1.日本.\n\t2.简体中文\n\t3.正体中文（居中）\n')
+simp=str()
+while simp not in {'1', '2'}:
+	simp=input('请选择简化字字形：\n\t1.日本\n\t2.中国大陆\n')
 rmun=str()
 while rmun not in {'y', 'n'}:
 	rmun=input('是否移除未使用的字形(输入Y/N)：\n').lower()
@@ -68,27 +82,50 @@ print('正在载入字体...')
 font = json.loads(subprocess.check_output((otfccdump, '--no-bom', inf)).decode("utf-8", "ignore"))
 print('获取本地化列表...')
 loc=set()
-lockr=set()
+lockor=set()
+loczhs=set()
+loczht=set()
 for lang in font['GSUB']['languages'].keys():
 	for fs in font['GSUB']['languages'][lang]['features']:
 		if fs.split('_')[0]=='locl':
 			loc.update(set(font['GSUB']['features'][fs]))
 			if lang.split('_')[-1].strip()=='KOR':
-				lockr.update(set(font['GSUB']['features'][fs]))
+				lockor.update(set(font['GSUB']['features'][fs]))
+			elif lang.split('_')[-1].strip()=='ZHS':
+				loczhs.update(set(font['GSUB']['features'][fs]))
+			elif lang.split('_')[-1].strip()=='ZHT':
+				loczht.update(set(font['GSUB']['features'][fs]))
 
 exch='侾倜兎剪叟呀咎咠唹嚳墁奜媺嬴孼宬岈巓幃幰廋微徵恝惆惘搜撐於旅旣晧晷曁杓栲桯梏檉毒氓汋汒沿淤湔溲滾漰潛潤澔瀆瀛灼煎煢爟牘牙牚犢獌珵珹琱甿瘦瞎瞬砑稠稧穿窖竇箭篠簉糙糱絳綢緯繭續罔羸肓腴膄臝臾舛舜舞船艘芒茫萸蒯蕣虻蚌蜩蟃衮袞裒裯襁覿訝訹誥讀豹負賙贏贖趼輞迓邙郜鄰鉛鋥鎉鏹閼降隙雕靠颼馰騪驎驘鬋魍鮵鴉鵠鵩鵰麗麟黷'
-exgl=set()
-for ch in exch:
-	cod=str(ord(ch))
-	if cod in font['cmap']:
-		exgl.add(font['cmap'][cod])
+sipmch='寿写将弥弯径恋条残涙浅滞涛湾炉画皐禅祷称茎蒋蚕蛮変践鋳覇'
+pzhs='·’‘”“•≤≥≮≯！：；？'
+pzht='·’‘”“•、。，．'
+exgl=getgname(exch)
+sip=str()
+trd=str()
+if pun=='2':
+	sip+=pzhs
+if pun=='3':
+	trd+=pzht
+if simp=='2':
+	sip+=sipmch
 
 glyph_codes = build_glyph_codes()
 
 tbs=set()
-for krtb in lockr:
-	a=gettbs(krtb)
+for krtb in lockor:
+	a=gettbs(krtb, exgl, False)
 	if len(a)>200:
+		tbs.update(a)
+if len(sip)>0:
+	simpg=getgname(sip)
+	for zhstb in loczhs:
+		a=gettbs(zhstb, simpg, True)
+		tbs.update(a)
+if len(trd)>0:
+	trdg=getgname(trd)
+	for zhttb in loczht:
+		a=gettbs(zhttb, trdg, True)
 		tbs.update(a)
 if len(tbs)>0:
 	for itm in tbs:
@@ -163,7 +200,7 @@ if rmun=='y':
 	glyph_codes = build_glyph_codes()
 	for v1 in vgl:
 		if len(glyph_codes[v1])<1:
-			print('移除', v1)
+			#print('移除', v1)
 			del glyph_codes[v1]
 			try:
 				font['glyph_order'].remove(v1)
@@ -200,7 +237,7 @@ del exgl
 del dv
 del tv
 del loc
-del lockr
+del lockor
 print('正在生成字体...')
 subprocess.run((otfccbuild, '--keep-modified-time', '--keep-average-char-width', '-O3', '-q', '-o', outf),
 			input = json.dumps(font), encoding = 'utf-8')
