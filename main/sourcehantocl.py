@@ -1,4 +1,4 @@
-import os, json, subprocess, platform
+import os, json, subprocess, platform, gc
 from collections import defaultdict
 
 pydir = os.path.abspath(os.path.dirname(__file__))
@@ -54,7 +54,159 @@ def ckfile(f):
 		elif os.path.isfile(f.strip("'")):
 			return f.strip("'")
 	return f
+def creattmp(mch, pun, simp):
+	print('获取本地化列表...')
+	loc=set()
+	lockor=set()
+	loczhs=set()
+	loczht=set()
+	for lang in font['GSUB']['languages'].keys():
+		for fs in font['GSUB']['languages'][lang]['features']:
+			if fs.split('_')[0]=='locl':
+				loc.update(set(font['GSUB']['features'][fs]))
+				if lang.split('_')[-1].strip()=='KOR':
+					lockor.update(set(font['GSUB']['features'][fs]))
+				elif lang.split('_')[-1].strip()=='ZHS':
+					loczhs.update(set(font['GSUB']['features'][fs]))
+				elif lang.split('_')[-1].strip()=='ZHT':
+					loczht.update(set(font['GSUB']['features'][fs]))
 
+	exch='侾倜兎剪叟呀咎咠唹嚳墁奜媺嬴孼宬岈巓幃幰廋微徵恝惆惘搜撐於旅旣晧晷曁杓栲桯梏檉毒氓汋汒沿淤湔溲滾漰潛潤澔瀆瀛灼煎煢爟牘牙牚犢獌珵珹琱甿瘦瞎瞬砑稠稧穿窖竇箭篠簉糙糱絳綢緯繭續罔羸肓腴膄臝臾舛舜舞船艘芒茫萸蒯蕣虻蚌蜩蟃衮袞裒裯襁覿訝訹誥讀豹負賙贏贖趼輞迓邙郜鄰鉛鋥鎉鏹閼降隙雕靠颼馰騪驎驘鬋魍鮵鴉鵠鵩鵰麗麟黷'
+	sipmch='寿写将弥弯径恋条残涙浅滞涛湾炉画皐禅祷称茎蒋蚕蛮変践鋳覇'
+	pzhs='·’‘”“•≤≥≮≯！：；？'
+	pzht='·’‘”“•、。，．'
+	exgl=getgname(exch)
+	sip=str()
+	trd=str()
+	if pun=='2':
+		sip+=pzhs
+	if pun=='3':
+		trd+=pzht
+	if simp=='2':
+		sip+=sipmch
+
+	tbs=set()
+	for krtb in lockor:
+		a=gettbs(krtb, exgl, False)
+		if len(a)>200:
+			tbs.update(a)
+	if len(sip)>0:
+		simpg=getgname(sip)
+		for zhstb in loczhs:
+			a=gettbs(zhstb, simpg, True)
+			tbs.update(a)
+	if len(trd)>0:
+		trdg=getgname(trd)
+		for zhttb in loczht:
+			a=gettbs(zhttb, trdg, True)
+			tbs.update(a)
+	if len(tbs)>0:
+		for itm in tbs:
+			gettrch(itm[0], itm[1])
+	else:
+		print('未找到任何可用的本地化字形！')
+
+	print('正在移除本地化列表...')
+	vgl=set()
+	for subs in loc:
+		if rmun=='y':
+			ftype=font['GSUB']['lookups'][subs]['type']
+			for subtable in font['GSUB']['lookups'][subs]['subtables']:
+				for j, t in list(subtable.items()):
+					if ftype=='gsub_single':
+						vgl.add(t)
+						vgl.add(j)
+
+		del font['GSUB']['lookups'][subs]
+		f1todel = set()
+		for f1 in font['GSUB']['features'].keys():
+			if subs in font['GSUB']['features'][f1]:
+				font['GSUB']['features'][f1].remove(subs)
+			if len(font['GSUB']['features'][f1]) == 0:
+				f1todel.add(f1)
+				continue
+		for  f1 in f1todel:
+			del font['GSUB']['features'][f1]
+	print('正在处理异体字信息...')
+	dv=dict()
+	for k in font['cmap_uvs'].keys():
+		c, v=k.split(' ')
+		if c not in dv:
+			dv[c]=dict()
+		dv[c][v]=font['cmap_uvs'][k]
+	tv=dict()
+	with open('uvs-get-jp1-MARK.txt', 'r', encoding='utf-8') as f:
+		for line in f.readlines():
+			if line.startswith('#'):
+				continue
+			line=line.strip()
+			if line.endswith('X'):
+				a=line.split(' ')
+				tv[str(ord(a[0]))]=str(int(a[3].strip('X'), 16))
+
+	for k in dv.keys():
+		if k in tv:
+			if tv[k] in dv[k]:
+				print('处理', chr(int(k)))
+				tch=dv[k][tv[k]]
+				font['cmap'][k]=tch
+	if mch=='y':
+		print('正在合并多编码汉字...')
+		vartab=list()
+		with open('mulcodechar.txt', 'r', encoding='utf-8') as f:
+			for line in f.readlines():
+				line = line.strip()
+				if line.startswith('#') or '\t' not in line:
+					continue
+				s, t = line.strip().split('\t')
+				if s and t and s != t:
+					vartab.append((s, t))
+		for chs in vartab:
+			unis=str(ord(chs[0]))
+			unit=str(ord(chs[1]))
+			if unit in font['cmap']:
+				print('处理 '+chs[0]+'-'+chs[1])
+				gn=font['cmap'][unit]
+				font['cmap'][unis] = gn
+	if rmun=='y':
+		print('正在移除字形...')
+		glyph_codes = build_glyph_codes()
+		for v1 in vgl:
+			if len(glyph_codes[v1])<1:
+				#print('移除', v1)
+				del glyph_codes[v1]
+				try:
+					font['glyph_order'].remove(v1)
+				except ValueError:
+					pass
+				del font['glyf'][v1]
+
+	print('正在设置字体名称...')
+	nname=list()
+	for nj in font['name']:
+		if nj['languageID']==1041:
+			nk=dict(nj)
+			ns=dict(nj)
+			nt=dict(nj)
+			nh=dict(nj)
+			nk['languageID']=1042
+			nk['nameString']=nk['nameString'].replace('源ノ明朝', '본명조').replace('源ノ角ゴシック', '본고딕').replace('源ノ等幅', '본모노')
+			ns['languageID']=2052
+			ns['nameString']=ns['nameString'].replace('源ノ明朝', '思源宋体').replace('源ノ角ゴシック', '思源黑体').replace('源ノ等幅', '思源等宽')
+			nt['languageID']=1028
+			nt['nameString']=nt['nameString'].replace('源ノ明朝', '思源宋體').replace('源ノ角ゴシック', '思源黑體').replace('源ノ等幅', '思源等寬')
+			nh['languageID']=3076
+			nh['nameString']=nh['nameString'].replace('源ノ明朝', '思源宋體 香港').replace('源ノ角ゴシック', '思源黑體 香港').replace('源ノ等幅', '思源等寬 香港')
+			nname.append(nk)
+			nname.append(ns)
+			nname.append(nt)
+			nname.append(nh)
+	font['name']=font['name']+nname
+	print('正在生成字体...')
+	tmpfile='tmp.json'
+	with open(tmpfile, 'w', encoding='utf-8') as f:
+		f.write(json.dumps(font))
+	return tmpfile
 inf=str()
 outf=str()
 print('====思源字体（日版）转传承字形====\n')
@@ -80,166 +232,15 @@ while rmun not in {'y', 'n'}:
 
 print('正在载入字体...')
 font = json.loads(subprocess.check_output((otfccdump, '--no-bom', inf)).decode("utf-8", "ignore"))
-print('获取本地化列表...')
-loc=set()
-lockor=set()
-loczhs=set()
-loczht=set()
-for lang in font['GSUB']['languages'].keys():
-	for fs in font['GSUB']['languages'][lang]['features']:
-		if fs.split('_')[0]=='locl':
-			loc.update(set(font['GSUB']['features'][fs]))
-			if lang.split('_')[-1].strip()=='KOR':
-				lockor.update(set(font['GSUB']['features'][fs]))
-			elif lang.split('_')[-1].strip()=='ZHS':
-				loczhs.update(set(font['GSUB']['features'][fs]))
-			elif lang.split('_')[-1].strip()=='ZHT':
-				loczht.update(set(font['GSUB']['features'][fs]))
-
-exch='侾倜兎剪叟呀咎咠唹嚳墁奜媺嬴孼宬岈巓幃幰廋微徵恝惆惘搜撐於旅旣晧晷曁杓栲桯梏檉毒氓汋汒沿淤湔溲滾漰潛潤澔瀆瀛灼煎煢爟牘牙牚犢獌珵珹琱甿瘦瞎瞬砑稠稧穿窖竇箭篠簉糙糱絳綢緯繭續罔羸肓腴膄臝臾舛舜舞船艘芒茫萸蒯蕣虻蚌蜩蟃衮袞裒裯襁覿訝訹誥讀豹負賙贏贖趼輞迓邙郜鄰鉛鋥鎉鏹閼降隙雕靠颼馰騪驎驘鬋魍鮵鴉鵠鵩鵰麗麟黷'
-sipmch='寿写将弥弯径恋条残涙浅滞涛湾炉画皐禅祷称茎蒋蚕蛮変践鋳覇'
-pzhs='·’‘”“•≤≥≮≯！：；？'
-pzht='·’‘”“•、。，．'
-exgl=getgname(exch)
-sip=str()
-trd=str()
-if pun=='2':
-	sip+=pzhs
-if pun=='3':
-	trd+=pzht
-if simp=='2':
-	sip+=sipmch
-
 glyph_codes = build_glyph_codes()
+tmpfile=creattmp(mch, pun, simp)
 
-tbs=set()
-for krtb in lockor:
-	a=gettbs(krtb, exgl, False)
-	if len(a)>200:
-		tbs.update(a)
-if len(sip)>0:
-	simpg=getgname(sip)
-	for zhstb in loczhs:
-		a=gettbs(zhstb, simpg, True)
-		tbs.update(a)
-if len(trd)>0:
-	trdg=getgname(trd)
-	for zhttb in loczht:
-		a=gettbs(zhttb, trdg, True)
-		tbs.update(a)
-if len(tbs)>0:
-	for itm in tbs:
-		gettrch(itm[0], itm[1])
-else:
-	print('未找到任何可用的本地化字形！')
-
-print('正在移除本地化列表...')
-vgl=set()
-for subs in loc:
-	if rmun=='y':
-		ftype=font['GSUB']['lookups'][subs]['type']
-		for subtable in font['GSUB']['lookups'][subs]['subtables']:
-			for j, t in list(subtable.items()):
-				if ftype=='gsub_single':
-					vgl.add(t)
-					vgl.add(j)
-
-	del font['GSUB']['lookups'][subs]
-	f1todel = set()
-	for f1 in font['GSUB']['features'].keys():
-		if subs in font['GSUB']['features'][f1]:
-			font['GSUB']['features'][f1].remove(subs)
-		if len(font['GSUB']['features'][f1]) == 0:
-			f1todel.add(f1)
-			continue
-	for  f1 in f1todel:
-		del font['GSUB']['features'][f1]
-print('正在处理异体字信息...')
-dv=dict()
-for k in font['cmap_uvs'].keys():
-	c, v=k.split(' ')
-	if c not in dv:
-		dv[c]=dict()
-	dv[c][v]=font['cmap_uvs'][k]
-tv=dict()
-with open('uvs-get-jp1-MARK.txt', 'r', encoding='utf-8') as f:
-	for line in f.readlines():
-		if line.startswith('#'):
-			continue
-		line=line.strip()
-		if line.endswith('X'):
-			a=line.split(' ')
-			tv[str(ord(a[0]))]=str(int(a[3].strip('X'), 16))
-
-for k in dv.keys():
-	if k in tv:
-		if tv[k] in dv[k]:
-			print('处理', chr(int(k)))
-			tch=dv[k][tv[k]]
-			font['cmap'][k]=tch
-if mch=='y':
-	print('正在合并多编码汉字...')
-	vartab=list()
-	with open('mulcodechar.txt', 'r', encoding='utf-8') as f:
-		for line in f.readlines():
-			line = line.strip()
-			if line.startswith('#') or '\t' not in line:
-				continue
-			s, t = line.strip().split('\t')
-			if s and t and s != t:
-				vartab.append((s, t))
-	for chs in vartab:
-		unis=str(ord(chs[0]))
-		unit=str(ord(chs[1]))
-		if unit in font['cmap']:
-			print('处理 '+chs[0]+'-'+chs[1])
-			gn=font['cmap'][unit]
-			font['cmap'][unis] = gn
-if rmun=='y':
-	print('正在移除字形...')
-	glyph_codes = build_glyph_codes()
-	for v1 in vgl:
-		if len(glyph_codes[v1])<1:
-			#print('移除', v1)
-			del glyph_codes[v1]
-			try:
-				font['glyph_order'].remove(v1)
-			except ValueError:
-				pass
-			del font['glyf'][v1]
-
-print('正在设置字体名称...')
-nname=list()
-for nj in font['name']:
-	if nj['languageID']==1041:
-		nk=dict(nj)
-		ns=dict(nj)
-		nt=dict(nj)
-		nh=dict(nj)
-		nk['languageID']=1042
-		nk['nameString']=nk['nameString'].replace('源ノ明朝', '본명조').replace('源ノ角ゴシック', '본고딕').replace('源ノ等幅', '본모노')
-		ns['languageID']=2052
-		ns['nameString']=ns['nameString'].replace('源ノ明朝', '思源宋体').replace('源ノ角ゴシック', '思源黑体').replace('源ノ等幅', '思源等宽')
-		nt['languageID']=1028
-		nt['nameString']=nt['nameString'].replace('源ノ明朝', '思源宋體').replace('源ノ角ゴシック', '思源黑體').replace('源ノ等幅', '思源等寬')
-		nh['languageID']=3076
-		nh['nameString']=nh['nameString'].replace('源ノ明朝', '思源宋體 香港').replace('源ノ角ゴシック', '思源黑體 香港').replace('源ノ等幅', '思源等寬 香港')
-		nname.append(nk)
-		nname.append(ns)
-		nname.append(nt)
-		nname.append(nh)
-font['name']=font['name']+nname
-
-del glyph_codes
-del tbs
-del exch
-del exgl
-del dv
-del tv
-del loc
-del lockor
-print('正在生成字体...')
-subprocess.run((otfccbuild, '--keep-modified-time', '--keep-average-char-width', '-O3', '-q', '-o', outf),
-			input = json.dumps(font), encoding = 'utf-8')
+for x in set(locals().keys()):
+	if x not in ('os', 'subprocess', 'otfccbuild', 'outf', 'tmpfile', 'gc'):
+		del locals()[x]
+gc.collect()
+print('正在生成字体文件...')
+subprocess.run((otfccbuild, '--keep-modified-time', '--keep-average-char-width', '-O3', '-q', '-o', outf, tmpfile))
+os.remove(tmpfile)
 print('完成!')
 
