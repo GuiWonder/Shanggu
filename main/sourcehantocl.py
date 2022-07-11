@@ -1,4 +1,4 @@
-import os, json, subprocess, platform, gc, sys
+import os, json, subprocess, platform, tempfile, gc, sys
 from collections import defaultdict
 
 pydir = os.path.abspath(os.path.dirname(__file__))
@@ -219,7 +219,8 @@ def creattmp(mch, pun, simp):
 			nname.append(nh)
 	font['name']=font['name']+nname
 	print('正在生成字体...')
-	tmpfile='tmp.json'
+	#tmpfile='tmp.json'
+	tmpfile = tempfile.mktemp('.json')
 	with open(tmpfile, 'w', encoding='utf-8') as f:
 		f.write(json.dumps(font))
 	return tmpfile
