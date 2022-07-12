@@ -13,5 +13,9 @@
 * 選項2：標點選擇：1.日本 2.簡體中文 3.正體中文（居中）
 * 選項3：簡化字字形選擇：1.日本 2.中國大陸
 * 選項4：是否移除未使用的字形，輸入Y/N
+* 選項5：設定字體名稱：1.使用思源原版字體名稱 2.使用尙古黑體、尙古明體 3.我來命名
+* 選項6*：指定英文名稱
+* 選項7*：指定中文名稱
 ### 2.執行帶引數命令
-將輸入輸出檔案與上述選項作為引數執行，例如：<br /> `python sourcehantocl.py SourceHanSans-Regular.otf SourceHanSans-cl-Regular.otf y 3 2 y`
+將輸入輸出檔案與上述選項作為引數執行，例如：<br /> `python sourcehantocl.py SourceHanSans-Regular.otf MyFont-Regular.otf y 3 2 y 2`<br />
+`python sourcehantocl.py SourceHanSans-Regular.otf MyFont-Regular.otf y 3 2 y 3 MyFont 新名稱`
