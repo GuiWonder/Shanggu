@@ -198,26 +198,97 @@ def creattmp(mch, pun, simp):
 				del font['glyf'][v1]
 
 	print('正在设置字体名称...')
-	nname=list()
-	for nj in font['name']:
-		if nj['languageID']==1041:
-			nk=dict(nj)
-			ns=dict(nj)
-			nt=dict(nj)
-			nh=dict(nj)
-			nk['languageID']=1042
-			nk['nameString']=nk['nameString'].replace('源ノ明朝', '본명조').replace('源ノ角ゴシック', '본고딕').replace('源ノ等幅', '본모노')
-			ns['languageID']=2052
-			ns['nameString']=ns['nameString'].replace('源ノ明朝', '思源宋体').replace('源ノ角ゴシック', '思源黑体').replace('源ノ等幅', '思源等宽')
-			nt['languageID']=1028
-			nt['nameString']=nt['nameString'].replace('源ノ明朝', '思源宋體').replace('源ノ角ゴシック', '思源黑體').replace('源ノ等幅', '思源等寬')
-			nh['languageID']=3076
-			nh['nameString']=nh['nameString'].replace('源ノ明朝', '思源宋體 香港').replace('源ノ角ゴシック', '思源黑體 香港').replace('源ノ等幅', '思源等寬 香港')
-			nname.append(nk)
-			nname.append(ns)
-			nname.append(nt)
-			nname.append(nh)
-	font['name']=font['name']+nname
+	if setname=='1':
+		nname=list()
+		for nj in font['name']:
+			if nj['languageID']==1041:
+				nk=dict(nj)
+				ns=dict(nj)
+				nt=dict(nj)
+				nh=dict(nj)
+				nk['languageID']=1042
+				nk['nameString']=nk['nameString'].replace('源ノ明朝', '본명조').replace('源ノ角ゴシック', '본고딕').replace('源ノ等幅', '본모노')
+				ns['languageID']=2052
+				ns['nameString']=ns['nameString'].replace('源ノ明朝', '思源宋体').replace('源ノ角ゴシック', '思源黑体').replace('源ノ等幅', '思源等宽')
+				nt['languageID']=1028
+				nt['nameString']=nt['nameString'].replace('源ノ明朝', '思源宋體').replace('源ノ角ゴシック', '思源黑體').replace('源ノ等幅', '思源等寬')
+				nh['languageID']=3076
+				nh['nameString']=nh['nameString'].replace('源ノ明朝', '思源宋體 香港').replace('源ノ角ゴシック', '思源黑體 香港').replace('源ノ等幅', '思源等寬 香港')
+				nname.append(nk)
+				nname.append(ns)
+				nname.append(nt)
+				nname.append(nh)
+		font['name']=font['name']+nname
+	elif setname=='2':
+		nname=list()
+		for nj in font['name']:
+			if nj['languageID']==1041:
+				ns=dict(nj)
+				nt=dict(nj)
+				nh=dict(nj)
+				ns['languageID']=2052
+				ns['nameString']=ns['nameString'].replace('源ノ明朝', '尙古明体').replace('源ノ角ゴシック', '尙古黑体').replace('源ノ等幅', '尙古等宽')
+				nt['languageID']=1028
+				nt['nameString']=nt['nameString'].replace('源ノ明朝', '尙古明體').replace('源ノ角ゴシック', '尙古黑體').replace('源ノ等幅', '尙古等寬')
+				nh['languageID']=3076
+				nh['nameString']=nh['nameString'].replace('源ノ明朝', '尙古明體 香港').replace('源ノ角ゴシック', '尙古黑體 香港').replace('源ノ等幅', '尙古等寬 香港')
+				nname.append(ns)
+				nname.append(nt)
+				nname.append(nh)
+			#elif nj['nameID']>0 and nj['nameID']<7:
+			else:
+				ne=dict(nj)
+				ne['nameString']=ne['nameString'].replace('Source Han', 'Advocate Ancient').replace('SourceHan', 'AdvocateAncient')
+				nname.append(ne)
+		font['name']=nname
+		if 'CFF_' in font:
+			font['CFF_']['fontName']=font['CFF_']['fontName'].replace('SourceHan', 'AdvocateAncient')
+			font['CFF_']['fullName']=font['CFF_']['fullName'].replace('Source Han', 'Advocate Ancient')
+			font['CFF_']['familyName']=font['CFF_']['familyName'].replace('Source Han', 'Advocate Ancient')
+			if 'fdArray' in font['CFF_']:
+				nfd=dict()
+				for k in font['CFF_']['fdArray'].keys():
+					nfd[k.replace('SourceHan', 'AdvocateAncient')]=font['CFF_']['fdArray'][k]
+				font['CFF_']['fdArray']=nfd
+				for gl in font['glyf'].values():
+					if 'CFF_fdSelect' in gl:
+						gl['CFF_fdSelect']=gl['CFF_fdSelect'].replace('SourceHan', 'AdvocateAncient')
+	if setname=='3':
+		pname=enname.replace(' ', '')
+		nname=list()
+		for nj in font['name']:
+			if nj['languageID']==1041:
+				ns=dict(nj)
+				nt=dict(nj)
+				nh=dict(nj)
+				ns['languageID']=2052
+				ns['nameString']=ns['nameString'].replace('源ノ明朝', zhname).replace('源ノ角ゴシック', zhname).replace('源ノ等幅', zhname)
+				nt['languageID']=1028
+				nt['nameString']=nt['nameString'].replace('源ノ明朝', zhname).replace('源ノ角ゴシック', zhname).replace('源ノ等幅', zhname)
+				nh['languageID']=3076
+				nh['nameString']=nh['nameString'].replace('源ノ明朝', zhname).replace('源ノ角ゴシック', zhname).replace('源ノ等幅', zhname)
+				nname.append(ns)
+				nname.append(nt)
+				nname.append(nh)
+			#elif nj['nameID']>0 and nj['nameID']<7:
+			else:
+				ne=dict(nj)
+				ne['nameString']=ne['nameString'].replace('Source Han Sans', enname).replace('SourceHanSans', pname).replace('Source Han Serif', enname).replace('SourceHanSerif', pname).replace('Source Han Mono', enname).replace('SourceHanMono', pname)
+				nname.append(ne)
+		font['name']=nname
+		if 'CFF_' in font:
+			font['CFF_']['fontName']=font['CFF_']['fontName'].replace('SourceHanSans', pname).replace('SourceHanSerif', pname).replace('SourceHanMono', pname)
+			font['CFF_']['fullName']=font['CFF_']['fullName'].replace('Source Han Sans', enname).replace('Source Han Serif', enname).replace('Source Han Mono', enname)
+			font['CFF_']['familyName']=font['CFF_']['familyName'].replace('Source Han Sans', enname).replace('Source Han Serif', enname).replace('Source Han Mono', enname)
+			if 'fdArray' in font['CFF_']:
+				nfd=dict()
+				for k in font['CFF_']['fdArray'].keys():
+					nfd[k.replace('SourceHanSans', pname).replace('SourceHanSerif', pname).replace('SourceHanMono', pname)]=font['CFF_']['fdArray'][k]
+				font['CFF_']['fdArray']=nfd
+				for gl in font['glyf'].values():
+					if 'CFF_fdSelect' in gl:
+						gl['CFF_fdSelect']=gl['CFF_fdSelect'].replace('SourceHanSans', pname).replace('SourceHanSerif', pname).replace('SourceHanMono', pname)
+
 	print('正在生成字体...')
 	#tmpfile='tmp.json'
 	tmpfile = tempfile.mktemp('.json')
@@ -232,7 +303,9 @@ mch=str()
 pun=str()
 simp=str()
 rmun=str()
-
+setname=str()
+enname=str()
+zhname=str()
 if len(sys.argv)<3:
 	while not os.path.isfile(inf):
 		inf=input('请输入字体文件路径（或拖入文件）：\n')
@@ -258,6 +331,20 @@ else:
 	pun=sys.argv[4]
 	simp=sys.argv[5]
 	rmun=sys.argv[6].lower()
+if len(sys.argv)<8:
+	while setname not in {'1', '2', '3'}:
+		setname=input('字体名称设置：\n\t1.使用思源原版字体名称.\n\t2.使用尙古黑体、尙古明体\n\t3.我来命名\n')
+else:
+	setname=sys.argv[7]
+if setname=='3':
+	if len(sys.argv)<10:
+		while not enname.strip():
+			enname=input('请输入英文字体名称：\n')
+		while not zhname.strip():
+			zhname=input('请输入英文字体名称：\n')
+	else:
+		enname=sys.argv[8]
+		zhname=sys.argv[9]
 
 print('正在载入字体...')
 font = json.loads(subprocess.check_output((otfccdump, '--no-bom', inf)).decode("utf-8", "ignore"))
