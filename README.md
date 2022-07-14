@@ -6,8 +6,15 @@
 ![image](./pic/Pic03.png)  
 ## 下載字型
 可從 [Releases](https://github.com/GuiWonder/SourceHanToClassic/releases) 頁面下載字型。
-## 使用說明
-### 1.執行命令
+## 關於字型名稱：
+#### 1. 思源字型原版名稱（不更改名稱）： <br />Source Han Sans | 思源黑体 | 思源黑體 | 思源黑體 香港 | 源ノ角ゴシック | 본고딕，<br />Source Han Serif | 思源宋体 | 思源宋體 | 思源宋體 香港 | 源ノ明朝 | 본명조，<br />Source Han Mono | 思源等宽 | 思源等寬 | 思源等寬 香港 | 源ノ等幅 | 본모노
+由於名稱與原版思源字型名稱完全相同，因此此版字型無法與原版思源字型共存，但可與 Google [noto-cjk](https://github.com/googlefonts/noto-cjk) 共存。
+#### 2. Advocate Ancient Sans | 尙古黑体 | 尙古黑體 | 尙古黑體 香港，<br />Advocate Ancient Serif | 尙古明体 | 尙古明體 | 尙古明體 香港，<br />Advocate Ancient Mono | 尙古等宽 | 尙古等寬 | 尙古等寬 香港
+此版字型可與原版思源字型共存，與上版相比，僅名稱不同。
+#### 3. 指定其他字型名稱
+可與原版思源字型共存，僅名稱不同。
+## 轉換工具使用說明
+### 1. 執行命令
 執行命令`python sourcehantocl.py`
 * 選項1：是否合併多個編碼的漢字，例如：青-靑 尚-尙 兑-兌 温-溫等？，輸入Y/N
 * 選項2：標點選擇：1.日本 2.簡體中文 3.正體中文（居中）
@@ -16,6 +23,6 @@
 * 選項5：設定字體名稱：1.使用思源原版字體名稱 2.使用尙古黑體、尙古明體 3.我來命名
 * 選項6*：字體的英文名稱
 * 選項7*：字體的中文名稱
-### 2.執行帶引數命令
+### 2. 執行帶引數命令
 將輸入輸出檔案與上述選項作為引數執行，例如：<br /> `python sourcehantocl.py SourceHanSans-Regular.otf MyFont-Regular.otf y 3 2 y 2`<br />
 `python sourcehantocl.py SourceHanSans-Regular.otf MyFont-Regular.otf y 3 2 y 3 MyFont 新名稱`
