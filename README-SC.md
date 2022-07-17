@@ -21,7 +21,7 @@
 此版字体名称为：<br />
 **Advocate Ancient Sans TC | 尙古黑体-繁体，Advocate Ancient Serif TC | 尙古明体-繁体**
 ### 2. 可处理简繁一对多的繁体字体（简转繁字体）
-使用词汇，对于简繁一对多，可根据文本自动匹配正确的字形，这样大大减少了简繁转换出现错别字的情况。此功能需要 OpenTypr 特性。<br />
+使用词汇，对于简繁一对多，可根据文本自动匹配正确的字形，这样大大减少了简繁转换出现错别字的情况。此功能需要 OpenType 特性。<br />
 此版字体名称为：<br />
 **Advocate Ancient Sans ST | 尙古黑体-繁体一对多，Advocate Ancient Serif ST | 尙古明体-繁体一对多**
 <br /><br />
