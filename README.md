@@ -1,4 +1,4 @@
-**繁體中文** [简体中文](README-SC.md#%E6%80%9D%E6%BA%90%E4%B8%AD%E6%96%87%E5%AD%97%E4%BD%93%E8%BD%AC%E4%B8%BA%E4%BC%A0%E6%89%BF%E5%AD%97%E5%BD%A2%E6%97%A7%E5%AD%97%E5%BD%A2)
+**繁體中文** [简体中文](README-SC.md##思源中文字体转为传承字形旧字形)
 # 思源中文字型轉為傳承字形（舊字形）
 * [思源中文字型](https://github.com/adobe-fonts)（使用日版）轉為傳承字形，思源黑體、思源宋體、思源等寬均可使用 
 * [思源中文字体](https://github.com/adobe-fonts)（使用日版）转为传承字形，思源黑体、思源宋体、思源等宽均可使用
