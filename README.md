@@ -3,8 +3,7 @@
 * [思源中文字型](https://github.com/adobe-fonts)（使用日版）轉為傳承字形，思源黑體、思源宋體、思源等寬均可使用 
 * [思源中文字体](https://github.com/adobe-fonts)（使用日版）转为传承字形，思源黑体、思源宋体、思源等宽均可使用
 ## 預覽
-![image](./pic/Pic01.png)  
-![image](./pic/Pic03.png)  
+![image](./pic/Pic003.jpg)  
 ## 下載字型
 可從 [Releases](https://github.com/GuiWonder/SourceHanToClassic/releases) 頁面下載字型。
 ## 關於字型名稱：
