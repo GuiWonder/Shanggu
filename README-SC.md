@@ -1,7 +1,6 @@
 [繁體中文](https://github.com/GuiWonder/SourceHanToClassic#思源中文字体转为传承字形) **简体中文**
 # 思源中文字体转为传承字形
-* [思源中文字型](https://github.com/adobe-fonts)（使用日版）轉為傳承字形（旧字形），思源黑體、思源宋體、思源等寬均可用 
-* [思源中文字体](https://github.com/adobe-fonts)（使用日版）转为传承字形（旧字形），思源黑体、思源宋体、思源等宽均可用
+* [思源中文字体](https://github.com/adobe-fonts)（使用日版）转为传承字形（旧字形），思源黑体、思源宋体、思源等宽均可用。
 ## 预览
 ![image](./pic/Pic003.jpg)  
 ## 下载字体
