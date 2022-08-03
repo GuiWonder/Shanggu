@@ -4,6 +4,8 @@
 
 ## 預覽
 ![image](./pic/Pic003.jpg)  
+與舊報紙對比<br />
+![image](./pic/Pic002.png)  
 ## 下載字型
 可從 [Releases](https://github.com/GuiWonder/SourceHanToClassic/releases) 頁面下載字型。
 ## 關於字型名稱：
