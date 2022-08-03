@@ -3,6 +3,8 @@
 * [思源中文字体](https://github.com/adobe-fonts)（使用日版）转为传承字形（旧字形），思源黑体、思源宋体、思源等宽均可用。
 ## 预览
 ![image](./pic/Pic003.jpg)  
+与旧报纸对比<br />
+![image](./pic/Pic002.png)  
 ## 下载字体
 可从 [Releases](https://github.com/GuiWonder/SourceHanToClassic/releases) 页面下载字体。
 ## 关于字体名称：
