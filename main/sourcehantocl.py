@@ -11,7 +11,7 @@ if platform.system() == 'Linux':
 	otfccdump += '2'
 	otfccbuild += '2'
 
-fontver='1.001'
+fontver='1.002'
 fontid='AAF'
 
 def build_glyph_codes():
@@ -167,7 +167,7 @@ def creattmp(mch, pun, simp):
 			if len(font['GSUB']['features'][f1]) == 0:
 				f1todel.add(f1)
 				continue
-		for  f1 in f1todel:
+		for f1 in f1todel:
 			del font['GSUB']['features'][f1]
 	print('正在处理异体字信息...')
 	dv=dict()
@@ -179,9 +179,9 @@ def creattmp(mch, pun, simp):
 	tv=dict()
 	with open('uvs-get-jp1-MARK.txt', 'r', encoding='utf-8') as f:
 		for line in f.readlines():
+			line=line.strip()
 			if line.startswith('#'):
 				continue
-			line=line.strip()
 			if line.endswith('X'):
 				a=line.split(' ')
 				tv[str(ord(a[0]))]=str(int(a[3].strip('X'), 16))
@@ -208,8 +208,7 @@ def creattmp(mch, pun, simp):
 			unit=str(ord(chs[1]))
 			if unit in font['cmap']:
 				print('处理 '+chs[0]+'-'+chs[1])
-				gn=font['cmap'][unit]
-				font['cmap'][unis] = gn
+				font['cmap'][unis] = font['cmap'][unit]
 	if rmun=='y':
 		print('正在移除字形...')
 		glyph_codes = build_glyph_codes()
