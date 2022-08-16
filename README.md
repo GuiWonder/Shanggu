@@ -7,7 +7,8 @@
 與舊報紙對比<br />
 ![image](./pic/Pic002.png)  
 ## 下載字型
-可從 [Releases](https://github.com/GuiWonder/SourceHanToClassic/releases) 頁面下載字型。
+1. 可從本站 [Releases](https://github.com/GuiWonder/SourceHanToClassic/releases) 頁面下載字型。
+2. 可從[騰訊微雲](https://share.weiyun.com/VEoOc5xK)下載 AdvocateAncient 系列字型。
 ## 關於字型名稱：
 
 當前字型命名為「 **尚古 Advocate Ancient Fonts** 」，共 7 套，每套 7 種粗細，字型名稱如下：<br />
@@ -45,7 +46,8 @@ Advocate Ancient Serif ST | 尙古明體-準繁體。**
 * 選項6*：字型的英文名稱
 * 選項7*：字型的中文名稱
 ### 2. 執行帶引數命令
-將輸入輸出檔案與上述選項作為引數執行，例如：<br /> `python sourcehantocl.py SourceHanSans-Regular.otf MyFont-Regular.otf y 3 2 y 2`<br />
+將輸入輸出檔案與上述選項作為引數執行，例如：<br /> 
+`python sourcehantocl.py SourceHanSans-Regular.otf AdvocateAncientSans-Regular.otf y 3 2 y 2`<br />
 `python sourcehantocl.py SourceHanSans-Regular.otf MyFont-Regular.otf y 3 2 y 3 MyFont 新名稱`
 
 ## 特別感謝
@@ -55,4 +57,4 @@ Advocate Ancient Serif ST | 尙古明體-準繁體。**
 * [Open Chinese Convert](https://github.com/BYVoid/OpenCC) 
 * [《正確實現簡轉繁字型》](https://ayaka.shn.hk/s2tfont/hant/)
 ## 關於作者
-- **Email：** chunfengfly@gmail.com
+- **Email：** chunfengfly@outlook.com
