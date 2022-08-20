@@ -2,6 +2,7 @@
 # 思源中文字体转为传承字形
 * [思源中文字体](https://github.com/adobe-fonts)（使用日版）转为传承字形（旧字形），思源黑体、思源宋体、思源等宽均可用。
 ## 预览
+![image](./pic/aa0001.png)  
 ![image](./pic/Pic003.jpg)  
 与旧报纸对比<br />
 ![image](./pic/Pic002.png)  
