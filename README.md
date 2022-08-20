@@ -3,6 +3,7 @@
 * [思源中文字型](https://github.com/adobe-fonts)（使用日版）轉為傳承字形（舊字形），思源黑體、思源宋體、思源等寬均可用 。
 
 ## 預覽
+![image](./pic/aa0001.png)  
 ![image](./pic/Pic003.jpg)  
 與舊報紙對比<br />
 ![image](./pic/Pic002.png)  
