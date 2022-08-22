@@ -4,14 +4,14 @@ from collections import defaultdict
 pydir = os.path.abspath(os.path.dirname(__file__))
 otfccdump = os.path.join(pydir, 'otfcc/otfccdump')
 otfccbuild = os.path.join(pydir, 'otfcc/otfccbuild')
-if platform.system() == 'Mac':
+if platform.system() in ('Mac', 'Darwin'):
 	otfccdump += '1'
 	otfccbuild += '1'
 if platform.system() == 'Linux':
 	otfccdump += '2'
 	otfccbuild += '2'
 
-fontver='1.003'
+fontver='1.004'
 fontid='AAF'
 
 def build_glyph_codes():
@@ -100,16 +100,16 @@ def creattmp(mch, pun, simp):
 				elif lang.split('_')[-1].strip()=='ZHH':
 					loczhhk.update(set(font['GSUB']['features'][fs]))
 
-	#exch='侾倜兎剪叟呀咎咠唹嚳墁奜媺嬴孼宬岈巓幃幰廋微徵恝惆惘搜撐於旅旣晧晷曁杓栲桯梏檉毒氓汋汒沿淤湔溲滾漰潛潤澔瀆瀛灼煎煢爟牘牙牚犢獌珵珹琱甿瘦瞎瞬砑稠稧穿窖竇箭篠簉糙糱絳綢緯繭續罔羸肓腴膄臝臾舛舜舞船艘芒茫萸蒯蕣虻蚌蜩蟃衮袞裒裯襁覿訝訹誥讀豹負賙贏贖趼輞迓邙郜鄰鉛鋥鎉鏹閼降隙雕靠颼馰騪驎驘鬋魍鮵鴉鵠鵩鵰麗麟黷匾喝櫝殺浧釁䐁丫夢拄晩覈覉遑隍'
+	#exch='侾倜兎剪叟呀咎咠唹嚳墁奜媺嬴孼宬岈巓幃幰廋微徵恝惆惘搜撐於旅旣晧晷曁杓栲桯梏檉毒氓汋汒沿淤湔溲滾漰潛潤澔瀆瀛灼煎煢爟牘牙牚犢獌珵珹琱甿瘦瞎瞬砑稠稧穿窖竇箭篠簉糙糱絳綢緯繭續罔羸肓腴膄臝臾舛舜舞船艘芒茫萸蒯蕣虻蚌蜩蟃衮袞裒裯襁覿訝訹誥讀豹負賙贏贖趼輞迓邙郜鄰鉛鋥鎉鏹閼降隙雕靠颼馰騪驎驘鬋魍鮵鴉鵠鵩鵰麗麟黷匾喝櫝殺浧釁䐁丫夢拄晩覈覉遑隍偰'
 	#exgl=getgname(exch)
 	pen='"\'—‘’‚“”„‼⁇⁈⁉⸺⸻'
 	pzhs='·’‘”“•≤≥≮≯！：；？'+pen
 	pzht='·’‘”“•、。，．'+pen
 	sip=str()
-	sipch='将蒋残浅践与写泻惮禅箪蝉恋峦蛮変挛栾滦弯湾径茎弥称滞画遥瑶'
-	krd='丈乖乳交伴使侮侵便偉偏偠健偰傑僊僧僭免全公关具兼再冒冓冬凞刃分判券削割劘勇勉勝勤包化半卑博卻厖叉及史吏吸呈咬咲唐唳唾啄啓喓喞喫嘆嘲噓器嚚嚮圍坪堙堞塀塌塘塚墜墨壄壿复夔契奓妥姬姿娜娵婦媛媾嫌宵寐寒寧尊尋導尨屣層峯巡巨巽帽幣平庭廉廊廐廟廠延廷建廻弊弱彩徘忍忭急悔情愉慧慨憊憎懲⼾房所扇扈扉扱抱拐拒拳挺捨捩掃採揃揲援搆搔搨摩摯敏敷⽂斐斧斲旃昀晴暑暖曌曙曜更朕朗杖松柊栓校栴梅梗梛梢榻構槩槪欄次泡派浮海浸消渚港湧湮溝滋滕滬漢潔澘濦濯灞灰炷煙煮燏燿爨爵⽗爺牀牂牒⽛狀狡猪猶班琢瑞環璵甄甦甩畇畔癒癤盆益矩砲硝硬碑碟磨社祈祉祐祖祝神祢祥禍禎福禫程稱穀穢⽳突窙竄筵節簿籐籾粉精糖紋納級紛終絞絣綮総編緩練縛縢縫縵繁繩纛缾署⽻翁翌習翔翠翦翩翫翻翼耀者耕耗聡肇肖肩肺胞脈腱臭⾇艇花苒苣菔菜菟著蓮蓴薄藤蘭虁虐虔虜虞蚊蚤蛀蝇蝙螽蟒蠨衂衆術衛褊褐覃視覯訟註評認誕誤誹請諏諞諭諮諸謁謄謙講謹譖豁貧貨賆資賊賓購贈距踛躍躸較輸轄迅迎近返迪迫迬迭述迷追退送逃逆透逐途通逝逞速造逢連逮週進逸遂遇遊運遍過道達違遘遠遣適遭遮遵遷選遺遼避邃還那邦邨都鄕采釜鉒鉼銎鋆鍵鎌鎖鏖门陬隆隊隣隻雇雙難雪雰霔靖静⾮靡靭靴鞭響頌頑頒頻類顧⾷飢飯飼飽飾養餓館駁駩騰驟骪鬅鬣鬮魔鮗鮫鱍鱏鶐鶹鶾鶿⿇麿黛鼂鼇鼈鼬⿐齹⿔龝廊朗𰻞衋䕡倂搤濊癢膋諲豃趿軶輧込鯞聖'
-	trd='㈾㊩㊮㕙㗴㙇㙈㧻㨘㫵㯳㵆㵟㵪㵵㶏㹃㻇㻐㻗㻴䁓䃺䄲䅮䅼䈑䉠䜘䡱䤑䤵䥲䱻䱽䶉丸倯偺傂傦傴僈儆儚兂兓兝凐剎医匽匾區唬啝啿喒喼嘔嘬噆噳嚂堪塭塺墈夢婓婔尠屄岈岋岤峑幭弒弢归恐恬恮愖愝慪憩憼懱懵戡摠摳撮撯擎擏攠斟昊昞昶朂柭栃栐梤椕椹樞樧檶歁歅歋歐毆汆汛汵沉沷洖洰浧浻淭淲湛滘漒漚潖澂澞澬濸瀎灖牄犘獊瑏璁璥甂甌甍甚甝眾瞂瞘矏砑硂硹硿碪碰磃磘磡礣笌籴糂糌緰聰肏舋舔芔虥蚐蚜蟼蠛衊貙赹輙銏銩鋷鍖鍤鎐鎦鎩鏂阠馤驄驅驔驖驚鸆麫黀黂黮鼢鼦鼩齖齱殺㖗㘚㮇㴲䒳䮐偛偡傯刏勘啗嗖埾堔壏嶇嶵嶶弅憌拄掐掭掰掽揕揝搋摋擨敺斳枒栥棎榗榹檓檨淊溦溾漫璺睃穨篫篬簅籈籕羀羒脋臽蛧蛩蜭蝆蝨螥螩螶蟌贀贉跫踸軀邳鄋鄮鄸鄹醙醧醩醫錎閷閻闉陷鞏韈馛駏骺鬾鬿魀魊鰻鱋鱴鵇鷖鷗麱黇黢黫䁥䓟䔽䕕䕡噶嵁暱楶櫙欿毉潜瑿蠀蠮醰黳釁佢僋冹卼厞叡啟塣壾奜悜戺揙楄檌溞瀩眅睙砨碥稨耛耩蛂蜧蝹螔覤覹觓豃豟豱豽貾贙趿踂軡軧軶鄑銇錓鎉鎪鏏陫頛馧驈驨鯞鯦鯫鵚鶣齴氯椂睩䔄熎䬙蘨蘣蘳嫹擙鐭蔑蕞莈敬'#壬任凭拰恁栠軠鈓賃銋鵀
-	trhkd='䭯䭰䭲䮖䴴䶜倡偈傮僣儥劊勂厭唱嗂嘈噲嚕堨壓尳峼嵑嶆嶱巀幵异彉徟徻愒愮愲慒憯懀懨揭撗擖擫敹昌暍曶曷曹替朁會朅桀椙楬榣榤槽樇檜檠櫓櫜櫝歇毼氌沓涾淍淐渠渴滍漕潃澮濌猒猖猣猲獚獦獪琩璯皾睭瞺矌碉碣磔磭磷穔穬穭筶篎粈粣粼糟糨糮羯聽菖葛薈藒蚩蝎蝬螖螬蟝蠍蠶蠽贕赻踏蹧蹸輵轕鄶鋯錔錩錭鍻鎥鑥閶陻鞜鞨韘韥飺饜馜馝馞馡馣馥騆騔魘魯鯧鰽鱠鶡黶齃齔喝㭼䂿儈厴堎惾抇擼朘稄糔羧耴薨踜靨黈鼭潛噆噶嶜甭甮唦挱鷬'#栠
+	sipch='将蒋残浅践与写泻惮禅箪蝉恋峦蛮挛栾滦弯湾径茎弥称滞画遥瑶'#変
+	krd='丈乖乳交伴使侮侵便偉偏偠健傑僊僧僭免全公关具兼再冒冓冬凞刃分判券削割劘勇勉勝勤包化半卑博卻厖叉及史吏吸呈咬咲唐唳唾啄啓喓喞喫嘆嘲噓器嚚嚮圍坪堙堞塀塌塘塚墜墨壄壿复夔契奓妥姬姿娜娵婦媛媾嫌宵寐寒寧尊尋導尨屣層峯巡巨巽帽幣平庭廉廊廐廟廠延廷建廻弊弱彩徘忍忭急悔情愉慧慨憊憎懲⼾房所扇扈扉扱抱拐拒拳挺捨捩掃採揃揲援搆搔搨摩摯敏敷⽂斐斧斲旃昀晴暑暖曌曙曜更朕朗杖松柊栓校栴梅梗梛梢榻構槩槪欄次泡派浮海浸消渚港湧湮溝滋滕滬漢潔澘濦濯灞灰炷煙煮燏燿爨爵⽗爺牀牂牒⽛狀狡猪猶班琢瑞環璵甄甦甩畇畔癒癤盆益矩砲硝硬碑碟磨社祈祉祐祖祝神祢祥禍禎福禫程稱穀穢⽳突窙竄筵節簿籐籾粉精糖紋納級紛終絞絣綮総編緩練縛縢縫縵繁繩纛缾署⽻翁翌習翔翠翦翩翫翻翼耀者耕耗聡肇肖肩肺胞脈腱臭⾇艇花苒苣菔菜菟著蓮蓴薄藤蘭虁虐虔虜虞蚊蚤蛀蝇蝙螽蟒蠨衂衆術衛褊褐覃視覯訟註評認誕誤誹請諏諞諭諮諸謁謄謙講謹譖豁貧貨賆資賊賓購贈距踛躍躸較輸轄迅迎近返迪迫迬迭述迷追退送逃逆透逐途通逝逞速造逢連逮週進逸遂遇遊運遍過道達違遘遠遣適遭遮遵遷選遺遼避邃還那邦邨都鄕采釜鉒鉼銎鋆鍵鎌鎖鏖门陬隆隊隣隻雇雙難雪雰霔靖静⾮靡靭靴鞭響頌頑頒頻類顧⾷飢飯飼飽飾養餓館駁駩騰驟骪鬅鬣鬮魔鮗鮫鱍鱏鶐鶹鶾鶿⿇麿黛鼂鼇鼈鼬⿐齹⿔龝廊朗𰻞衋䕡倂搤濊癢膋諲豃趿軶輧込鯞聖'
+	trd='㈾㊩㊮㕙㗴㙇㙈㧻㨘㫵㯳㵆㵟㵪㵵㶏㹃㻇㻐㻗㻴䁓䃺䄲䅮䅼䈑䉠䜘䡱䤑䤵䥲䱻䱽䶉丸倯偺傂傦傴僈儆儚兂兓兝凐剎医匽匾區唬啝啿喒喼嘔嘬噆噳嚂堪塭塺墈夢婓婔尠屄岈岋岤峑幭弒弢恐恮愖愝慪憼懱懵戡摠摳撮撯擎擏攠斟昊昞昶朂柭栃栐梤椕椹樞樧檶歁歅歋歐毆汆汛汵沉沷洖洰浧浻淭淲湛滘漒漚潖澂澞澬濸瀎灖牄犘獊瑏璁璥甂甌甍甚甝眾瞂瞘矏砑硂硹硿碪碰磃磘磡礣笌籴糂糌緰聰肏舋芔虥蚐蚜蟼蠛衊貙赹輙銏銩鋷鍖鍤鎐鎦鎩鏂阠馤驄驅驔驖驚鸆麫黀黂黮鼢鼦鼩齖齱殺㖗㘚㮇㴲䒳䮐偛偡傯刏勘啗嗖埾堔壏嶇嶵嶶弅憌拄掐掭掰掽揕揝搋摋擨敺斳枒栥棎榗榹檓檨淊溦溾漫璺睃穨篫篬簅籈籕羀羒脋臽蛧蛩蜭蝆蝨螥螩螶蟌贀贉跫踸軀邳鄋鄮鄸鄹醙醧醩醫錎閷閻闉陷鞏韈馛駏骺鬾鬿魀魊鰻鱋鱴鵇鷖鷗麱黇黢黫䁥䓟䔽䕕䕡噶嵁暱楶櫙欿毉潜瑿蠀蠮醰黳釁佢僋冹卼厞叡啟塣壾奜悜戺揙楄檌溞瀩眅睙砨碥稨耛耩蛂蜧蝹螔覤覹觓豃豟豱豽貾贙趿踂軡軧軶鄑銇錓鎉鎪鏏陫頛馧驈驨鯞鯦鯫鵚鶣齴氯椂睩䔄熎䬙蘨蘣蘳嫹擙鐭蔑蕞莈敬'#壬任凭拰恁栠軠鈓賃銋鵀归舌恬舔甜舐憩湉
+	trhkd='䭯䭰䭲䮖䴴䶜倡偈傮僣儥劊勂厭唱嗂嘈噲嚕堨壓尳峼嵑嶆嶱巀幵异彉徟徻愒愮愲慒憯懀懨揭撗擖擫敹昌暍曶曷曹替朁會桀椙楬榣榤槽樇檜檠櫓櫜櫝歇毼氌沓涾淍淐渠渴滍漕潃澮濌猒猖猣猲獚獦獪琩璯皾睭瞺矌碉碣磔磭磷穔穬穭筶篎粈粣粼糟糨糮羯聽菖葛薈藒蚩蝎蝬螖螬蟝蠍蠶蠽贕赻踏蹧蹸輵轕鄶鋯錔錩錭鍻鎥鑥閶陻鞜鞨韘韥飺饜馜馝馞馡馣馥騆騔魘魯鯧鰽鱠鶡黶齃齔喝㭼䂿儈厴堎惾抇擼朘稄糔羧耴薨踜靨黈鼭潛噆噶嶜甭甮唦挱鷬'#栠朅
 	if pun=='2':
 		setpun(pzhs, loczhs)
 	if pun=='3':
@@ -177,7 +177,7 @@ def creattmp(mch, pun, simp):
 			dv[c]=dict()
 		dv[c][v]=font['cmap_uvs'][k]
 	tv=dict()
-	with open('uvs-get-jp1-MARK.txt', 'r', encoding='utf-8') as f:
+	with open(os.path.join(pydir, 'uvs-get-jp1-MARK.txt'), 'r', encoding='utf-8') as f:
 		for line in f.readlines():
 			line=line.strip()
 			if line.startswith('#'):
@@ -195,7 +195,7 @@ def creattmp(mch, pun, simp):
 	if mch=='y':
 		print('正在合并多编码汉字...')
 		vartab=list()
-		with open('mulcodechar.txt', 'r', encoding='utf-8') as f:
+		with open(os.path.join(pydir, 'mulcodechar.txt'), 'r', encoding='utf-8') as f:
 			for line in f.readlines():
 				line = line.strip()
 				if line.startswith('#') or '\t' not in line:
@@ -208,6 +208,8 @@ def creattmp(mch, pun, simp):
 			unit=str(ord(chs[1]))
 			if unit in font['cmap']:
 				print('处理 '+chs[0]+'-'+chs[1])
+				if rmun=='y':
+					vgl.add(font['cmap'][unis])
 				font['cmap'][unis] = font['cmap'][unit]
 	if rmun=='y':
 		print('正在移除字形...')
@@ -221,6 +223,22 @@ def creattmp(mch, pun, simp):
 				except ValueError:
 					pass
 				del font['glyf'][v1]
+	print('正在获取1.0版字形...')
+	file10=os.path.join(pydir, 'sourcehan1.0/'+font['CFF_']['fontName'].replace('Mono', 'Sans').replace('HW', '')+'.otf')
+	with open(os.path.join(pydir, 'sourcehan1.0.txt'), 'r', encoding='utf-8') as f:
+		s10=f.read().strip()
+		font10 = json.loads(subprocess.check_output((otfccdump, '--no-bom', file10)).decode("utf-8", "ignore"))
+		for ch in s10:
+			uni=str(ord(ch))
+			if uni in font10['cmap'] and uni in font['cmap']:
+				g1=font['cmap'][uni]
+				g2=font10['cmap'][uni]
+				if g1=='.notdef' or g2=='.notdef':
+					continue
+				print('处理', ch)
+				for k in font10['glyf'][g2].keys():
+					if k not in ('CFF_fdSelect', 'CFF_CID'):
+						font['glyf'][g1][k]=font10['glyf'][g2][k]
 
 	print('正在设置字体名称...')
 	if setname=='1':
@@ -245,6 +263,23 @@ def creattmp(mch, pun, simp):
 				nname.append(nh)
 		font['name']=font['name']+nname
 	elif setname=='2':
+		enn='Advocate Ancient'
+		ennps='AdvocateAncient'
+		scn=['尙古黑体', '尙古明体', '尙古等宽']
+		tcn=['尙古黑體', '尙古明體', '尙古等寬']
+		hcn=['尙古黑體 香港', '尙古明體 香港', '尙古等寬 香港']
+		if mch=='n' and pun=='2'and simp=='2':
+			enn='Advocate Ancient SC'
+			ennps='AdvocateAncientSC'
+			scn=['尙古黑体SC', '尙古明体SC', '尙古等宽SC']
+			tcn=['尙古黑體SC', '尙古明體SC', '尙古等寬SC']
+			hcn=tcn
+		elif mch=='n' and pun=='1' and simp=='1':
+			enn='Advocate Ancient JP'
+			ennps='AdvocateAncientJP'
+			scn=['尙古黑体JP', '尙古明体JP', '尙古等宽JP']
+			tcn=['尙古黑體JP', '尙古明體JP', '尙古等寬JP']
+			hcn=tcn
 		font['OS_2']['achVendID']=fontid
 		font['head']['fontRevision']=float(fontver)
 		nname=list()
@@ -253,19 +288,23 @@ def creattmp(mch, pun, simp):
 				ns=dict(nj)
 				nt=dict(nj)
 				nh=dict(nj)
+				if enn=='Advocate Ancient JP':
+					njn=dict(nj)
+					njn['nameString']=njn['nameString'].replace('源ノ', '尙古')
+					nname.append(njn)
 				ns['languageID']=2052
-				ns['nameString']=ns['nameString'].replace('源ノ明朝', '尙古明体').replace('源ノ角ゴシック', '尙古黑体').replace('源ノ等幅', '尙古等宽')
+				ns['nameString']=ns['nameString'].replace('源ノ角ゴシック', scn[0]).replace('源ノ明朝', scn[1]).replace('源ノ等幅', scn[2])
 				nt['languageID']=1028
-				nt['nameString']=nt['nameString'].replace('源ノ明朝', '尙古明體').replace('源ノ角ゴシック', '尙古黑體').replace('源ノ等幅', '尙古等寬')
+				nt['nameString']=nt['nameString'].replace('源ノ角ゴシック', tcn[0]).replace('源ノ明朝', tcn[1]).replace('源ノ等幅', tcn[2])
 				nh['languageID']=3076
-				nh['nameString']=nh['nameString'].replace('源ノ明朝', '尙古明體 香港').replace('源ノ角ゴシック', '尙古黑體 香港').replace('源ノ等幅', '尙古等寬 香港')
+				nh['nameString']=nh['nameString'].replace('源ノ角ゴシック', hcn[0]).replace('源ノ明朝', hcn[1]).replace('源ノ等幅', hcn[2])
 				nname.append(ns)
 				nname.append(nt)
 				nname.append(nh)
 			#elif nj['nameID']>0 and nj['nameID']<7:
 			elif nj['nameID']==3:
 				ne=dict(nj)
-				ne['nameString']=fontver+';'+fontid+';'+ne['nameString'].split(';')[2].replace('SourceHan', 'AdvocateAncient')
+				ne['nameString']=fontver+';'+fontid+';'+ne['nameString'].split(';')[2].replace('SourceHan', ennps)
 				nname.append(ne)
 			elif nj['nameID']==5:
 				ne=dict(nj)
@@ -278,23 +317,23 @@ def creattmp(mch, pun, simp):
 			elif nj['nameID']!=0 and nj['nameID']!=7 and nj['nameID']!=8:
 			#else:
 				ne=dict(nj)
-				ne['nameString']=ne['nameString'].replace('Source Han', 'Advocate Ancient').replace('SourceHan', 'AdvocateAncient')
+				ne['nameString']=ne['nameString'].replace('Source Han', enn).replace('SourceHan', ennps)
 				nname.append(ne)
 		font['name']=nname
 		if 'CFF_' in font:
 			font['CFF_']['notice']=''
-			font['CFF_']['fontName']=font['CFF_']['fontName'].replace('SourceHan', 'AdvocateAncient')
-			font['CFF_']['fullName']=font['CFF_']['fullName'].replace('Source Han', 'Advocate Ancient')
-			font['CFF_']['familyName']=font['CFF_']['familyName'].replace('Source Han', 'Advocate Ancient')
+			font['CFF_']['fontName']=font['CFF_']['fontName'].replace('SourceHan', ennps)
+			font['CFF_']['fullName']=font['CFF_']['fullName'].replace('Source Han', enn)
+			font['CFF_']['familyName']=font['CFF_']['familyName'].replace('Source Han', enn)
 			if 'fdArray' in font['CFF_']:
 				nfd=dict()
 				for k in font['CFF_']['fdArray'].keys():
-					nfd[k.replace('SourceHan', 'AdvocateAncient')]=font['CFF_']['fdArray'][k]
+					nfd[k.replace('SourceHan', ennps)]=font['CFF_']['fdArray'][k]
 				font['CFF_']['fdArray']=nfd
 				for gl in font['glyf'].values():
 					if 'CFF_fdSelect' in gl:
-						gl['CFF_fdSelect']=gl['CFF_fdSelect'].replace('SourceHan', 'AdvocateAncient')
-	if setname=='3':
+						gl['CFF_fdSelect']=gl['CFF_fdSelect'].replace('SourceHan', ennps)
+	elif setname=='3':
 		pname=enname.replace(' ', '')
 		nname=list()
 		for nj in font['name']:
@@ -331,7 +370,6 @@ def creattmp(mch, pun, simp):
 						gl['CFF_fdSelect']=gl['CFF_fdSelect'].replace('SourceHanSans', pname).replace('SourceHanSerif', pname).replace('SourceHanMono', pname)
 
 	print('正在生成字体...')
-	#tmpfile='tmp.json'
 	tmpfile = tempfile.mktemp('.json')
 	with open(tmpfile, 'w', encoding='utf-8') as f:
 		f.write(json.dumps(font))
