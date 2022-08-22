@@ -6,37 +6,26 @@
 ![image](./pic/aa0001.png)  
 ![image](./pic/Pic003.jpg)  
 與舊報紙對比<br />
-![image](./pic/Pic002.png)  
-## 下載字型
-1. 可從本站 [Releases](https://github.com/GuiWonder/SourceHanToClassic/releases) 頁面下載字型。
-2. 可從[騰訊微雲](https://share.weiyun.com/VEoOc5xK)下載 AdvocateAncient 系列字型。
+![image](./pic/Pic002.png) 
+ 
 ## 關於字型名稱：
-
-當前字型命名為「 **尚古 Advocate Ancient Fonts** 」，共 7 套，每套 7 種粗細，字型名稱如下：<br />
+當前字型命名為「 **尚古 Advocate Ancient Fonts** 」，共 8 套，每套 7 種粗細，字型名稱如下：<br />
 **Advocate Ancient Sans | 尙古黑体 | 尙古黑體 | 尙古黑體 香港，<br />
 Advocate Ancient Serif | 尙古明体 | 尙古明體 | 尙古明體 香港，<br />
 Advocate Ancient Mono | 尙古等宽 | 尙古等寬 | 尙古等寬 香港<br />
-Advocate Ancient Sans TC | 尙古黑體-繁體，<br />
-Advocate Ancient Serif TC | 尙古明體-繁體，<br />
-Advocate Ancient Sans ST | 尙古黑體-準繁體，<br />
-Advocate Ancient Serif ST | 尙古明體-準繁體。**
+Advocate Ancient Sans ST | 尙古黑體-轉繁體，<br />
+Advocate Ancient Serif ST | 尙古明體-轉繁體。<br />
+Advocate Ancient Sans SC | 尙古黑体SC | 尙古黑體SC，<br />
+Advocate Ancient Serif SC | 尙古明体SC | 尙古明體SC，<br />
+Advocate Ancient Mono SC | 尙古等宽SC | 尙古等寬SC。<br /><br />**
+*註1：SC版為多編碼漢字分開編碼的版本。*<br />
+*註2：「轉繁體」中，由於詞彙佔用一部分字形空間，因此需要移除一部分字形，所顯示的字元數目要少一些（約一萬八千字元）。*
 
-## 繁體字型、簡轉繁字型
-由於一些簡化字沒有傳承字形，現提供繁體字型（簡轉繁字型）。目前提供兩種版本。
-### 1. 普通繁體字型（簡轉繁字型）
-簡繁字形為一對一，對於簡繁一對多使用單一常用字，多數簡繁一對多的簡化字可正確顯示為繁體。
-此版字型名稱為：<br />
-**Advocate Ancient Sans TC | 尙古黑體-繁體，<br />
-Advocate Ancient Serif TC | 尙古明體-繁體。**
-### 2. 可處理簡繁一對多的繁體字型（簡轉繁字型）
-使用詞彙，對於簡繁一對多，可根據文字自動匹配正確的字形，這樣大大減少了簡繁轉換出錯的情況。此功能需要 OpenType 特性。<br />
-此版字型名稱為：<br />
-**Advocate Ancient Sans ST | 尙古黑體-準繁體，<br />
-Advocate Ancient Serif ST | 尙古明體-準繁體。**
-<br /><br />
-*註：繁體一對多字型中，由於詞彙佔用一部分字形空間，因此需要移除一部分字形，所顯示的字元數目要少一些（約一萬八千字元）。*
+## 下載字型
+1. 可從本站 [Releases](https://github.com/GuiWonder/SourceHanToClassic/releases) 頁面下載字型。
+2. 可從[騰訊微雲](https://share.weiyun.com/VEoOc5xK)下載 AdvocateAncient 系列字型。
 
-## 轉換工具使用說明
+## 使用工具生成字型
 ### 1. 執行命令
 執行命令`python sourcehantocl.py`
 * 選項1：是否合併多個編碼的漢字，例如：青-靑 尚-尙 兑-兌 温-溫等？，輸入Y/N
@@ -57,5 +46,6 @@ Advocate Ancient Serif ST | 尙古明體-準繁體。**
 * [I.字坊](https://github.com/ichitenfont)的[傳承字形標準化檔案](https://github.com/ichitenfont/inheritedglyphs)及[I.明體](https://github.com/ichitenfont/I.Ming)
 * [Open Chinese Convert](https://github.com/BYVoid/OpenCC) 
 * [《正確實現簡轉繁字型》](https://ayaka.shn.hk/s2tfont/hant/)
+
 ## 關於作者
 - **Email：** chunfengfly@outlook.com
