@@ -57,12 +57,15 @@ def ckfile(f):
 		elif os.path.isfile(f.strip("'")):
 			return f.strip("'")
 	return f
-	
+
 def setpun(pzh, loczh):
 	pg=getgname(pzh)
 	zhp=list()
 	for tb in loczh:
-		if len(font['GSUB']['lookups'][tb]['subtables'][0])>200:
+		allen=0
+		for ctb in font['GSUB']['lookups'][tb]['subtables']:
+			allen+=len(ctb)
+		if allen>60:
 			for subtable in font['GSUB']['lookups'][tb]['subtables']:
 				for j, t in list(subtable.items()):
 					for p1 in pzh:
@@ -73,12 +76,31 @@ def setpun(pzh, loczh):
 								zhp.append((cod, t))
 								print('处理', p1)
 		else:
-			a=gettbs(tb, pg, False)
+			a=gettbs(tb, pg, True)
 			if len(a)>0:
 				for itm in a:
 					gettrch(itm[0], itm[1])
 	for punzh in zhp:
 		font['cmap'][punzh[0]]=punzh[1]
+
+def getother(fname, gtext):
+	with open(gtext, 'r', encoding='utf-8') as f:
+		s10=f.read().strip()
+		font10 = json.loads(subprocess.check_output((otfccdump, '--no-bom', fname)).decode("utf-8", "ignore"))
+		for ch in s10:
+			uni=str(ord(ch))
+			if uni in font10['cmap'] and uni in font['cmap']:
+				g1=font['cmap'][uni]
+				g2=font10['cmap'][uni]
+				if g1=='.notdef' or g2=='.notdef':
+					continue
+				print('处理', ch)
+				if 'CFF_' in font:
+					for k in font10['glyf'][g2].keys():
+						if k not in ('CFF_fdSelect', 'CFF_CID'):
+							font['glyf'][g1][k]=font10['glyf'][g2][k]
+				else:
+					font['glyf'][g1]=font10['glyf'][g2]
 
 def creattmp(mch, pun, simp):
 	print('获取本地化列表...')
@@ -158,7 +180,6 @@ def creattmp(mch, pun, simp):
 					if ftype=='gsub_single':
 						vgl.add(t)
 						vgl.add(j)
-
 		del font['GSUB']['lookups'][subs]
 		f1todel = set()
 		for f1 in font['GSUB']['features'].keys():
@@ -169,6 +190,7 @@ def creattmp(mch, pun, simp):
 				continue
 		for f1 in f1todel:
 			del font['GSUB']['features'][f1]
+
 	print('正在处理异体字信息...')
 	dv=dict()
 	for k in font['cmap_uvs'].keys():
@@ -185,13 +207,39 @@ def creattmp(mch, pun, simp):
 			if line.endswith('X'):
 				a=line.split(' ')
 				tv[str(ord(a[0]))]=str(int(a[3].strip('X'), 16))
-
 	for k in dv.keys():
 		if k in tv:
 			if tv[k] in dv[k]:
 				print('处理', chr(int(k)))
 				tch=dv[k][tv[k]]
 				font['cmap'][k]=tch
+
+	fpn=str()
+	for n1 in font['name']:
+		if n1['nameID']==6 and '-' in n1['nameString']:
+			fpn=n1['nameString']
+			break
+	if 'CFF_' in font:
+		ffmt='.otf'
+	else:
+		ffmt='.ttf'
+	print('正在获取1.0版字形...')
+	file10=os.path.join(pydir, 'sourcehan1.0/'+fpn.replace('Mono', 'Sans').replace('HW', '')+ffmt)
+	text10=os.path.join(pydir, 'sourcehan1.0.txt')
+	if os.path.isfile(file10) and os.path.isfile(text10):
+		getother(file10, text10)
+	else:
+		print('获取1.0版字形失败！')
+
+	#if 'Sans' in fpn or 'Mono' in fpn:
+	#	print('正在获取秋空黑体字形...')
+	#	filec=os.path.join(pydir, 'ChiuKongGothic-CL/ChiuKongGothic-CL-'+fpn.split('-')[-1]+ffmt)
+	#	textc=os.path.join(pydir, 'ChiuKongGothic-CL.txt')
+	#	if os.path.isfile(filec) and os.path.isfile(textc):
+	#		getother(filec, textc)
+	#	else:
+	#		print('获取秋空黑体字形失败！')
+
 	if mch=='y':
 		print('正在合并多编码汉字...')
 		vartab=list()
@@ -223,22 +271,6 @@ def creattmp(mch, pun, simp):
 				except ValueError:
 					pass
 				del font['glyf'][v1]
-	print('正在获取1.0版字形...')
-	file10=os.path.join(pydir, 'sourcehan1.0/'+font['CFF_']['fontName'].replace('Mono', 'Sans').replace('HW', '')+'.otf')
-	with open(os.path.join(pydir, 'sourcehan1.0.txt'), 'r', encoding='utf-8') as f:
-		s10=f.read().strip()
-		font10 = json.loads(subprocess.check_output((otfccdump, '--no-bom', file10)).decode("utf-8", "ignore"))
-		for ch in s10:
-			uni=str(ord(ch))
-			if uni in font10['cmap'] and uni in font['cmap']:
-				g1=font['cmap'][uni]
-				g2=font10['cmap'][uni]
-				if g1=='.notdef' or g2=='.notdef':
-					continue
-				print('处理', ch)
-				for k in font10['glyf'][g2].keys():
-					if k not in ('CFF_fdSelect', 'CFF_CID'):
-						font['glyf'][g1][k]=font10['glyf'][g2][k]
 
 	print('正在设置字体名称...')
 	if setname=='1':
