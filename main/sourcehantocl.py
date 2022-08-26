@@ -87,6 +87,9 @@ def getother(fname, gtext):
 	with open(gtext, 'r', encoding='utf-8') as f:
 		s10=f.read().strip()
 		font10 = json.loads(subprocess.check_output((otfccdump, '--no-bom', fname)).decode("utf-8", "ignore"))
+		scl = 1.0
+		if font["head"]["unitsPerEm"] != font10["head"]["unitsPerEm"]:
+			scl = font["head"]["unitsPerEm"] / font10["head"]["unitsPerEm"]
 		for ch in s10:
 			uni=str(ord(ch))
 			if uni in font10['cmap'] and uni in font['cmap']:
@@ -99,8 +102,35 @@ def getother(fname, gtext):
 					for k in font10['glyf'][g2].keys():
 						if k not in ('CFF_fdSelect', 'CFF_CID'):
 							font['glyf'][g1][k]=font10['glyf'][g2][k]
+							if scl != 1.0:
+								sclglyph(font['glyf'][g1], scl)
 				else:
 					font['glyf'][g1]=font10['glyf'][g2]
+					if scl != 1.0:
+						sclglyph(font['glyf'][g1], scl)
+
+def sclglyph(glyph, scl):
+	glyph['advanceWidth'] = round(glyph['advanceWidth'] * scl)
+	if 'advanceHeight' in glyph:
+		glyph['advanceHeight'] = round(glyph['advanceHeight'] * scl)
+		glyph['verticalOrigin'] = round(glyph['verticalOrigin'] * scl)
+	if 'contours' in glyph:
+		for contour in glyph['contours']:
+			for point in contour:
+				point['x'] = round(point['x'] * scl);
+				point['y'] = round(point['y'] * scl);
+	if 'references' in glyph:
+		for reference in glyph['references']:
+			reference['x'] = round(scl * reference['x'])
+			reference['y'] = round(scl * reference['y'])
+	if 'stemH' in glyph:
+		for stemh in glyph['stemH']:
+			stemh['position'] = round(scl * stemh['position'])
+			stemh['width'] = round(scl * stemh['width'])
+	if 'stemV' in glyph:
+		for stemv in glyph['stemV']:
+			stemv['position'] = round(scl * stemv['position'])
+			stemv['width'] = round(scl * stemv['width'])
 
 def creattmp(mch, pun, simp):
 	print('获取本地化列表...')
