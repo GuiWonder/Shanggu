@@ -249,6 +249,8 @@ def creattmp(mch, pun, simp):
 		if n1['nameID']==6 and '-' in n1['nameString']:
 			fpn=n1['nameString']
 			break
+	if fpn.endswith('It'):
+		fpn=fpn[:-2]
 	if 'CFF_' in font:
 		ffmt='.otf'
 	else:
@@ -501,4 +503,3 @@ print('正在生成字体文件...')
 subprocess.run((otfccbuild, '--keep-modified-time', '--keep-average-char-width', '-O3', '-q', '-o', outf, tmpfile))
 os.remove(tmpfile)
 print('完成!')
-
