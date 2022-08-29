@@ -61,26 +61,32 @@ def ckfile(f):
 def setpun(pzh, loczh):
 	pg=getgname(pzh)
 	zhp=list()
+	etb=set()
+	ztb=set()
 	for tb in loczh:
 		allen=0
 		for ctb in font['GSUB']['lookups'][tb]['subtables']:
 			allen+=len(ctb)
 		if allen>60:
-			for subtable in font['GSUB']['lookups'][tb]['subtables']:
-				for j, t in list(subtable.items()):
-					for p1 in pzh:
-						cod=str(ord(p1))
-						if cod in font['cmap']:
-							g=font['cmap'][cod]
-							if g==j:
-								zhp.append((cod, t))
-								print('处理', p1)
+			ztb.add(tb)
 		else:
-			a=gettbs(tb, pg, True)
-			if len(a)>0:
-				for itm in a:
-					gettrch(itm[0], itm[1])
+			etb.add(tb)
+	for tb in ztb:
+		for subtable in font['GSUB']['lookups'][tb]['subtables']:
+			for j, t in list(subtable.items()):
+				for p1 in pzh:
+					cod=str(ord(p1))
+					if cod in font['cmap']:
+						g=font['cmap'][cod]
+						if g==j:
+							zhp.append((cod, t))
+	for tb in etb:
+		a=gettbs(tb, pg, True)
+		if len(a)>0:
+			for itm in a:
+				gettrch(itm[0], itm[1])
 	for punzh in zhp:
+		print('处理', chr(int(punzh[0])))
 		font['cmap'][punzh[0]]=punzh[1]
 
 def getother(fname, gtext):
@@ -99,15 +105,19 @@ def getother(fname, gtext):
 					continue
 				print('处理', ch)
 				if 'CFF_' in font:
+					gnew=dict()
+					if 'CFF_fdSelect' in font['glyf'][g1]:
+						gnew['CFF_fdSelect']=font['glyf'][g1]['CFF_fdSelect']
+					if 'CFF_CID' in font['glyf'][g1]:
+						gnew['CFF_CID']=font['glyf'][g1]['CFF_CID']
 					for k in font10['glyf'][g2].keys():
 						if k not in ('CFF_fdSelect', 'CFF_CID'):
-							font['glyf'][g1][k]=font10['glyf'][g2][k]
-							if scl != 1.0:
-								sclglyph(font['glyf'][g1], scl)
+							gnew[k]=font10['glyf'][g2][k]
+					font['glyf'][g1]=gnew
 				else:
 					font['glyf'][g1]=font10['glyf'][g2]
-					if scl != 1.0:
-						sclglyph(font['glyf'][g1], scl)
+				if scl != 1.0:
+					sclglyph(font['glyf'][g1], scl)
 
 def sclglyph(glyph, scl):
 	glyph['advanceWidth'] = round(glyph['advanceWidth'] * scl)
@@ -203,7 +213,7 @@ def creattmp(mch, pun, simp):
 	print('正在移除本地化列表...')
 	vgl=set()
 	for subs in loc:
-		if rmun=='y':
+		if rmun=='1' or rmun=='2':
 			ftype=font['GSUB']['lookups'][subs]['type']
 			for subtable in font['GSUB']['lookups'][subs]['subtables']:
 				for j, t in list(subtable.items()):
@@ -223,11 +233,14 @@ def creattmp(mch, pun, simp):
 
 	print('正在处理异体字信息...')
 	dv=dict()
+	uvsgly=set()
 	for k in font['cmap_uvs'].keys():
 		c, v=k.split(' ')
 		if c not in dv:
 			dv[c]=dict()
 		dv[c][v]=font['cmap_uvs'][k]
+		if rmun!='3':
+			uvsgly.add(font['cmap_uvs'][k])
 	tv=dict()
 	with open(os.path.join(pydir, 'uvs-get-jp1-MARK.txt'), 'r', encoding='utf-8') as f:
 		for line in f.readlines():
@@ -288,21 +301,74 @@ def creattmp(mch, pun, simp):
 			unit=str(ord(chs[1]))
 			if unit in font['cmap']:
 				print('处理 '+chs[0]+'-'+chs[1])
-				if rmun=='y':
+				if rmun=='1' or rmun=='2':
 					vgl.add(font['cmap'][unis])
 				font['cmap'][unis] = font['cmap'][unit]
-	if rmun=='y':
+	if rmun=='2':
+		vgl.difference_update(uvsgly)
+	elif rmun=='1':
+		vgl.update(uvsgly)
+	if rmun=='1' or rmun=='2':
 		print('正在移除字形...')
 		glyph_codes = build_glyph_codes()
+		isrm=set()
 		for v1 in vgl:
 			if len(glyph_codes[v1])<1:
 				#print('移除', v1)
+				isrm.add(v1)
 				del glyph_codes[v1]
 				try:
 					font['glyph_order'].remove(v1)
 				except ValueError:
 					pass
 				del font['glyf'][v1]
+		print('正在检查Lookup表...')
+		if 'GSUB' in font:
+			for lookup in font['GSUB']['lookups'].values():
+				if lookup['type'] == 'gsub_single':
+					for subtable in lookup['subtables']:
+						for g1, g2 in list(subtable.items()):
+							if g1 in isrm or g2 in isrm:
+								del subtable[g1]
+				elif lookup['type'] == 'gsub_alternate':
+					for subtable in lookup['subtables']:
+						for item in set(subtable.keys()):
+							if item in isrm or len(set(subtable[item]).intersection(isrm))>0:
+								del subtable[item]
+				elif lookup['type'] == 'gsub_ligature': 
+					for subtable in lookup['subtables']:
+						s1=list()
+						for item in subtable['substitutions']:
+							if item['to'] not in isrm and len(set(item['from']).intersection(isrm))<1:
+								s1.append(item)
+						subtable['substitutions']=s1
+				elif lookup['type'] == 'gsub_chaining':
+					for subtable in lookup['subtables']:
+						for ls in subtable['match']:
+							for l1 in ls:
+								l1=list(set(l1).difference(isrm))
+		if 'GPOS' in font:
+			for lookup in font['GPOS']['lookups'].values():
+				if lookup['type'] == 'gpos_single':
+					for subtable in lookup['subtables']:
+						for item in list(subtable.keys()):
+							if item in isrm:
+								del subtable[item]
+				elif lookup['type'] == 'gpos_pair':
+					for subtable in lookup['subtables']:
+						for item in list(subtable['first'].keys()):
+							if item in isrm:
+								del subtable['first'][item]
+						for item in list(subtable['second'].keys()):
+							if item in isrm:
+								del subtable['second'][item]
+				elif lookup['type'] == 'gpos_mark_to_base':
+					nsb=list()
+					for subtable in lookup['subtables']:
+						gs=set(subtable['marks'].keys()).union(set(subtable['bases'].keys()))
+						if len(gs.intersection(isrm))<1:
+							nsb.append(subtable)
+					lookup['subtables']=nsb
 
 	print('正在设置字体名称...')
 	if setname=='1':
@@ -343,6 +409,12 @@ def creattmp(mch, pun, simp):
 			ennps='AdvocateAncientJP'
 			scn=['尙古黑体JP', '尙古明体JP', '尙古等宽JP']
 			tcn=['尙古黑體JP', '尙古明體JP', '尙古等寬JP']
+			hcn=tcn
+		elif mch=='n' and pun=='3':
+			enn='Advocate Ancient TC'
+			ennps='AdvocateAncientTC'
+			scn=['尙古黑体TC', '尙古明体TC', '尙古等宽TC']
+			tcn=['尙古黑體TC', '尙古明體TC', '尙古等寬TC']
 			hcn=tcn
 		font['OS_2']['achVendID']=fontid
 		font['head']['fontRevision']=float(fontver)
@@ -467,13 +539,18 @@ if len(sys.argv)<7:
 		pun=input('请选择标点：\n\t1.日本\n\t2.简体中文\n\t3.正体中文（居中）\n')
 	while simp not in {'1', '2'}:
 		simp=input('请选择简化字字形：\n\t1.日本\n\t2.中国大陆\n')
-	while rmun not in {'y', 'n'}:
-		rmun=input('是否移除未使用的字形(输入Y/N)：\n').lower()
+	while rmun not in {'1', '2', '3','y', 'n'}:
+		rmun=input('是否移除未使用的字形：\n\t1.移除这些字形\n\t2.保留异体选择器中的字形\n\t3.不移除任何字形\n').lower()
 else:
 	mch=sys.argv[3].lower()
 	pun=sys.argv[4]
 	simp=sys.argv[5]
 	rmun=sys.argv[6].lower()
+if rmun=='y':
+	rmun='1'
+if rmun=='n':
+	rmun='3'
+
 if len(sys.argv)<8:
 	while setname not in {'1', '2', '3'}:
 		#setname=input('字体名称设置：\n\t1.使用思源原版字体名称\n\t2.使用尙古黑体、尙古明体\n\t3.我来命名\n')
