@@ -12,8 +12,8 @@
 **Advocate Ancient Sans | 尙古黑体 | 尙古黑體 | 尙古黑體 香港，<br />
 Advocate Ancient Serif | 尙古明体 | 尙古明體 | 尙古明體 香港，<br />
 Advocate Ancient Mono | 尙古等宽 | 尙古等寬 | 尙古等寬 香港<br />
-Advocate Ancient Sans ST | 尙古黑體-轉繁體，<br />
-Advocate Ancient Serif ST | 尙古明體-轉繁體。<br />
+Advocate Ancient Sans ST | 尙古黑體 轉繁體，<br />
+Advocate Ancient Serif ST | 尙古明體 轉繁體。<br />
 Advocate Ancient Sans SC | 尙古黑体SC | 尙古黑體SC，<br />
 Advocate Ancient Serif SC | 尙古明体SC | 尙古明體 SC，<br />
 Advocate Ancient Mono SC | 尙古等宽SC | 尙古等寬SC。<br /><br />**
@@ -30,14 +30,14 @@ Advocate Ancient Mono SC | 尙古等宽SC | 尙古等寬SC。<br /><br />**
 * 选项1：是否合并多个编码的汉字，例如：青-靑 尚-尙 兑-兌 温-溫等？，输入Y/N
 * 选项2：标点击择：1.日本 2.简体中文 3.正体中文（居中）
 * 选项3：简化字字形选择：1.日本 2.中国大陆
-* 选项4：是否移除未使用的字形，输入Y/N
+* 选项4：是否移除未使用的字形：1.移除这些字形 2.保留异体选择器中的字形 3.不移除任何字形
 * 选项5：设置字体名称：~1.使用思源原版字体名称~ 2.使用尙古黑体、尙古明体 3.我来命名
 * 选项6*：字体的英文名称
 * 选项7*：字体的中文名称
 ### 2. 运行带参数命令
 将输入输出文件与上述选项作为参数运行，例如：<br /> 
-`python sourcehantocl.py SourceHanSans-Regular.otf AdvocateAncientSans-Regular.otf y 3 2 y 2`<br />
-`python sourcehantocl.py SourceHanSans-Regular.otf MyFont-Regular.otf y 3 2 y 3 MyFont 新名称`
+`python sourcehantocl.py SourceHanSans-Regular.otf AdvocateAncientSans-Regular.otf y 3 2 2 2`<br />
+`python sourcehantocl.py SourceHanSans-Regular.otf MyFont-Regular.otf y 3 2 2 3 MyFont 新名称`
 
 ## 特别感谢
 * [Adobe Fonts](https://github.com/adobe-fonts) [思源黑体](https://github.com/adobe-fonts/source-han-sans) [思源宋体](https://github.com/adobe-fonts/source-han-serif) [思源等宽](https://github.com/adobe-fonts/source-han-mono)
