@@ -1,0 +1,43 @@
+
+name: Build
+
+on:
+  watch:
+  push:
+  #  branches: [ "main" ]
+  #pull_request:
+  #  branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+    - name: Begin
+      run: |
+        python3 ./build.py
+
+    - name: Upload to release
+      uses: marvinpinto/action-automatic-releases@latest
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "test-release-AA"
+        prerelease: true
+        title: Daily Test
+        files: |
+            AdvocateAncientMono.7z
+            AdvocateAncientSans.7z
+            AdvocateAncientSerif.7z
+            AdvocateAncientMonoSC.7z
+            AdvocateAncientSansSC.7z
+            AdvocateAncientSerifSC.7z
+            AdvocateAncientSansST.7z
+            AdvocateAncientSerifST.7z
+            
+
