@@ -11,7 +11,7 @@ if platform.system() == 'Linux':
 	otfccdump += '2'
 	otfccbuild += '2'
 
-fontver='1.004'
+fontver='1.005'
 fontid='AAF'
 
 def build_glyph_codes():
