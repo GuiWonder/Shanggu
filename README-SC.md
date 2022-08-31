@@ -17,7 +17,7 @@ Advocate Ancient Serif ST | 尙古明體 轉繁體。<br />
 Advocate Ancient Sans SC | 尙古黑体SC | 尙古黑體SC，<br />
 Advocate Ancient Serif SC | 尙古明体SC | 尙古明體 SC，<br />
 Advocate Ancient Mono SC | 尙古等宽SC | 尙古等寬SC。<br /><br />**
-*注1：SC版为多编码汉字分开编码的版本。*<br />
+*注1：SC版为多编码汉字分开编码的版本,使用构建工具可构建分开编码的TC、JP版。*<br />
 *注2：“轉繁體”中，由于词汇占用一部分字形空间，因此需要移除一部分字形，所显示的字符数目要少一些。（约一万八千字符）。*
 
 ## 下载字体
