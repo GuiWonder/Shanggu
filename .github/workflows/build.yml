@@ -2,8 +2,8 @@
 name: Build
 
 on:
-  watch:
   push:
+    branches: [ "off" ]
   #  branches: [ "main" ]
   #pull_request:
   #  branches: [ "main" ]
