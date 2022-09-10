@@ -3,10 +3,8 @@ name: Build
 
 on:
   push:
+    #branches: [ "main" ]
     branches: [ "off" ]
-  #  branches: [ "main" ]
-  #pull_request:
-  #  branches: [ "main" ]
 
 jobs:
   build:
@@ -22,7 +20,39 @@ jobs:
     - name: Begin
       run: |
         python3 ./build.py
-
+    #- uses: actions/upload-artifact@v2
+    #  with:
+    #    name: AdvocateAncientMonoOTFs
+    #    path: AdvocateAncientMonoOTFs.7z
+    #- uses: actions/upload-artifact@v2
+    #  with:
+    #    name: AdvocateAncientMonoOTCs
+    #    path: AdvocateAncientMonoOTCs.7z
+    #- uses: actions/upload-artifact@v2
+    #  with:
+    #    name: AdvocateAncientSansOTFs
+    #    path: AdvocateAncientSansOTFs.7z
+    #- uses: actions/upload-artifact@v2
+    #  with:
+    #    name: AdvocateAncientSansOTCs
+    #    path: AdvocateAncientSansOTCs.7z
+    #- uses: actions/upload-artifact@v2
+    #  with:
+    #    name: AdvocateAncientSansFANTI
+    #    path: AdvocateAncientSansFANTI.7z
+    #- uses: actions/upload-artifact@v2
+    #  with:
+    #    name: AdvocateAncientSerifOTFs
+    #    path: AdvocateAncientSerifOTFs.7z
+    #- uses: actions/upload-artifact@v2
+    #  with:
+    #    name: AdvocateAncientSerifOTCs
+    #    path: AdvocateAncientSerifOTCs.7z
+    #- uses: actions/upload-artifact@v2
+    #  with:
+    #    name: AdvocateAncientSerifFANTI
+    #    path: AdvocateAncientSerifFANTI.7z
+        
     - name: Upload to release
       uses: marvinpinto/action-automatic-releases@latest
       with:
@@ -31,13 +61,11 @@ jobs:
         prerelease: true
         title: Daily Test
         files: |
-            AdvocateAncientMono.7z
-            AdvocateAncientSans.7z
-            AdvocateAncientSerif.7z
-            AdvocateAncientMonoSC.7z
-            AdvocateAncientSansSC.7z
-            AdvocateAncientSerifSC.7z
-            AdvocateAncientSansST.7z
-            AdvocateAncientSerifST.7z
-            
-
+            AdvocateAncientMonoOTCs.7z
+            AdvocateAncientMonoOTFs.7z
+            AdvocateAncientSansOTCs.7z
+            AdvocateAncientSansOTFs.7z
+            AdvocateAncientSansFANTI.7z
+            AdvocateAncientSerifOTCs.7z
+            AdvocateAncientSerifOTFs.7z
+            AdvocateAncientSerifFANTI.7z
