@@ -340,24 +340,12 @@ def setinfo():
         nn['nameString']=nn['nameString'].replace('Advocate Ancient Sans', 'Advocate Ancient Sans '+tc).replace('AdvocateAncientSans', 'AdvocateAncientSans'+tc).replace('Advocate Ancient Serif', 'Advocate Ancient Serif '+tc).replace('AdvocateAncientSerif', 'AdvocateAncientSerif'+tc).replace(' 香港', '').replace('尙古黑體','尙古黑體'+zhn).replace('尙古黑体','尙古黑體'+zhn).replace('尙古明體','尙古明體'+zhn).replace('尙古明体','尙古明體'+zhn)
         newn.append(nn)
     font['name']=newn
-        
-        
-    if 'CFF_' in font:
-        font['CFF_']['fontName']=font['CFF_']['fontName'].replace('AdvocateAncientSans', 'AdvocateAncientSans'+tc).replace('AdvocateAncientSerif', 'AdvocateAncientSerif'+tc)
-        font['CFF_']['fullName']=font['CFF_']['fullName'].replace('Advocate Ancient Sans', 'Advocate Ancient Sans '+tc).replace('Advocate Ancient Serif', 'Advocate Ancient Serif '+tc)
-        font['CFF_']['familyName']=font['CFF_']['familyName'].replace('Advocate Ancient Sans', 'Advocate Ancient Sans '+tc).replace('Advocate Ancient Serif', 'Advocate Ancient Serif '+tc)
-        if 'fdArray' in font['CFF_']:
-            nfd=dict()
-            for k in font['CFF_']['fdArray'].keys():
-                nfd[k.replace('AdvocateAncientSans', 'AdvocateAncientSans'+tc).replace('AdvocateAncientSerif', 'AdvocateAncientSerif'+tc)]=font['CFF_']['fdArray'][k]
-            font['CFF_']['fdArray']=nfd
-            for gl in font['glyf'].values():
-                if 'CFF_fdSelect' in gl:
-                    gl['CFF_fdSelect']=gl['CFF_fdSelect'].replace('AdvocateAncientSans', 'AdvocateAncientSans'+tc).replace('AdvocateAncientSerif', 'AdvocateAncientSerif'+tc)
 
-if len(sys.argv) > 3:
+if len(sys.argv) > 2:
     print('Loading font...')
-    tc = sys.argv[3].upper()
+    tc = 'ST'
+    if len(sys.argv) > 3:
+        tc = sys.argv[3].upper()
     fin = sys.argv[1]
     font = json.loads(subprocess.check_output((otfccdump, '--no-bom', fin)).decode("utf-8", "ignore"))
     fontcodes = set(map(int, font['cmap']))
