@@ -2,9 +2,9 @@
 name: Build
 
 on:
-  push:
+  workflow_dispatch:
+  #push:
     #branches: [ "main" ]
-    branches: [ "off" ]
 
 jobs:
   build:
@@ -38,6 +38,14 @@ jobs:
     #    path: AdvocateAncientSansOTCs.7z
     #- uses: actions/upload-artifact@v2
     #  with:
+    #    name: AdvocateAncientSansHWOTFs
+    #    path: AdvocateAncientSansHWOTFs.7z
+    #- uses: actions/upload-artifact@v2
+    #  with:
+    #    name: AdvocateAncientSansHWOTCs
+    #    path: AdvocateAncientSansHWOTCs.7z
+    #- uses: actions/upload-artifact@v2
+    #  with:
     #    name: AdvocateAncientSansFANTI
     #    path: AdvocateAncientSansFANTI.7z
     #- uses: actions/upload-artifact@v2
@@ -65,6 +73,8 @@ jobs:
             AdvocateAncientMonoOTFs.7z
             AdvocateAncientSansOTCs.7z
             AdvocateAncientSansOTFs.7z
+            AdvocateAncientSansHWOTCs.7z
+            AdvocateAncientSansHWOTFs.7z
             AdvocateAncientSansFANTI.7z
             AdvocateAncientSerifOTCs.7z
             AdvocateAncientSerifOTFs.7z
