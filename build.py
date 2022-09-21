@@ -12,6 +12,8 @@ shurl=[
 	"https://github.com/adobe-fonts/source-han-sans/raw/release/OTF/Japanese/SourceHanSans-Medium.otf",
 	"https://github.com/adobe-fonts/source-han-sans/raw/release/OTF/Japanese/SourceHanSans-Normal.otf",
 	"https://github.com/adobe-fonts/source-han-sans/raw/release/OTF/Japanese/SourceHanSans-Regular.otf",
+	"https://github.com/adobe-fonts/source-han-sans/raw/release/OTF/JapaneseHW/SourceHanSansHW-Regular.otf",
+	"https://github.com/adobe-fonts/source-han-sans/raw/release/OTF/JapaneseHW/SourceHanSansHW-Bold.otf",
 	"https://github.com/adobe-fonts/source-han-serif/raw/release/OTF/Japanese/SourceHanSerif-Bold.otf",
 	"https://github.com/adobe-fonts/source-han-serif/raw/release/OTF/Japanese/SourceHanSerif-ExtraLight.otf",
 	"https://github.com/adobe-fonts/source-han-serif/raw/release/OTF/Japanese/SourceHanSerif-Heavy.otf",
@@ -31,7 +33,7 @@ os.makedirs('./src')
 for u1 in shurl:
 	os.system(f'wget -P src {u1} || exit 1') 
 
-aa=('AdvocateAncientMono', 'AdvocateAncientSans', 'AdvocateAncientSerif')
+aa=('AdvocateAncientMono', 'AdvocateAncientSansHW', 'AdvocateAncientSans', 'AdvocateAncientSerif')
 for fod in aa:
 	os.makedirs(f'./fonts/{fod}')
 	os.makedirs(f'./fonts/{fod}TC')
@@ -43,7 +45,7 @@ for fod in aa:
 	copy('./main/LICENSE.txt', f'./fonts/{fod}SC/')
 	copy('./main/LICENSE.txt', f'./fonts/{fod}JP/')
 	copy('./main/LICENSE.txt', f'./fonts/{fod}OTCs/')
-	if fod!='AdvocateAncientMono':
+	if fod!='AdvocateAncientMono' and fod!='AdvocateAncientSansHW':
 		os.makedirs(f'./fonts/{fod}ST')
 		copy('./main/LICENSE.txt', f'./fonts/{fod}ST/')
 
@@ -66,7 +68,7 @@ for fod in aa:
 totc='python3 ./main/converttotc.py'
 copytree('./TCFontCreator/main/datas', './main/datas')
 rmtree('./TCFontCreator') 
-for fod in aa[1:]:
+for fod in aa[2:]:
 	for item in os.listdir(f'./fonts/{fod}'):
 		if item.lower().split('.')[-1] in ('otf', 'ttf'):
 			os.system(f"{totc} ./fonts/{fod}/{item} ./fonts/{fod}ST/{item.replace('-', 'ST-')} st") 
