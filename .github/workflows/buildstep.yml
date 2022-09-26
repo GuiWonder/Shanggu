@@ -1,0 +1,81 @@
+
+name: Build by step
+
+on:
+  workflow_dispatch:
+  #push:
+    #branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+    - name: Begin
+      run: |
+        python3 ./buildstep.py
+    - uses: actions/upload-artifact@v2
+      with:
+        name: AdvocateAncientMonoOTFs
+        path: AdvocateAncientMonoOTFs.7z
+    - uses: actions/upload-artifact@v2
+      with:
+        name: AdvocateAncientMonoOTCs
+        path: AdvocateAncientMonoOTCs.7z
+    - uses: actions/upload-artifact@v2
+      with:
+        name: AdvocateAncientSansOTFs
+        path: AdvocateAncientSansOTFs.7z
+    - uses: actions/upload-artifact@v2
+      with:
+        name: AdvocateAncientSansOTCs
+        path: AdvocateAncientSansOTCs.7z
+    - uses: actions/upload-artifact@v2
+      with:
+        name: AdvocateAncientSansHWOTFs
+        path: AdvocateAncientSansHWOTFs.7z
+    - uses: actions/upload-artifact@v2
+      with:
+        name: AdvocateAncientSansHWOTCs
+        path: AdvocateAncientSansHWOTCs.7z
+    - uses: actions/upload-artifact@v2
+      with:
+        name: AdvocateAncientSansFANTI
+        path: AdvocateAncientSansFANTI.7z
+    - uses: actions/upload-artifact@v2
+      with:
+        name: AdvocateAncientSerifOTFs
+        path: AdvocateAncientSerifOTFs.7z
+    - uses: actions/upload-artifact@v2
+      with:
+        name: AdvocateAncientSerifOTCs
+        path: AdvocateAncientSerifOTCs.7z
+    - uses: actions/upload-artifact@v2
+      with:
+        name: AdvocateAncientSerifFANTI
+        path: AdvocateAncientSerifFANTI.7z
+        
+    - name: Upload to release
+      uses: marvinpinto/action-automatic-releases@latest
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "test-release-AA"
+        prerelease: true
+        title: Daily Test
+        files: |
+            AdvocateAncientMonoOTCs.7z
+            AdvocateAncientMonoOTFs.7z
+            AdvocateAncientSansOTCs.7z
+            AdvocateAncientSansOTFs.7z
+            AdvocateAncientSansHWOTCs.7z
+            AdvocateAncientSansHWOTFs.7z
+            AdvocateAncientSansFANTI.7z
+            AdvocateAncientSerifOTCs.7z
+            AdvocateAncientSerifOTFs.7z
+            AdvocateAncientSerifFANTI.7z
