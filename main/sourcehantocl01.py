@@ -11,9 +11,6 @@ if platform.system() == 'Linux':
 	otfccdump += '2'
 	otfccbuild += '2'
 
-fontver='1.006'
-fontid='AAF'
-
 def build_glyph_codes():
 	glyph_codes = defaultdict(list)
 	for codepoint, glyph_name in font['cmap'].items():
