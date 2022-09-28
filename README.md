@@ -12,20 +12,20 @@
 ### 名稱
 當前字體命名為“ **尚古 Advocate Ancient Fonts** 。
 #### 1. 多編碼[漢字](./main/mulcodechar.txt)（如青-靑 尚-尙 兑-兌 温-溫等）合併為舊字形
-> Advocate Ancient Sans | 尙古黑體 | 尙古黑體，<br />
-> Advocate Ancient Serif | 尙古明體 | 尙古明體，<br />
-> Advocate Ancient Mono | 尙古等寬 | 尙古等寬。<br />
+> Advocate Ancient Sans | 尙古黑体 | 尙古黑體，<br />
+> Advocate Ancient Serif | 尙古明体 | 尙古明體，<br />
+> Advocate Ancient Mono | 尙古等宽 | 尙古等寬。<br />
 #### 2. 多編碼漢字分開編碼
 根據標點和簡化字的不同，分為TC、SC、JP三種。<br />
-> Advocate Ancient Sans TC | 尙古黑體TC | 尙古黑體TC，<br />
-> Advocate Ancient Serif TC | 尙古明體TC | 尙古明體TC，<br />
-> Advocate Ancient Mono TC | 尙古等寬TC | 尙古等寬TC<br />
-> Advocate Ancient Sans SC | 尙古黑體SC | 尙古黑體SC，<br />
-> Advocate Ancient Serif SC | 尙古明體SC | 尙古明體SC，<br />
-> Advocate Ancient Mono SC | 尙古等寬SC | 尙古等寬SC，<br />
-> Advocate Ancient Sans JP | 尙古黑體JP | 尙古黑體JP，<br />
-> Advocate Ancient Serif JP | 尙古明體JP | 尙古明體JP，<br />
-> Advocate Ancient Mono JP | 尙古等寬JP | 尙古等寬JP。<br />
+> Advocate Ancient Sans TC | 尙古黑体TC | 尙古黑體TC，<br />
+> Advocate Ancient Serif TC | 尙古明体TC | 尙古明體TC，<br />
+> Advocate Ancient Mono TC | 尙古等宽TC | 尙古等寬TC<br />
+> Advocate Ancient Sans SC | 尙古黑体SC | 尙古黑體SC，<br />
+> Advocate Ancient Serif SC | 尙古明体SC | 尙古明體SC，<br />
+> Advocate Ancient Mono SC | 尙古等宽SC | 尙古等寬SC，<br />
+> Advocate Ancient Sans JP | 尙古黑体JP | 尙古黑體JP，<br />
+> Advocate Ancient Serif JP | 尙古明体JP | 尙古明體JP，<br />
+> Advocate Ancient Mono JP | 尙古等宽JP | 尙古等寬JP。<br />
 #### 3. 簡轉繁體
 > Advocate Ancient Sans ST | 尙古黑體 轉繁體，<br />
 > Advocate Ancient Serif ST | 尙古明體 轉繁體。<br />
