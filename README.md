@@ -5,13 +5,13 @@
 
 ## 預覽
 ![image](./pic/aa0001.png)  
-![image](./pic/Pic003.jpg)  
+![image](./pic/Pic0002.jpg)  
 與舊報紙對比<br />
-![image](./pic/Pic002.png)  
+![image](./pic/Pic0005.jpg)  
 ## 關於字體
 ### 名稱
 當前字體命名為“ **尚古 Advocate Ancient Fonts** 。
-#### 1. 多編碼[漢字](./main/mulcodechar.txt)（如青-靑 尚-尙 兑-兌 温-溫等）合併為舊字形
+#### 1. [多編碼漢字](./main/mulcodechar.txt)（如青-靑 尚-尙 兑-兌 温-溫等）合併為舊字形
 > Advocate Ancient Sans | 尙古黑体 | 尙古黑體，<br />
 > Advocate Ancient Serif | 尙古明体 | 尙古明體，<br />
 > Advocate Ancient Mono | 尙古等宽 | 尙古等寬。<br />
