@@ -39,7 +39,7 @@ for item in os.listdir('./src'):
 	if item.lower().split('.')[-1] in ('otf', 'ttf'):
 		os.system(f"{tocl01} ./src/{item} ./fonts/01/{item} 2") 
 rmtree('./src')
-#os.system(f'7z a ./01.7z ./fonts/01/*') 
+os.system(f'7z a ./01.7z ./fonts/01/*') 
 
 aa=('AdvocateAncientMono', 'AdvocateAncientSansHW', 'AdvocateAncientSans', 'AdvocateAncientSerif')
 for fod in aa:
