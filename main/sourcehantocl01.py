@@ -105,6 +105,15 @@ def sclglyph(glyph, scl):
 			stemv['position'] = round(scl * stemv['position'])
 			stemv['width'] = round(scl * stemv['width'])
 
+def gfmloc(g, loczh):
+	for zhtb in loczh:
+		ftype=font['GSUB']['lookups'][zhtb]['type']
+		if ftype=='gsub_single':
+			for subtable in font['GSUB']['lookups'][zhtb]['subtables']:
+				if g in subtable:
+					return subtable[g]
+	return ""
+
 def creattmp():
 	print('获取本地化列表...')
 	loc=set()
@@ -168,6 +177,13 @@ def creattmp():
 	else:
 		print('未找到任何可用的本地化字形！')
 
+	locscv=[('𫜹', '彐')]
+	for lv1 in locscv:
+		gv2=gfmloc(font['cmap'][str(ord(lv1[1]))], loczhs)
+		if gv2:
+			print('处理', lv1[0])
+			font['cmap'][str(ord(lv1[0]))]=gv2
+
 	print('正在检查本地化列表...')
 	vgl=set()
 	allpun=set()
@@ -209,6 +225,12 @@ def creattmp():
 				print('处理', chr(int(k)))
 				tch=dv[k][tv[k]]
 				font['cmap'][k]=tch
+
+	radic=[('⺼', '⽉'), ('⽉', '月'), ('⻁', '虎'), ('⽛', '牙'), ('⾳', '音'), ('⿓', '龍')]
+	for chs in radic:
+		if str(ord(chs[1])) in font['cmap']:
+			print('处理 ', chs[0])
+			font['cmap'][str(ord(chs[0]))] = font['cmap'][str(ord(chs[1]))]
 
 	fpn=str()
 	for n1 in font['name']:

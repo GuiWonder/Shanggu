@@ -11,7 +11,7 @@ if platform.system() == 'Linux':
 	otfccdump += '2'
 	otfccbuild += '2'
 
-fontver='1.007'
+fontver='1.008'
 fontid='AAF'
 
 def build_glyph_codes():
@@ -118,10 +118,6 @@ def creattmp(mch, pun, simp):
 	if simp=='2':
 		sip+=sipch
 	tbs=set()
-	#for krtb in lockor:
-	#	a=gettbs(krtb, exgl, False)
-	#	if len(a)>200:
-	#		tbs.update(a)
 	if len(sip)>0:
 		simpg=getgname(sip)
 		for zhstb in loczhs:
@@ -151,7 +147,6 @@ def creattmp(mch, pun, simp):
 		for f1 in f1todel:
 			del font['GSUB']['features'][f1]
 
-
 	if mch=='y':
 		print('正在合并多编码汉字...')
 		vartab=list()
@@ -162,13 +157,15 @@ def creattmp(mch, pun, simp):
 					continue
 				s, t = line.strip().split('\t')
 				if s and t and s != t:
-					vartab.append((s, t))
-		for chs in vartab:
-			unis=str(ord(chs[0]))
-			unit=str(ord(chs[1]))
-			if unit in font['cmap']:
-				print('处理 '+chs[0]+'-'+chs[1])
-				font['cmap'][unis] = font['cmap'][unit]
+					if str(ord(t)) in font['cmap']:
+						print('处理 '+s+'-'+t)
+						font['cmap'][str(ord(s))] = font['cmap'][str(ord(t))]
+
+	fpn=str()
+	for n1 in font['name']:
+		if n1['nameID']==6 and '-' in n1['nameString']:
+			fpn=n1['nameString']
+			break
 
 	print('正在设置字体名称...')
 	if setname=='1':
@@ -193,50 +190,59 @@ def creattmp(mch, pun, simp):
 				nname.append(nh)
 		font['name']=font['name']+nname
 	elif setname=='2':
+		fnn='Advocate Ancient'
+		fnnps='AdvocateAncient'
+		if 'CFF_' in font:
+			font['CFF_']['notice']=''
+			font['CFF_']['fontName']=font['CFF_']['fontName'].replace('SourceHan', fnnps)
+			font['CFF_']['fullName']=font['CFF_']['fullName'].replace('Source Han', fnn)
+			font['CFF_']['familyName']=font['CFF_']['familyName'].replace('Source Han', fnn)
+			if 'fdArray' in font['CFF_']:
+				nfd=dict()
+				for k in font['CFF_']['fdArray'].keys():
+					nfd[k.replace('SourceHan', fnnps)]=font['CFF_']['fdArray'][k]
+				font['CFF_']['fdArray']=nfd
+				for gl in font['glyf'].values():
+					if 'CFF_fdSelect' in gl:
+						gl['CFF_fdSelect']=gl['CFF_fdSelect'].replace('SourceHan', fnnps)
+
+		font['OS_2']['achVendID']=fontid
+		font['head']['fontRevision']=float(fontver)
+
 		enn=['Advocate Ancient Sans', 'Advocate Ancient Serif', 'Advocate Ancient Mono']
 		ennps=['AdvocateAncientSans', 'AdvocateAncientSerif', 'AdvocateAncientMono']
 		scn=['尙古黑体', '尙古明体', '尙古等宽']
 		tcn=['尙古黑體', '尙古明體', '尙古等寬']
+		locn=""
 		if mch=='n' and pun=='2'and simp=='2':
-			enn=['Advocate Ancient Sans SC', 'Advocate Ancient Serif SC', 'Advocate Ancient Mono SC']
-			ennps=['AdvocateAncientSansSC', 'AdvocateAncientSerifSC', 'AdvocateAncientMonoSC']
-			scn=['尙古黑体SC', '尙古明体SC', '尙古等宽SC']
-			tcn=['尙古黑體SC', '尙古明體SC', '尙古等寬SC']
+			locn='SC'
 		elif mch=='n' and pun=='1' and simp=='1':
-			enn=['Advocate Ancient Sans JP', 'Advocate Ancient Serif JP', 'Advocate Ancient Mono JP']
-			ennps=['AdvocateAncientSansJP', 'AdvocateAncientSerifJP', 'AdvocateAncientMonoJP']
-			scn=['尙古黑体JP', '尙古明体JP', '尙古等宽JP']
-			tcn=['尙古黑體JP', '尙古明體JP', '尙古等寬JP']
+			locn='JP'
 		elif mch=='n' and pun=='3':
-			enn=['Advocate Ancient Sans TC', 'Advocate Ancient Serif TC', 'Advocate Ancient Mono TC']
-			ennps=['AdvocateAncientSansTC', 'AdvocateAncientSerifTC', 'AdvocateAncientMonoTC']
-			scn=['尙古黑体TC', '尙古明体TC', '尙古等宽TC']
-			tcn=['尙古黑體TC', '尙古明體TC', '尙古等寬TC']
-		font['OS_2']['achVendID']=fontid
-		font['head']['fontRevision']=float(fontver)
+			locn='TC'
 		nname=list()
 		for nj in font['name']:
 			if nj['languageID']==1041:
 				ns=dict(nj)
 				nt=dict(nj)
 				nh=dict(nj)
-				if 'JP' in enn[0]:
+				if 'JP'==locn:
 					njn=dict(nj)
 					njn['nameString']=njn['nameString'].replace('源ノ', '尙古')
 					nname.append(njn)
 				ns['languageID']=2052
-				ns['nameString']=ns['nameString'].replace('源ノ角ゴシック', scn[0]).replace('源ノ明朝', scn[1]).replace('源ノ等幅', scn[2])
+				ns['nameString']=ns['nameString'].replace('源ノ角ゴシック', scn[0]+locn).replace('源ノ明朝', scn[1]+locn).replace('源ノ等幅', scn[2]+locn)
 				nt['languageID']=1028
-				nt['nameString']=nt['nameString'].replace('源ノ角ゴシック', tcn[0]).replace('源ノ明朝', tcn[1]).replace('源ノ等幅', tcn[2])
+				nt['nameString']=nt['nameString'].replace('源ノ角ゴシック', tcn[0]+locn).replace('源ノ明朝', tcn[1]+locn).replace('源ノ等幅', tcn[2]+locn)
 				nh['languageID']=3076
-				nh['nameString']=nh['nameString'].replace('源ノ角ゴシック', tcn[0]).replace('源ノ明朝', tcn[1]).replace('源ノ等幅', tcn[2])
+				nh['nameString']=nh['nameString'].replace('源ノ角ゴシック', tcn[0]+locn).replace('源ノ明朝', tcn[1]+locn).replace('源ノ等幅', tcn[2]+locn)
 				nname.append(ns)
 				nname.append(nt)
 				nname.append(nh)
 			#elif nj['nameID']>0 and nj['nameID']<7:
 			elif nj['nameID']==3:
 				ne=dict(nj)
-				ne['nameString']=fontver+';'+fontid+';'+ne['nameString'].split(';')[2].replace('SourceHanSans', ennps[0]).replace('SourceHanSerif', ennps[1]).replace('SourceHanMono', ennps[2])
+				ne['nameString']=fontver+';'+fontid+';'+fpn.replace('SourceHanSans', ennps[0]+locn).replace('SourceHanSerif', ennps[1]+locn).replace('SourceHanMono', ennps[2]+locn)
 				nname.append(ne)
 			elif nj['nameID']==5:
 				ne=dict(nj)
@@ -249,9 +255,10 @@ def creattmp(mch, pun, simp):
 			elif nj['nameID']!=0 and nj['nameID']!=7 and nj['nameID']!=8:
 			#else:
 				ne=dict(nj)
-				ne['nameString']=ne['nameString'].replace('Source Han Sans', enn[0]).replace('Source Han Serif', enn[1]).replace('Source Han Mono', enn[2]).replace('SourceHanSans', ennps[0]).replace('SourceHanSerif', ennps[1]).replace('SourceHanMono', ennps[2])
+				ne['nameString']=ne['nameString'].replace('Source Han Sans', enn[0]+' '+locn).replace('Source Han Serif', enn[1]+' '+locn).replace('Source Han Mono', enn[2]+' '+locn).replace('SourceHanSans', ennps[0]+locn).replace('SourceHanSerif', ennps[1]+locn).replace('SourceHanMono', ennps[2]+locn)
 				nname.append(ne)
 		font['name']=nname
+	
 	elif setname=='3':
 		pname=enname.replace(' ', '')
 		nname=list()
