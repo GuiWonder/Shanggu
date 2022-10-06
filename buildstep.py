@@ -48,14 +48,14 @@ for fod in aa:
 	os.makedirs(f'./fonts/{fod}SC')
 	os.makedirs(f'./fonts/{fod}JP')
 	os.makedirs(f'./fonts/{fod}OTCs')
-	copy('./main/LICENSE.txt', f'./fonts/{fod}/')
-	copy('./main/LICENSE.txt', f'./fonts/{fod}TC/')
-	copy('./main/LICENSE.txt', f'./fonts/{fod}SC/')
-	copy('./main/LICENSE.txt', f'./fonts/{fod}JP/')
-	copy('./main/LICENSE.txt', f'./fonts/{fod}OTCs/')
+	copy('./LICENSE.txt', f'./fonts/{fod}/')
+	copy('./LICENSE.txt', f'./fonts/{fod}TC/')
+	copy('./LICENSE.txt', f'./fonts/{fod}SC/')
+	copy('./LICENSE.txt', f'./fonts/{fod}JP/')
+	copy('./LICENSE.txt', f'./fonts/{fod}OTCs/')
 	if fod!='AdvocateAncientMono' and fod!='AdvocateAncientSansHW':
 		os.makedirs(f'./fonts/{fod}ST')
-		copy('./main/LICENSE.txt', f'./fonts/{fod}ST/')
+		copy('./LICENSE.txt', f'./fonts/{fod}ST/')
 
 tocl='python3 ./main/sourcehantocl02.py'
 tootc='python3 ./main/otf2otc.py -o'
