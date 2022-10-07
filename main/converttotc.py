@@ -246,7 +246,10 @@ def build_char_table():
 def addlookupschar(chtab):
     kt = dict()
     for s, t in chtab:
-        kt[font['cmap'][str(ord(s))]] = font['cmap'][str(ord(t))]
+        gls=font['cmap'][str(ord(s))]
+        glt=font['cmap'][str(ord(t))]
+        if gls != glt:
+            kt[gls] = glt
     font['GSUB']['lookups']['stchars'] = {
                                             'type': 'gsub_single',
                                             'flags': {},
