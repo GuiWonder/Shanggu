@@ -1,7 +1,7 @@
 **繁體中文** [简体中文](./README-SC.md#思源中文传承化字体)
 
 # 思源中文傳承化字體
-由[思源中文字體](https://github.com/adobe-fonts)日文版修改傳承字形（舊字形）字體，包含思源黑體、思源宋體、思源等寬。1.004 版開始加入思源舊版（1.0x 版）字形。
+由[思源中文字體](https://github.com/adobe-fonts)日文版修改傳承字形（舊字形）字體，包含[思源黑體](https://github.com/adobe-fonts/source-han-sans)、[思源宋體](https://github.com/adobe-fonts/source-han-serif)、[思源等寬](https://github.com/adobe-fonts/source-han-mono)。1.004 版開始加入思源舊版（1.0x 版）字形。
 
 ## 預覽
 ![image](./pic/aa0001.png)  
