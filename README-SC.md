@@ -1,7 +1,7 @@
 [繁體中文](https://github.com/GuiWonder/SourceHanToClassic#思源中文傳承化字體) **简体中文**
 
 # 思源中文传承化字体
-由[思源中文字体](https://github.com/adobe-fonts)日文版修改传承字形（旧字形）字体，包含思源黑体、思源宋体、思源等宽。1.004 版开始加入思源旧版（1.0x 版）字形。
+由[思源中文字体](https://github.com/adobe-fonts)日文版修改传承字形（旧字形）字体，包含[思源黑体](https://github.com/adobe-fonts/source-han-sans)、[思源宋体](https://github.com/adobe-fonts/source-han-serif)、[思源等宽](https://github.com/adobe-fonts/source-han-mono)。1.004 版开始加入思源旧版（1.0x 版）字形。
 
 ## 预览
 ![image](./pic/aa0001.png)  
