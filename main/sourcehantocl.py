@@ -433,7 +433,8 @@ def creattmp(mch, pun, simp):
 
 	elif setname=='2':
 		fnn='Advocate Ancient'
-		fnnps='AdvocateAncient'
+		fnnps=fnn.replace(' ', '')
+		
 		if 'CFF_' in font:
 			font['CFF_']['notice']=''
 			font['CFF_']['fontName']=font['CFF_']['fontName'].replace('SourceHan', fnnps)
@@ -451,40 +452,39 @@ def creattmp(mch, pun, simp):
 		font['OS_2']['achVendID']=fontid
 		font['head']['fontRevision']=float(fontver)
 
-		enn=['Advocate Ancient Sans', 'Advocate Ancient Serif', 'Advocate Ancient Mono']
-		ennps=['AdvocateAncientSans', 'AdvocateAncientSerif', 'AdvocateAncientMono']
 		scn=['尙古黑体', '尙古明体', '尙古等宽']
 		tcn=['尙古黑體', '尙古明體', '尙古等寬']
 		locn=""
 		if mch=='n' and pun=='2'and simp=='2':
-			locn='SC'
+			locn=' SC'
 		elif mch=='n' and pun=='1' and simp=='1':
-			locn='JP'
+			locn=' JP'
 		elif mch=='n' and pun=='3':
-			locn='TC'
+			locn=' TC'
+		locnp=locn.strip()
 		nname=list()
 		for nj in font['name']:
 			if nj['languageID']==1041:
 				ns=dict(nj)
 				nt=dict(nj)
 				nh=dict(nj)
-				if 'JP'==locn:
+				if 'JP'==locnp:
 					njn=dict(nj)
 					njn['nameString']=njn['nameString'].replace('源ノ', '尙古')
 					nname.append(njn)
 				ns['languageID']=2052
-				ns['nameString']=ns['nameString'].replace('源ノ角ゴシック', scn[0]+locn).replace('源ノ明朝', scn[1]+locn).replace('源ノ等幅', scn[2]+locn)
+				ns['nameString']=ns['nameString'].replace('源ノ角ゴシック', scn[0]+locnp).replace('源ノ明朝', scn[1]+locnp).replace('源ノ等幅', scn[2]+locnp)
 				nt['languageID']=1028
-				nt['nameString']=nt['nameString'].replace('源ノ角ゴシック', tcn[0]+locn).replace('源ノ明朝', tcn[1]+locn).replace('源ノ等幅', tcn[2]+locn)
+				nt['nameString']=nt['nameString'].replace('源ノ角ゴシック', tcn[0]+locnp).replace('源ノ明朝', tcn[1]+locnp).replace('源ノ等幅', tcn[2]+locnp)
 				nh['languageID']=3076
-				nh['nameString']=nh['nameString'].replace('源ノ角ゴシック', tcn[0]+locn).replace('源ノ明朝', tcn[1]+locn).replace('源ノ等幅', tcn[2]+locn)
+				nh['nameString']=nh['nameString'].replace('源ノ角ゴシック', tcn[0]+locnp).replace('源ノ明朝', tcn[1]+locnp).replace('源ノ等幅', tcn[2]+locnp)
 				nname.append(ns)
 				nname.append(nt)
 				nname.append(nh)
 			#elif nj['nameID']>0 and nj['nameID']<7:
 			elif nj['nameID']==3:
 				ne=dict(nj)
-				ne['nameString']=fontver+';'+fontid+';'+fpn.replace('SourceHanSans', ennps[0]+locn).replace('SourceHanSerif', ennps[1]+locn).replace('SourceHanMono', ennps[2]+locn)
+				ne['nameString']=fontver+';'+fontid+';'+fpn.replace('SourceHan', fnnps).replace('Sans', 'Sans'+locnp).replace('Serif', 'Serif'+locnp).replace('Mono', 'Mono'+locnp)
 				nname.append(ne)
 			elif nj['nameID']==5:
 				ne=dict(nj)
@@ -497,7 +497,10 @@ def creattmp(mch, pun, simp):
 			elif nj['nameID']!=0 and nj['nameID']!=7 and nj['nameID']!=8:
 			#else:
 				ne=dict(nj)
-				ne['nameString']=ne['nameString'].replace('Source Han Sans', enn[0]+' '+locn).replace('Source Han Serif', enn[1]+' '+locn).replace('Source Han Mono', enn[2]+' '+locn).replace('SourceHanSans', ennps[0]+locn).replace('SourceHanSerif', ennps[1]+locn).replace('SourceHanMono', ennps[2]+locn)
+				if 'Source Han' in ne['nameString']:
+					ne['nameString']=ne['nameString'].replace('Source Han', fnn).replace('Sans', 'Sans'+locn).replace('Serif', 'Serif'+locn).replace('Mono', 'Mono'+locn)
+				elif 'SourceHan' in ne['nameString']:
+					ne['nameString']=ne['nameString'].replace('SourceHan', fnnps).replace('Sans', 'Sans'+locnp).replace('Serif', 'Serif'+locnp).replace('Mono', 'Mono'+locnp)
 				nname.append(ne)
 		font['name']=nname
 	
