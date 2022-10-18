@@ -55,10 +55,10 @@ for item in os.listdir('./src'):
 	if item.lower().split('.')[-1] in ('otf', 'ttf'):
 		aan=item.replace('SourceHan', 'AdvocateAncient')
 		fn1, fn2=aan.split('-')
-		os.system(f"{tocl} ./src/{item} ./fonts/{fn1}/{aan} y 3 2 2 2") 
-		os.system(f"{tocl} ./src/{item} ./fonts/{fn1}TC/{fn1}TC-{fn2} n 3 1 2 2") 
-		os.system(f"{tocl} ./src/{item} ./fonts/{fn1}SC/{fn1}SC-{fn2} n 2 2 2 2") 
-		os.system(f"{tocl} ./src/{item} ./fonts/{fn1}JP/{fn1}JP-{fn2} n 1 1 2 2") 
+		os.system(f"{tocl} ./src/{item} ./fonts/{fn1}/{aan} 2 y 3 2") 
+		os.system(f"{tocl} ./src/{item} ./fonts/{fn1}TC/{fn1}TC-{fn2} 2 n 3 1") 
+		os.system(f"{tocl} ./src/{item} ./fonts/{fn1}SC/{fn1}SC-{fn2} 2 n 2 2") 
+		os.system(f"{tocl} ./src/{item} ./fonts/{fn1}JP/{fn1}JP-{fn2} 2 n 1 1") 
 		os.system(f"{tootc} ./fonts/{fn1}OTCs/{aan.split('.')[0]}.ttc ./fonts/{fn1}/{aan} ./fonts/{fn1}TC/{fn1}TC-{fn2} ./fonts/{fn1}SC/{fn1}SC-{fn2} ./fonts/{fn1}JP/{fn1}JP-{fn2}") 
 rmtree('./src')
 for fod in aa:
