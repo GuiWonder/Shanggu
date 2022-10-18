@@ -68,7 +68,7 @@ jobs:
         automatic_release_tag: "test-release-AA"
         prerelease: true
 #         draft: true
-        title: Daily Test
+        title: Build Test
         files: |
             AdvocateAncientMonoOTCs.7z
             AdvocateAncientMonoOTFs.7z
