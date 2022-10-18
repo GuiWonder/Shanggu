@@ -1,7 +1,7 @@
 [繁體中文](https://github.com/GuiWonder/SourceHanToClassic#思源中文傳承化字體) **简体中文**
 
 # 思源中文传承化字体
-由[思源中文字体](https://github.com/adobe-fonts)日文版修改传承字形（旧字形）字体，包含[思源黑体](https://github.com/adobe-fonts/source-han-sans)、[思源宋体](https://github.com/adobe-fonts/source-han-serif)、[思源等宽](https://github.com/adobe-fonts/source-han-mono)。1.004 版开始加入思源旧版（1.0x 版）字形。
+由[思源黑体](https://github.com/adobe-fonts/source-han-sans)、[思源宋体](https://github.com/adobe-fonts/source-han-serif)、[思源等宽](https://github.com/adobe-fonts/source-han-mono)日文版修改传承字形（旧字形）字体。1.004 版开始加入思源旧版（1.0x 版）字形。
 
 ## 预览
 ![image](./pic/aa0001.png)  
@@ -26,10 +26,9 @@
 > Advocate Ancient Sans JP | 尙古黑体JP | 尙古黑體JP，<br />
 > Advocate Ancient Serif JP | 尙古明体JP | 尙古明體JP，<br />
 > Advocate Ancient Mono JP | 尙古等宽JP | 尙古等寬JP。<br />
-#### 3. 简转繁体
+#### 3. 简转繁体，目前使用词汇方案
 > Advocate Ancient Sans ST | 尙古黑體 轉繁體，<br />
 > Advocate Ancient Serif ST | 尙古明體 轉繁體。<br />
-> *注：“轉繁體”中，由于词汇占用一部分字形空间，因此需要移除一部分字形，所显示的字符数目要少一些。（约一万八千字符）*
 ### 格式
 目前提供 OTF 与 OTC 两种格式。
 
@@ -40,17 +39,14 @@
 ## 使用工具生成字体
 ### 1. 运行命令
 运行命令`python sourcehantocl.py`
-* 选项1：是否合并多个编码的汉字，例如：青-靑 尚-尙 兑-兌 温-溫等？输入Y/N
-* 选项2：标点击择：1.日本 2.简体中文 3.正体中文（居中）
-* 选项3：简化字字形选择：1.日本 2.中国大陆
-* 选项4：是否移除未使用的字形：1.移除这些字形 2.保留异体选择器中的字形 3.不移除任何字形
-* 选项5：设置字体名称：~1.使用思源原版字体名称~ 2.使用尙古黑体、尙古明体 3.我来命名
-* 选项6*：字体的英文名称
-* 选项7*：字体的中文名称
+* 选项1：是否移除未使用的字形：1.移除这些字形 2.保留异体选择器中的字形 3.不移除任何字形
+* 选项2：是否合并多个编码的汉字，例如：青-靑 尚-尙 兑-兌 温-溫等？输入Y/N
+* 选项3：标点击择：1.日本 2.简体中文 3.正体中文（居中）
+* 选项4：简化字字形选择：1.日本 2.中国大陆
+* 可在 config.json 中设置字体名称
 ### 2. 运行带参数命令
 将输入输出文件与上述选项作为参数运行，例如：<br /> 
-`python sourcehantocl.py SourceHanSans-Regular.otf AdvocateAncientSans-Regular.otf y 3 2 2 2`<br />
-`python sourcehantocl.py SourceHanSans-Regular.otf MyFont-Regular.otf y 3 2 2 3 MyFont 新名称`
+`python sourcehantocl.py SourceHanSans-Regular.otf AdvocateAncientSans-Regular.otf 2 y 3 2`<br />
 
 ## 特别感谢
 * [Adobe Fonts](https://github.com/adobe-fonts) [思源黑体](https://github.com/adobe-fonts/source-han-sans) [思源宋体](https://github.com/adobe-fonts/source-han-serif) [思源等宽](https://github.com/adobe-fonts/source-han-mono)
