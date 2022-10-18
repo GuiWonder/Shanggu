@@ -20,53 +20,54 @@ jobs:
     - name: Begin
       run: |
         python3 ./buildstep.py
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: AdvocateAncientMonoOTFs
         path: AdvocateAncientMonoOTFs.7z
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: AdvocateAncientMonoOTCs
         path: AdvocateAncientMonoOTCs.7z
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: AdvocateAncientSansOTFs
         path: AdvocateAncientSansOTFs.7z
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: AdvocateAncientSansOTCs
         path: AdvocateAncientSansOTCs.7z
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: AdvocateAncientSansHWOTFs
         path: AdvocateAncientSansHWOTFs.7z
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: AdvocateAncientSansHWOTCs
         path: AdvocateAncientSansHWOTCs.7z
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: AdvocateAncientSansFANTI
         path: AdvocateAncientSansFANTI.7z
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: AdvocateAncientSerifOTFs
         path: AdvocateAncientSerifOTFs.7z
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: AdvocateAncientSerifOTCs
         path: AdvocateAncientSerifOTCs.7z
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: AdvocateAncientSerifFANTI
         path: AdvocateAncientSerifFANTI.7z
         
     - name: Upload to release
-      uses: marvinpinto/action-automatic-releases@latest
+      uses: "marvinpinto/action-automatic-releases@latest"
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
         automatic_release_tag: "test-release-AA"
         prerelease: true
+#         draft: true
         title: Daily Test
         files: |
             AdvocateAncientMonoOTCs.7z
