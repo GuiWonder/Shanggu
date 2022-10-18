@@ -33,14 +33,6 @@ os.makedirs('./src')
 for u1 in shurl:
 	os.system(f'wget -P src {u1} || exit 1') 
 
-tocl01='python3 ./main/sourcehantocl01.py'
-os.makedirs(f'./fonts/01')
-for item in os.listdir('./src'):
-	if item.lower().split('.')[-1] in ('otf', 'ttf'):
-		os.system(f"{tocl01} ./src/{item} ./fonts/01/{item} 2") 
-rmtree('./src')
-os.system(f'7z a ./01.7z ./fonts/01/*') 
-
 aa=('AdvocateAncientMono', 'AdvocateAncientSansHW', 'AdvocateAncientSans', 'AdvocateAncientSerif')
 for fod in aa:
 	os.makedirs(f'./fonts/{fod}')
@@ -57,16 +49,23 @@ for fod in aa:
 		os.makedirs(f'./fonts/{fod}ST')
 		copy('./LICENSE.txt', f'./fonts/{fod}ST/')
 
-tocl='python3 ./main/sourcehantocl02.py'
+tocl='python3 ./main/sourcehantocl.py'
+os.makedirs(f'./fonts/01')
+for item in os.listdir('./src'):
+	if item.lower().split('.')[-1] in ('otf', 'ttf'):
+		os.system(f"{tocl} ./src/{item} ./fonts/01/{item} s2") 
+rmtree('./src')
+os.system(f'7z a ./01.7z ./fonts/01/*') 
+
 tootc='python3 ./main/otf2otc.py -o'
 for item in os.listdir('./fonts/01'):
 	if item.lower().split('.')[-1] in ('otf', 'ttf'):
 		aan=item.replace('SourceHan', 'AdvocateAncient')
 		fn1, fn2=aan.split('-')
-		os.system(f"{tocl} ./fonts/01/{item} ./fonts/{fn1}/{aan} y 3 2 2") 
-		os.system(f"{tocl} ./fonts/01/{item} ./fonts/{fn1}TC/{fn1}TC-{fn2} n 3 1 2") 
-		os.system(f"{tocl} ./fonts/01/{item} ./fonts/{fn1}SC/{fn1}SC-{fn2} n 2 2 2") 
-		os.system(f"{tocl} ./fonts/01/{item} ./fonts/{fn1}JP/{fn1}JP-{fn2} n 1 1 2") 
+		os.system(f"{tocl} ./fonts/01/{item} ./fonts/{fn1}/{aan} s y 3 2") 
+		os.system(f"{tocl} ./fonts/01/{item} ./fonts/{fn1}TC/{fn1}TC-{fn2} s n 3 1") 
+		os.system(f"{tocl} ./fonts/01/{item} ./fonts/{fn1}SC/{fn1}SC-{fn2} s n 2 2") 
+		os.system(f"{tocl} ./fonts/01/{item} ./fonts/{fn1}JP/{fn1}JP-{fn2} s n 1 1") 
 		os.system(f"{tootc} ./fonts/{fn1}OTCs/{aan.split('.')[0]}.ttc ./fonts/{fn1}/{aan} ./fonts/{fn1}TC/{fn1}TC-{fn2} ./fonts/{fn1}SC/{fn1}SC-{fn2} ./fonts/{fn1}JP/{fn1}JP-{fn2}") 
 
 for fod in aa:
