@@ -6,8 +6,6 @@
 ## 預覽
 ![image](./pic/aa0001.png)  
 ![image](./pic/Pic0002.jpg)  
-與舊報紙對比<br />
-![image](./pic/Pic0005.jpg)  
 ## 關於字體
 ### 名稱
 當前字體命名為“ **尚古 Advocate Ancient Fonts** 。
