@@ -67,7 +67,7 @@ jobs:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
         automatic_release_tag: "test-release-AA"
         prerelease: true
-#         draft: true
+        draft: true
         title: Build Test
         files: |
             AdvocateAncientMonoOTCs.7z
