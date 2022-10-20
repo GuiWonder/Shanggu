@@ -146,6 +146,12 @@ def gfmloc(g, loczh):
 	return ""
 
 def step1():
+	jpre=dict()
+	jpvar=[('𰰨', '芲'), ('𩑠', '頙')]
+	for chs in jpvar:
+		if str(ord(chs[1])) in font['cmap']:
+			jpre[str(ord(chs[0]))]=font['cmap'][str(ord(chs[1]))]
+
 	krch=cfg['krgl']
 	tcch=cfg['tcgl']#壬任凭拰恁栠軠鈓賃銋鵀舌恬舔甜舐憩湉
 	hcch=cfg['hcgl']#栠朅
@@ -181,29 +187,15 @@ def step1():
 	else:
 		print('未找到任何可用的本地化字形！')
 
-	locscv=[('𫜹', '彐')]
+	locscv=[('𫜹', '彐'), ('𣽽', '潸')]
 	for lv1 in locscv:
 		gv2=gfmloc(font['cmap'][str(ord(lv1[1]))], loczhs)
 		if gv2:
 			print('处理', lv1[0])
 			font['cmap'][str(ord(lv1[0]))]=gv2
 
-	print('正在检查本地化替换表...')
-	vgl=set()
-	allpun=set()
-	pungl=getgname(pzhs+pzht+sipch)
-	for subs in loc:
-		if rmun=='1' or rmun=='2':
-			ftype=font['GSUB']['lookups'][subs]['type']
-			for subtable in font['GSUB']['lookups'][subs]['subtables']:
-				for j, t in list(subtable.items()):
-					if ftype=='gsub_single':
-						vgl.add(t)
-						vgl.add(j)
-						if j in pungl or t in pungl:
-							allpun.add(j)
-							allpun.add(t)
-			vgl.difference_update(allpun)
+	for jco in jpre.keys():
+		font['cmap'][jco]=jpre[jco]
 
 	print('正在处理异体字信息...')
 	dv=dict()
@@ -231,7 +223,7 @@ def step1():
 				tch=dv[k][tv[k]]
 				font['cmap'][k]=tch
 
-	uvsmul=[('⺼', '月', 'E0100'), ('𱍐', '示', 'E0100'), ('䶹', '屮', 'E0101')]
+	uvsmul=[('⺼', '月', 'E0100'), ('𱍐', '示', 'E0100'), ('䶹', '屮', 'E0101'), ('𠾖', '器', 'E0100'), ('𡐨', '壄', 'E0100'), ('𤥨', '琢', 'E0101'), ('𦤀', '臭', 'E0100'), ('𨺓', '隆', 'E0100'), ('𫜸', '叱', 'E0101')]
 	for uvm in uvsmul:
 		u1=str(ord(uvm[0]))
 		u2=str(ord(uvm[1]))
@@ -277,116 +269,107 @@ def step1():
 	#	else:
 	#		print('获取秋空黑体字形失败！')
 
+	usedg=set()
+	usedg.update(font['cmap'].values())
 	if rmun=='2':
-		vgl.difference_update(uvsgly)
-	elif rmun=='1':
-		vgl.update(uvsgly)
+		usedg.update(uvsgly)
+	pungl=getgname(pzhs+pzht+simpcn)
+	print('正在检查本地化替换表...')
+	for subs in loc:
+		ftype=font['GSUB']['lookups'][subs]['type']
+		for subtable in font['GSUB']['lookups'][subs]['subtables']:
+			for j, t in list(subtable.items()):
+				if ftype=='gsub_single':
+					if j in pungl or t in pungl:
+						usedg.add(j)
+						usedg.add(t)
+					else:
+						del subtable[j]
 	if rmun=='1' or rmun=='2':
 		print('正在移除字形...')
-		glyph_codes = build_glyph_codes()
-		isrm=set()
-		for v1 in vgl:
-			if len(glyph_codes[v1])<1:
-				#print('移除', v1)
-				isrm.add(v1)
-				del glyph_codes[v1]
-				try:
-					font['glyph_order'].remove(v1)
-				except ValueError:
-					pass
-				del font['glyf'][v1]
+		if 'GSUB' in font:
+			for lkn in font['GSUB']['lookupOrder']:
+				if lkn in font['GSUB']['lookups']:
+					lookup=font['GSUB']['lookups'][lkn]
+					if lookup['type'] == 'gsub_single':
+						for subtable in lookup['subtables']:
+							for g1, g2 in list(subtable.items()):
+								if g1 in usedg:
+									usedg.add(g2)
+					elif lookup['type'] == 'gsub_alternate':
+						for subtable in lookup['subtables']:
+							for item in set(subtable.keys()):
+								if item in usedg:
+									usedg.update(set(subtable[item]))
+					elif lookup['type'] == 'gsub_ligature': 
+						for subtable in lookup['subtables']:
+							for item in subtable['substitutions']:
+								if set(item['from']).issubset(usedg):
+									usedg.add(item['to'])
+					elif lookup['type'] == 'gsub_chaining':
+						for subtable in lookup['subtables']:
+							for ls in subtable['match']:
+								for l1 in ls:
+									usedg.update(set(l1))
+		
+		unusegl=set()
+		unusegl.update(set(font['glyph_order']))
+		notg={'.notdef', '.null', 'nonmarkingreturn', 'NULL', 'NUL'}
+		unusegl.difference_update(notg)
+		unusegl.difference_update(usedg)
+		for ugl in unusegl:
+			font['glyph_order'].remove(ugl)
+			del font['glyf'][ugl]
+		
 		print('正在检查Lookup表...')
 		if 'GSUB' in font:
 			for lookup in font['GSUB']['lookups'].values():
 				if lookup['type'] == 'gsub_single':
 					for subtable in lookup['subtables']:
 						for g1, g2 in list(subtable.items()):
-							if g1 in isrm or g2 in isrm:
+							if g1 in unusegl or g2 in unusegl:
 								del subtable[g1]
 				elif lookup['type'] == 'gsub_alternate':
 					for subtable in lookup['subtables']:
 						for item in set(subtable.keys()):
-							if item in isrm or len(set(subtable[item]).intersection(isrm))>0:
+							if item in unusegl or len(set(subtable[item]).intersection(unusegl))>0:
 								del subtable[item]
 				elif lookup['type'] == 'gsub_ligature': 
 					for subtable in lookup['subtables']:
 						s1=list()
 						for item in subtable['substitutions']:
-							if item['to'] not in isrm and len(set(item['from']).intersection(isrm))<1:
+							if item['to'] not in unusegl and len(set(item['from']).intersection(unusegl))<1:
 								s1.append(item)
 						subtable['substitutions']=s1
 				elif lookup['type'] == 'gsub_chaining':
 					for subtable in lookup['subtables']:
 						for ls in subtable['match']:
 							for l1 in ls:
-								l1=list(set(l1).difference(isrm))
+								l1=list(set(l1).difference(unusegl))
 		if 'GPOS' in font:
 			for lookup in font['GPOS']['lookups'].values():
 				if lookup['type'] == 'gpos_single':
 					for subtable in lookup['subtables']:
 						for item in list(subtable.keys()):
-							if item in isrm:
+							if item in unusegl:
 								del subtable[item]
 				elif lookup['type'] == 'gpos_pair':
 					for subtable in lookup['subtables']:
 						for item in list(subtable['first'].keys()):
-							if item in isrm:
+							if item in unusegl:
 								del subtable['first'][item]
 						for item in list(subtable['second'].keys()):
-							if item in isrm:
+							if item in unusegl:
 								del subtable['second'][item]
 				elif lookup['type'] == 'gpos_mark_to_base':
 					nsb=list()
 					for subtable in lookup['subtables']:
 						gs=set(subtable['marks'].keys()).union(set(subtable['bases'].keys()))
-						if len(gs.intersection(isrm))<1:
+						if len(gs.intersection(unusegl))<1:
 							nsb.append(subtable)
 					lookup['subtables']=nsb
 
-		print('检查未使用的字形...')
-		unusegl=set()
-		unusegl.update(set(font['glyph_order']))
-		unusegl.difference_update(set(font['cmap'].values()))
-		unusegl.difference_update(allpun)
-		notg={'.notdef', '.null', 'nonmarkingreturn', 'NULL', 'NUL'}
-		unusegl.difference_update(notg)
-		if rmun=='2':
-			unusegl.difference_update(uvsgly)
-		#elif rmun=='1':
-		#	vgl.update(uvsgly)
-		lpuse=set()
-		print('正在检查Lookup使用的字形...')
-		if 'GSUB' in font:
-			for lookup in font['GSUB']['lookups'].values():
-				if lookup['type'] == 'gsub_single':
-					for subtable in lookup['subtables']:
-						for g1, g2 in list(subtable.items()):
-							lpuse.add(g1)
-							lpuse.add(g2)
-				elif lookup['type'] == 'gsub_alternate':
-					for subtable in lookup['subtables']:
-						for item in set(subtable.keys()):
-							lpuse.add(item)
-							lpuse.update(set(subtable[item]))
-				elif lookup['type'] == 'gsub_ligature': 
-					for subtable in lookup['subtables']:
-						s1=list()
-						for item in subtable['substitutions']:
-							lpuse.update(set(item['from']))
-							lpuse.add(item['to'])
-				elif lookup['type'] == 'gsub_chaining':
-					for subtable in lookup['subtables']:
-						for ls in subtable['match']:
-							for l1 in ls:
-								lpuse.update(set(l1))
-		unusegl.difference_update(lpuse)
-		#print(unusegl)
-		for ugl in unusegl:
-			try:
-				font['glyph_order'].remove(ugl)
-			except ValueError:
-				pass
-			del font['glyf'][ugl]
+
 def step2():
 	if pun=='2':
 		setpun(pzhs, loczhs)
@@ -394,7 +377,7 @@ def step2():
 		setpun(pzht, loczht)
 	if simp=='2':
 		tbs=set()
-		simpg=getgname(sipch)
+		simpg=getgname(simpcn)
 		for zhstb in loczhs:
 			a=gettbs(zhstb, simpg, True)
 			tbs.update(a)
@@ -410,7 +393,6 @@ def step2():
 				font['GSUB']['features'][f1].remove(subs)
 			if len(font['GSUB']['features'][f1]) == 0:
 				f1todel.add(f1)
-				continue
 		for f1 in f1todel:
 			del font['GSUB']['features'][f1]
 
@@ -618,7 +600,7 @@ for lang in font['GSUB']['languages'].keys():
 pen='"\'—‘’‚“”„‼⁇⁈⁉⸺⸻'
 pzhs='·’‘”“•≤≥≮≯！：；？'+pen
 pzht='·’‘”“•、。，．'+pen
-sipch='蒋残浅践写泻惮禅箪蝉恋峦蛮挛栾滦弯湾径茎弥称滞画遥瑶'#変将与
+simpcn='蒋残浅践写泻惮禅箪蝉恋峦蛮挛栾滦弯湾径茎弥称滞画遥瑶'#変将与
 if bystep!=2:
 	step1()
 if bystep!=1:
