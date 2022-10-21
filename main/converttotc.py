@@ -1,5 +1,4 @@
 import os, sys, json, subprocess, platform, tempfile, gc
-from collections import defaultdict
 from itertools import chain
 
 pydir = os.path.abspath(os.path.dirname(__file__))
@@ -52,12 +51,6 @@ def transforme():
             if s and t and s != t and (usemulchar or not s in mulchar):
                 if str(ord(t)) in font['cmap']:
                     font['cmap'][str(ord(s))] = font['cmap'][str(ord(t))]
-
-def build_glyph_codes():
-    glyph_codes = defaultdict(list)
-    for codepoint, glyph_name in font['cmap'].items():
-        glyph_codes[glyph_name].append(codepoint)
-    return glyph_codes
 
 def removeglyhps():
     usedg=set()
@@ -123,7 +116,15 @@ def removeglyhps():
     for ugl in unusegl:
         font['glyph_order'].remove(ugl)
         del font['glyf'][ugl]
-
+    
+    print('Checking cmap tables...')
+    for cod in set(font['cmap'].keys()):
+        if font['cmap'][cod] in unusegl:
+            del font['cmap'][cod]
+    if 'cmap_uvs' in font:
+        for uvk in set(font['cmap_uvs'].keys()):
+            if font['cmap_uvs'][uvk] in unusegl:
+                del font['cmap_uvs'][uvk]
     print('Checking Lookup tables...')
     if 'GSUB' in font:
         for lookup in font['GSUB']['lookups'].values():
@@ -327,7 +328,6 @@ if len(sys.argv) > 2:
     usemulchar = tc == 'TT'
     mulchar = getmulchar(tc == 'ST')
     transforme()
-    glyph_codes = build_glyph_codes()
     print('Removing glyghs...')
     removeglyhps()
     if tc == "ST":
