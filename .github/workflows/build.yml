@@ -8,15 +8,9 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v3
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v3
-      with:
-        python-version: "3.10"
     - name: Begin
       run: |
         python3 ./build.py
@@ -70,13 +64,4 @@ jobs:
 #         draft: true
         title: Build Test
         files: |
-            AdvocateAncientMonoOTCs.7z
-            AdvocateAncientMonoOTFs.7z
-            AdvocateAncientSansOTCs.7z
-            AdvocateAncientSansOTFs.7z
-            AdvocateAncientSansHWOTCs.7z
-            AdvocateAncientSansHWOTFs.7z
-            AdvocateAncientSansFANTI.7z
-            AdvocateAncientSerifOTCs.7z
-            AdvocateAncientSerifOTFs.7z
-            AdvocateAncientSerifFANTI.7z
+            *.7z
