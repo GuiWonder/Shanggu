@@ -11,11 +11,21 @@ if platform.system() == 'Linux':
 	otfccdump += '2'
 	otfccbuild += '2'
 
+def ckfile(f):
+	f=f.strip()
+	if not os.path.isfile(f):
+		if os.path.isfile(f.strip('"')):
+			return f.strip('"')
+		elif os.path.isfile(f.strip("'")):
+			return f.strip("'")
+	return f
+
 def build_glyph_codes():
 	glyph_codes = defaultdict(list)
 	for codepoint, glyph_name in font['cmap'].items():
 		glyph_codes[glyph_name].append(codepoint)
 	return glyph_codes
+
 def gettbs(chtat, tbg, isin):
 	tb1=set()
 	ftype=font['GSUB']['lookups'][chtat]['type']
@@ -30,6 +40,7 @@ def gettbs(chtat, tbg, isin):
 			if (isin and j in tbg) or ((not isin) and (j not in tbg)):
 				tb1.add((j, cht))
 	return tb1
+
 def gettrch(j, t):
 	if j==t:
 		return
@@ -38,6 +49,7 @@ def gettrch(j, t):
 		font['cmap'][str(cod)] = t
 		glyph_codes[t].append(cod)
 	glyph_codes[j].clear()
+
 def getgname(s):
 	gn=set()
 	for ch in s:
@@ -45,15 +57,6 @@ def getgname(s):
 		if cod in font['cmap']:
 			gn.add(font['cmap'][cod])
 	return gn
-
-def ckfile(f):
-	f=f.strip()
-	if not os.path.isfile(f):
-		if os.path.isfile(f.strip('"')):
-			return f.strip('"')
-		elif os.path.isfile(f.strip("'")):
-			return f.strip("'")
-	return f
 
 def setpun(pzh, loczh):
 	pg=getgname(pzh)
@@ -86,32 +89,67 @@ def setpun(pzh, loczh):
 		print('处理', chr(int(punzh[0])))
 		font['cmap'][punzh[0]]=punzh[1]
 
-def getother(fname, gtext):
-	with open(gtext, 'r', encoding='utf-8') as f:
-		s10=f.read().strip()
-		font10 = json.loads(subprocess.check_output((otfccdump, '--no-bom', fname)).decode("utf-8", "ignore"))
-		scl = 1.0
-		if font["head"]["unitsPerEm"] != font10["head"]["unitsPerEm"]:
-			scl = font["head"]["unitsPerEm"] / font10["head"]["unitsPerEm"]
-		for ch in s10:
-			uni=str(ord(ch))
-			if uni in font10['cmap'] and uni in font['cmap']:
-				g1=font['cmap'][uni]
-				g2=font10['cmap'][uni]
-				if g1=='.notdef' or g2=='.notdef':
-					continue
-				print('处理', ch)
-				gnew=dict()
-				if 'CFF_fdSelect' in font['glyf'][g1]:
-					gnew['CFF_fdSelect']=font['glyf'][g1]['CFF_fdSelect']
-				if 'CFF_CID' in font['glyf'][g1]:
-					gnew['CFF_CID']=font['glyf'][g1]['CFF_CID']
-				for k in font10['glyf'][g2].keys():
-					if k not in ('CFF_fdSelect', 'CFF_CID'):
-						gnew[k]=font10['glyf'][g2][k]
-				font['glyf'][g1]=gnew
-				if scl != 1.0:
-					sclglyph(font['glyf'][g1], scl)
+def gfmloc(g, loczh):
+	for zhtb in loczh:
+		ftype=font['GSUB']['lookups'][zhtb]['type']
+		if ftype=='gsub_single':
+			for subtable in font['GSUB']['lookups'][zhtb]['subtables']:
+				if g in subtable:
+					return subtable[g]
+	return ""
+
+def getscl(font2):
+	scl = 1.0
+	if font["head"]["unitsPerEm"] != font2["head"]["unitsPerEm"]:
+		scl = font["head"]["unitsPerEm"] / font2["head"]["unitsPerEm"]
+	return scl
+
+def getfontgl(filec, cfgf):
+	ofcfg=json.load(open(cfgf, 'r', encoding = 'utf-8'))
+	fontoth = json.loads(subprocess.check_output((otfccdump, '--no-bom', filec)).decode("utf-8", "ignore"))
+	if 'chars' in ofcfg:
+		getotherch(fontoth, ofcfg['chars'])
+	if 'uvs' in ofcfg:
+		getotheruv(fontoth, ofcfg['uvs'])
+	if 'charssp' in ofcfg:
+		spch=ofcfg['charssp']
+		for ch in spch:
+			g1=gfmloc(font['cmap'][str(ord(ch))], loczhs)
+			g2=fontoth['cmap'][str(ord(ch))]
+			cpglyf(font['glyf'][g1], fontoth['glyf'][g2], 1.0)
+
+def getotherch(font2, chars):
+	scl = getscl(font2)
+	for ch in chars:
+		uni=str(ord(ch))
+		if uni in font2['cmap'] and uni in font['cmap']:
+			g1=font['cmap'][uni]
+			g2=font2['cmap'][uni]
+			print('处理', ch)
+			font['glyf'][g1]=cpglyf(font['glyf'][g1], font2['glyf'][g2], scl)
+
+def getotheruv(font2, uv):
+	scl = getscl(font2)
+	for ch in uv.keys():
+		if str(ord(ch)) not in font['cmap']:
+			continue
+		print('cg', ch)
+		g1=font['cmap'][str(ord(ch))]
+		g2=font2['cmap_uvs'][str(ord(ch))+' '+str(int(uv[ch], 16))]
+		font['glyf'][g1]=cpglyf(font['glyf'][g1], font2['glyf'][g2], scl)
+
+def cpglyf(gl1, gl2, scl):
+	gnew=dict()
+	if 'CFF_fdSelect' in gl1:
+		gnew['CFF_fdSelect']=gl1['CFF_fdSelect']
+	if 'CFF_CID' in gl1:
+		gnew['CFF_CID']=gl1['CFF_CID']
+	for k in gl2.keys():
+		if k not in ('CFF_fdSelect', 'CFF_CID'):
+			gnew[k]=gl2[k]
+	if scl != 1.0:
+		sclglyph(gnew, scl)
+	return gnew
 
 def sclglyph(glyph, scl):
 	glyph['advanceWidth'] = round(glyph['advanceWidth'] * scl)
@@ -136,15 +174,6 @@ def sclglyph(glyph, scl):
 			stemv['position'] = round(scl * stemv['position'])
 			stemv['width'] = round(scl * stemv['width'])
 
-def gfmloc(g, loczh):
-	for zhtb in loczh:
-		ftype=font['GSUB']['lookups'][zhtb]['type']
-		if ftype=='gsub_single':
-			for subtable in font['GSUB']['lookups'][zhtb]['subtables']:
-				if g in subtable:
-					return subtable[g]
-	return ""
-
 def step1():
 	jpre=dict()
 	jpvar=[('𰰨', '芲'), ('𩑠', '頙')]
@@ -153,8 +182,8 @@ def step1():
 			jpre[str(ord(chs[0]))]=font['cmap'][str(ord(chs[1]))]
 
 	krch=cfg['krgl']
-	tcch=cfg['tcgl']#壬任凭拰恁栠軠鈓賃銋鵀舌恬舔甜舐憩湉
-	hcch=cfg['hcgl']#栠朅
+	tcch=cfg['tcgl']
+	hcch=cfg['hcgl']
 	scch=cfg['scgl']
 	tbs=set()
 	#for krtb in lockor:
@@ -252,22 +281,23 @@ def step1():
 	wtn={250:'ExtraLight', 300:'Light', 350:'Normal', 400:'Regular', 500:'Medium', 600:'SemiBold', 700:'Bold', 900:'Heavy'}
 	if font['OS_2']['usWeightClass'] in wtn:
 		wt=wtn[font['OS_2']['usWeightClass']]
+	
 	print('正在获取1.0版字形...')
 	file10=os.path.join(pydir, f'sourcehan1.0/SourceHan{ssty}-{wt}{ffmt}')
-	text10=os.path.join(pydir, 'sourcehan1.0.txt')
-	if os.path.isfile(file10) and os.path.isfile(text10):
-		getother(file10, text10)
+	if os.path.isfile(file10):
+		sh10set=json.load(open(os.path.join(pydir, 'sourcehan10.json'), 'r', encoding = 'utf-8'))
+		font10 = json.loads(subprocess.check_output((otfccdump, '--no-bom', file10)).decode("utf-8", "ignore"))
+		getotherch(font10, sh10set[ssty])
+		del font10
 	else:
 		print('获取1.0版字形失败！')
-
-	#if ssty=='Sans':
-	#	print('正在获取秋空黑体字形...')
-	#	filec=os.path.join(pydir, f'ChiuKongGothic-CL/ChiuKongGothic-CL-{wt}{ffmt}')
-	#	textc=os.path.join(pydir, 'ChiuKongGothic-CL.txt')
-	#	if os.path.isfile(filec) and os.path.isfile(textc):
-	#		getother(filec, textc)
-	#	else:
-	#		print('获取秋空黑体字形失败！')
+	
+	if ssty=='Sans':
+		filec=os.path.join(pydir, f'ChiuKongGothic-CL/ChiuKongGothic-CL-{wt}{ffmt}')
+		ckgcf=os.path.join(pydir, 'ChiuKongGothic-CL.json')
+		if os.path.isfile(filec) and os.path.isfile(ckgcf):
+			print('正在获取秋空黑体字形...')
+			getfontgl(filec, ckgcf)
 
 	usedg=set()
 	usedg.update(font['cmap'].values())
@@ -369,7 +399,6 @@ def step1():
 							nsb.append(subtable)
 					lookup['subtables']=nsb
 
-
 def step2():
 	if pun=='2':
 		setpun(pzhs, loczhs)
@@ -383,19 +412,6 @@ def step2():
 			tbs.update(a)
 			for itm in tbs:
 				gettrch(itm[0], itm[1])
-
-	print('正在移除本地化替换表...')
-	for subs in loc:
-		del font['GSUB']['lookups'][subs]
-		f1todel = set()
-		for f1 in font['GSUB']['features'].keys():
-			if subs in font['GSUB']['features'][f1]:
-				font['GSUB']['features'][f1].remove(subs)
-			if len(font['GSUB']['features'][f1]) == 0:
-				f1todel.add(f1)
-		for f1 in f1todel:
-			del font['GSUB']['features'][f1]
-
 	if mch=='y':
 		print('正在合并多编码汉字...')
 		vartab=list()
@@ -409,6 +425,19 @@ def step2():
 					if str(ord(t)) in font['cmap']:
 						print('处理 '+s+'-'+t)
 						font['cmap'][str(ord(s))] = font['cmap'][str(ord(t))]
+
+	print('正在移除本地化替换表...')
+	for subs in loc:
+		del font['GSUB']['lookups'][subs]
+		f1todel = set()
+		for f1 in font['GSUB']['features'].keys():
+			if subs in font['GSUB']['features'][f1]:
+				font['GSUB']['features'][f1].remove(subs)
+			if len(font['GSUB']['features'][f1]) == 0:
+				f1todel.add(f1)
+		for f1 in f1todel:
+			del font['GSUB']['features'][f1]
+
 	print('正在设置字体名称...')
 	if setname=='1':
 		nname=list()

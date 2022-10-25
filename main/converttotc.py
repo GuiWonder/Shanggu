@@ -311,7 +311,7 @@ def setinfo():
         zhn=' 轉繁體'
     for nj in font['name']:
         nn=dict(nj)
-        nn['nameString']=nn['nameString'].replace('Advocate Ancient Sans', 'Advocate Ancient Sans '+tc).replace('AdvocateAncientSans', 'AdvocateAncientSans'+tc).replace('Advocate Ancient Serif', 'Advocate Ancient Serif '+tc).replace('AdvocateAncientSerif', 'AdvocateAncientSerif'+tc).replace('尙古黑體','尙古黑體'+zhn).replace('尙古黑体','尙古黑體'+zhn).replace('尙古明體','尙古明體'+zhn).replace('尙古明体','尙古明體'+zhn)
+        nn['nameString']=nn['nameString'].replace('Advocate Ancient Sans', 'Advocate Ancient Sans '+tc).replace('AdvocateAncientSans', 'AdvocateAncientSans'+tc).replace('Advocate Ancient Serif', 'Advocate Ancient Serif '+tc).replace('AdvocateAncientSerif', 'AdvocateAncientSerif'+tc).replace('黑體','黑體'+zhn).replace('黑体','黑體'+zhn).replace('明體','明體'+zhn).replace('明体','明體'+zhn)
         newn.append(nn)
     font['name']=newn
 
