@@ -304,6 +304,9 @@ def addlookupword(stword):
                                         }
 
 def setinfo():
+    cfg=json.load(open(os.path.join(pydir, 'config.json'), 'r', encoding = 'utf-8'))
+    fnm=cfg['fontName']
+    fnp=fnm.replace(' ', '')
     newn=list()
     if tc=='TT':
         zhn=' 繁體'
@@ -311,7 +314,7 @@ def setinfo():
         zhn=' 轉繁體'
     for nj in font['name']:
         nn=dict(nj)
-        nn['nameString']=nn['nameString'].replace('Advocate Ancient Sans', 'Advocate Ancient Sans '+tc).replace('AdvocateAncientSans', 'AdvocateAncientSans'+tc).replace('Advocate Ancient Serif', 'Advocate Ancient Serif '+tc).replace('AdvocateAncientSerif', 'AdvocateAncientSerif'+tc).replace('黑體','黑體'+zhn).replace('黑体','黑體'+zhn).replace('明體','明體'+zhn).replace('明体','明體'+zhn)
+        nn['nameString']=nn['nameString'].replace(fnm+' Sans', fnm+' Sans '+tc).replace(fnp+'Sans', fnp+'Sans'+tc).replace(fnm+' Serif', fnm+' Serif '+tc).replace(fnp+'Serif', fnp+'Serif'+tc).replace('黑體','黑體'+zhn).replace('黑体','黑體'+zhn).replace('明體','明體'+zhn).replace('明体','明體'+zhn)
         newn.append(nn)
     font['name']=newn
 
