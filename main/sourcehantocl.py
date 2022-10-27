@@ -130,13 +130,24 @@ def getotherch(font2, chars):
 
 def getotheruv(font2, uv):
 	scl = getscl(font2)
+	oldu=set()
+	newu=dict()
 	for ch in uv.keys():
 		if str(ord(ch)) not in font['cmap']:
 			continue
-		print('cg', ch)
+		print('处理', ch)
 		g1=font['cmap'][str(ord(ch))]
 		g2=font2['cmap_uvs'][str(ord(ch))+' '+str(int(uv[ch], 16))]
 		font['glyf'][g1]=cpglyf(font['glyf'][g1], font2['glyf'][g2], scl)
+		if g1 in font['cmap_uvs'].values():
+			print('更正uvs', ch)
+			oldu.add(g1)
+			newu[str(ord(ch))+' '+str(int(uv[ch], 16))]=g1
+	for u1 in set(font['cmap_uvs'].keys()):
+		if font['cmap_uvs'][u1] in oldu:
+			del font['cmap_uvs'][u1]
+	for u2 in newu.keys():
+		font['cmap_uvs'][u2]=newu[u2]
 
 def cpglyf(gl1, gl2, scl):
 	gnew=dict()
