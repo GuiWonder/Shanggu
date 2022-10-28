@@ -231,22 +231,18 @@ def build_char_table():
 def build_word_table():
     stword = list()
     with open(os.path.join(pydir, 'datas/STPhrases.txt'),'r',encoding = 'utf-8') as f:
-        ls = list()
+        ccods=set(font['cmap'].keys())
         for line in f.readlines():
-            line = line.strip()
+            line = line.strip().split(' ')[0]
             if line.startswith('#') or '\t' not in line:
                 continue
-            ls.append(line.strip().split(' ')[0])
-        for line in ls:
-            s, t = line.strip().split('\t')
+            s, t = line.split('\t')
             s = s.strip()
             t = t.strip()
             if not(s and t):
                 continue
-            codesc = tuple(str(ord(c)) for c in s)
-            codetc = tuple(str(ord(c)) for c in t)
-            if all(codepoint in font['cmap'] for codepoint in codesc) \
-                    and all(codepoint in font['cmap'] for codepoint in codetc):
+            codestc = set(str(ord(c)) for c in s+t)
+            if codestc.issubset(ccods):
                 stword.append((s, t))
     if len(stword) + len(font['glyph_order']) > 65535:
         nd=len(stword) + len(font['glyph_order']) - 65535
@@ -307,14 +303,27 @@ def setinfo():
     cfg=json.load(open(os.path.join(pydir, 'config.json'), 'r', encoding = 'utf-8'))
     fnm=cfg['fontName']
     fnp=fnm.replace(' ', '')
+    tcn=cfg['fontNameTC']
+    scn=cfg['fontNameSC']
     newn=list()
     if tc=='TT':
         zhn=' 繁體'
     else:
         zhn=' 轉繁體'
+    rpln=[
+        (fnm+' Sans', fnm+' Sans '+tc), 
+        (fnm+' Serif', fnm+' Serif '+tc), 
+        (fnp+'Sans', fnp+'Sans'+tc), 
+        (fnp+'Serif', fnp+'Serif'+tc), 
+        (tcn+'黑體', tcn+'黑體'+zhn), 
+        (tcn+'明體', tcn+'明體'+zhn), 
+        (scn+'黑体', tcn+'黑體'+zhn), 
+        (scn+'明体', tcn+'明體'+zhn)
+    ]
     for nj in font['name']:
         nn=dict(nj)
-        nn['nameString']=nn['nameString'].replace(fnm+' Sans', fnm+' Sans '+tc).replace(fnp+'Sans', fnp+'Sans'+tc).replace(fnm+' Serif', fnm+' Serif '+tc).replace(fnp+'Serif', fnp+'Serif'+tc).replace('黑體','黑體'+zhn).replace('黑体','黑體'+zhn).replace('明體','明體'+zhn).replace('明体','明體'+zhn)
+        for rp in rpln:
+             nn['nameString']=nn['nameString'].replace(rp[0], rp[1])
         newn.append(nn)
     font['name']=newn
 
