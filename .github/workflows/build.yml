@@ -17,7 +17,7 @@ jobs:
     - uses: actions/upload-artifact@v3
       with:
         name: out
-        path: *.7z
+        path: "*.7z"
 
     - name: Upload to release
       uses: "marvinpinto/action-automatic-releases@latest"
