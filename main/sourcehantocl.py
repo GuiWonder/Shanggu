@@ -191,11 +191,11 @@ def step1():
 	for chs in jpvar:
 		if str(ord(chs[1])) in font['cmap']:
 			jpre[str(ord(chs[0]))]=font['cmap'][str(ord(chs[1]))]
-
-	krch=cfg['krgl']
-	tcch=cfg['tcgl']
-	hcch=cfg['hcgl']
-	scch=cfg['scgl']
+	shset=json.load(open(os.path.join(pydir, 'sourcehan.json'), 'r', encoding = 'utf-8'))
+	krch=shset['krgl']
+	tcch=shset['tcgl']
+	hcch=shset['hcgl']
+	scch=shset['scgl']
 	tbs=set()
 	#for krtb in lockor:
 	#	a=gettbs(krtb, xkrchg, False)
