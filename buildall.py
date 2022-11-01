@@ -9,8 +9,6 @@ shurl=[
 	"https://github.com/adobe-fonts/source-han-sans/raw/release/OTF/Japanese/SourceHanSans-Medium.otf",
 	"https://github.com/adobe-fonts/source-han-sans/raw/release/OTF/Japanese/SourceHanSans-Normal.otf",
 	"https://github.com/adobe-fonts/source-han-sans/raw/release/OTF/Japanese/SourceHanSans-Regular.otf",
-	"https://github.com/adobe-fonts/source-han-sans/raw/release/OTF/JapaneseHW/SourceHanSansHW-Regular.otf",
-	"https://github.com/adobe-fonts/source-han-sans/raw/release/OTF/JapaneseHW/SourceHanSansHW-Bold.otf",
 	"https://github.com/adobe-fonts/source-han-serif/raw/release/OTF/Japanese/SourceHanSerif-Bold.otf",
 	"https://github.com/adobe-fonts/source-han-serif/raw/release/OTF/Japanese/SourceHanSerif-ExtraLight.otf",
 	"https://github.com/adobe-fonts/source-han-serif/raw/release/OTF/Japanese/SourceHanSerif-Heavy.otf",
@@ -30,59 +28,60 @@ os.makedirs('./src')
 for u1 in shurl:
 	os.system(f'wget -P src {u1} || exit 1')
 
-os.system('chmod +x ./main/otfcc/*')
+os.system('chmod +x ./main/otfcc/*') 
 cfg=json.load(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), './main/config.json'), 'r', encoding = 'utf-8'))
 fnm=cfg['fontName'].replace(' ', '')
-aa=('Mono', 'SansHW', 'Sans', 'Serif')
+aa=('Mono', 'Sans', 'Serif')
 for fod in aa:
 	os.makedirs(f'./fonts/{fnm}{fod}')
 	os.makedirs(f'./fonts/{fnm}{fod}TC')
 	os.makedirs(f'./fonts/{fnm}{fod}SC')
 	os.makedirs(f'./fonts/{fnm}{fod}JP')
+	os.makedirs(f'./fonts/{fnm}{fod}OTCs')
 	copy('./LICENSE.txt', f'./fonts/{fnm}{fod}/')
 	copy('./LICENSE.txt', f'./fonts/{fnm}{fod}TC/')
 	copy('./LICENSE.txt', f'./fonts/{fnm}{fod}SC/')
 	copy('./LICENSE.txt', f'./fonts/{fnm}{fod}JP/')
-	if fod=='SansHW':
-		continue
-	os.makedirs(f'./fonts/{fnm}{fod}OTCs')
 	copy('./LICENSE.txt', f'./fonts/{fnm}{fod}OTCs/')
 
-tocl='python3 ./main/sourcehantocl.py'
-tootc='python3 ./main/otf2otc.py -t "CFF "=0 -o'
+tocl='python3 ./main/toclmul.py'
+tootc='python3 ./main/otf2otc.py -o'
 for item in os.listdir('./src'):
 	if item.lower().split('.')[-1] in ('otf', 'ttf'):
 		aan=item.replace('SourceHan', fnm)
 		fn1, fn2=aan.split('-')
-		os.system(f"{tocl} ./src/{item} ./fonts/{fn1}/{aan} 2 y 3 2")
-		os.system(f"{tocl} ./src/{item} ./fonts/{fn1}TC/{fn1}TC-{fn2} 2 n 3 1")
-		os.system(f"{tocl} ./src/{item} ./fonts/{fn1}SC/{fn1}SC-{fn2} 2 n 2 2")
-		os.system(f"{tocl} ./src/{item} ./fonts/{fn1}JP/{fn1}JP-{fn2} 2 n 1 1")
-		if 'Sans' in item and ('Regular' in item or 'Bold' in item):
-			continue
-		os.system(f"{tootc} ./fonts/{fn1}OTCs/{aan.split('.')[0]}.ttc ./fonts/{fn1}/{aan} ./fonts/{fn1}TC/{fn1}TC-{fn2} ./fonts/{fn1}SC/{fn1}SC-{fn2} ./fonts/{fn1}JP/{fn1}JP-{fn2}")
-hww=['Regular', 'Bold']
-for wt in hww:
-	if f'SourceHanSans-{wt}.otf' in os.listdir('./src'):
-		flst=[
-			f'./fonts/{fnm}Sans/{fnm}Sans-{wt}.otf', 
-			f'./fonts/{fnm}SansTC/{fnm}SansTC-{wt}.otf', 
-			f'./fonts/{fnm}SansSC/{fnm}SansSC-{wt}.otf', 
-			f'./fonts/{fnm}SansJP/{fnm}SansJP-{wt}.otf', 
-		]
-		if f'SourceHanSansHW-{wt}.otf' in os.listdir('./src'):
-			flsthw=[
-				f'./fonts/{fnm}SansHW/{fnm}SansHW-{wt}.otf', 
-				f'./fonts/{fnm}SansHWTC/{fnm}SansHWTC-{wt}.otf', 
-				f'./fonts/{fnm}SansHWSC/{fnm}SansHWSC-{wt}.otf', 
-				f'./fonts/{fnm}SansHWJP/{fnm}SansHWJP-{wt}.otf', 
+		os.system(f"{tocl} ./src/{item} ./fonts/{fn1}")
+		if 'Mono' not in item:
+			flst=[
+				f'./fonts/{fn1}/{fn1}-{fn2}', 
+				f'./fonts/{fn1}/{fn1}TC-{fn2}', 
+				f'./fonts/{fn1}/{fn1}SC-{fn2}', 
+				f'./fonts/{fn1}/{fn1}JP-{fn2}', 
+				f'./fonts/{fn1}/{fn1}HW-{fn2}', 
+				f'./fonts/{fn1}/{fn1}HWTC-{fn2}', 
+				f'./fonts/{fn1}/{fn1}HWSC-{fn2}', 
+				f'./fonts/{fn1}/{fn1}HWJP-{fn2}'
 			]
-			flst+=flsthw
-		fts=" ".join(flst)
-		os.system(f"{tootc} ./fonts/{fnm}SansOTCs/{fnm}Sans-{wt}.ttc {fts}")
-rmtree('./src')
+		else:
+			fn2it=fn2.replace('.', 'It.')
+			flst=[
+				f'./fonts/{fn1}/{fn1}-{fn2}', 
+				f'./fonts/{fn1}/{fn1}-{fn2it}', 
+				f'./fonts/{fn1}/{fn1}TC-{fn2}', 
+				f'./fonts/{fn1}/{fn1}TC-{fn2it}', 
+				f'./fonts/{fn1}/{fn1}SC-{fn2}', 
+				f'./fonts/{fn1}/{fn1}SC-{fn2it}', 
+				f'./fonts/{fn1}/{fn1}JP-{fn2}', 
+				f'./fonts/{fn1}/{fn1}JP-{fn2it}', 
+			]
+		flstall=' '.join(flst)
+		os.system(f"{tootc} ./fonts/{fn1}OTCs/{fn1}-{fn2.split('.')[0]}.ttc {flstall}")
 
 for fod in ('Mono', 'Sans', 'Serif'):
+	os.system(f'mv ./fonts/{fnm}{fod}/*TC* ./fonts/{fnm}{fod}TC/')
+	os.system(f'mv ./fonts/{fnm}{fod}/*SC* ./fonts/{fnm}{fod}SC/')
+	os.system(f'mv ./fonts/{fnm}{fod}/*JP* ./fonts/{fnm}{fod}JP/')
+	
 	os.system(f'7z a {fnm}{fod}OTCs.7z ./fonts/{fnm}{fod}OTCs/*')
 	otfs=[
 		f'./fonts/{fnm}{fod}', 
@@ -90,14 +89,6 @@ for fod in ('Mono', 'Sans', 'Serif'):
 		f'./fonts/{fnm}{fod}SC', 
 		f'./fonts/{fnm}{fod}JP'
 		]
-	if fod=='Sans':
-		otfhw=[
-			f'./fonts/{fnm}{fod}HW', 
-			f'./fonts/{fnm}{fod}HWTC', 
-			f'./fonts/{fnm}{fod}HWSC', 
-			f'./fonts/{fnm}{fod}HWJP'
-		]
-		otfs+=otfhw
 	otff=' '.join(otfs)
 	os.system(f'7z a {fnm}{fod}OTFs.7z {otff} -mx=9 -mfb=256 -md=256m')
 
@@ -112,7 +103,7 @@ for fod in gototc:
 totc='python3 ./main/converttotc.py'
 for fod in gototc:
 	for item in os.listdir(f'./fonts/{fnm}{fod}'):
-		if item.lower().split('.')[-1] in ('otf', 'ttf'):
+		if item.lower().split('.')[-1] in ('otf', 'ttf') and 'HW' not in item and 'It.' not in item:
 			os.system(f"{totc} ./fonts/{fnm}{fod}/{item} ./fonts/{fnm}{fod}ST/{item.replace('-', 'ST-')} st")
 	os.system(f'7z a {fnm}{fod}FANTI.7z ./fonts/{fnm}{fod}ST/*')
 rmtree('./main/datas')

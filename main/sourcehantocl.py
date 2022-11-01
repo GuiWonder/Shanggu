@@ -1,5 +1,4 @@
 import os, json, subprocess, platform, tempfile, gc, sys
-from collections import defaultdict
 
 pydir = os.path.abspath(os.path.dirname(__file__))
 otfccdump = os.path.join(pydir, 'otfcc/otfccdump')
@@ -20,12 +19,6 @@ def ckfile(f):
 			return f.strip("'")
 	return f
 
-def build_glyph_codes():
-	glyph_codes = defaultdict(list)
-	for codepoint, glyph_name in font['cmap'].items():
-		glyph_codes[glyph_name].append(codepoint)
-	return glyph_codes
-
 def gettbs(chtat, tbg, isin):
 	tb1=set()
 	ftype=font['GSUB']['lookups'][chtat]['type']
@@ -41,14 +34,11 @@ def gettbs(chtat, tbg, isin):
 				tb1.add((j, cht))
 	return tb1
 
-def gettrch(j, t):
-	if j==t:
-		return
-	for cod in glyph_codes[j]:
-		print('处理', chr(int(cod)))
-		font['cmap'][str(cod)] = t
-		glyph_codes[t].append(cod)
-	glyph_codes[j].clear()
+def replg(dic):
+	for cd in list(font['cmap'].keys()):
+		if font['cmap'][cd] in dic:
+			print('处理', chr(int(cd)))
+			font['cmap'][cd]=dic[font['cmap'][cd]]
 
 def getgname(s):
 	gn=set()
@@ -83,8 +73,11 @@ def setpun(pzh, loczh):
 	for tb in etb:
 		a=gettbs(tb, pg, True)
 		if len(a)>0:
+			relp=dict()
 			for itm in a:
-				gettrch(itm[0], itm[1])
+				if itm[0]!=itm[1]:
+					relp[itm[0]]=itm[1]
+			replg(relp)
 	for punzh in zhp:
 		print('处理', chr(int(punzh[0])))
 		font['cmap'][punzh[0]]=punzh[1]
@@ -185,6 +178,134 @@ def sclglyph(glyph, scl):
 			stemv['position'] = round(scl * stemv['position'])
 			stemv['width'] = round(scl * stemv['width'])
 
+def mergeshnm():
+	nname=list()
+	for nj in font['name']:
+		if nj['languageID']==1041:
+			nk=dict(nj)
+			ns=dict(nj)
+			nt=dict(nj)
+			nh=dict(nj)
+			nk['languageID']=1042
+			nk['nameString']=nk['nameString'].replace('源ノ明朝', '본명조').replace('源ノ角ゴシック', '본고딕').replace('源ノ等幅', '본모노')
+			ns['languageID']=2052
+			ns['nameString']=ns['nameString'].replace('源ノ明朝', '思源宋体').replace('源ノ角ゴシック', '思源黑体').replace('源ノ等幅', '思源等宽')
+			nt['languageID']=1028
+			nt['nameString']=nt['nameString'].replace('源ノ明朝', '思源宋體').replace('源ノ角ゴシック', '思源黑體').replace('源ノ等幅', '思源等寬')
+			nh['languageID']=3076
+			nh['nameString']=nh['nameString'].replace('源ノ明朝', '思源宋體 香港').replace('源ノ角ゴシック', '思源黑體 香港').replace('源ノ等幅', '思源等寬 香港')
+			nname.append(nk)
+			nname.append(ns)
+			nname.append(nt)
+			nname.append(nh)
+	font['name']=font['name']+nname
+
+def mkname():
+	if 'HW' in fpn:
+		hw=' HW'
+	else:
+		hw=''
+	scn=[cfg['fontNameSC']+'黑体', cfg['fontNameSC']+'明体', cfg['fontNameSC']+'等宽']
+	tcn=[cfg['fontNameTC']+'黑體', cfg['fontNameTC']+'明體', cfg['fontNameTC']+'等寬']
+	locn=""
+	if mch=='n' and pun=='2'and simp=='2':
+		locn=' SC'
+	elif mch=='n' and pun=='1' and simp=='1':
+		locn=' JP'
+	elif mch=='n' and pun=='3':
+		locn=' TC'
+	locnp=locn.strip()
+	
+	ofn=dict()
+	for nj in font['name']:
+		if nj['languageID']==1033:
+			if nj['nameID']==1:
+				ofn['enn']=nj['nameString']
+			if nj['nameID']==16:
+				ofn['ennzx']=nj['nameString']
+			if nj['nameID']==2:
+				ofn['enfml']=nj['nameString']
+			if nj['nameID']==17:
+				ofn['enfmlzx']=nj['nameString']
+			if nj['nameID']==13:
+				ofn['cpsp']=nj['nameString']
+			if nj['nameID']==14:
+				ofn['cpurl']=nj['nameString']
+		if nj['languageID']==1041:
+			if nj['nameID']==1:
+				ofn['jpn']=nj['nameString']
+			if nj['nameID']==16:
+				ofn['jpnzx']=nj['nameString']
+	newname=list()
+	if 'ennzx' in ofn:
+		oenn=ofn['ennzx']
+		ojpn=ofn['jpnzx']
+		fml=ofn['enfmlzx']
+	else:
+		oenn=ofn['enn']
+		ojpn=ofn['jpn']
+		fml=ofn['enfml']
+	fenn=oenn.replace('Source Han', fnn).replace(' HW', '')
+	ftcn=ojpn.replace('源ノ角ゴシック', tcn[0]).replace('源ノ明朝', tcn[1]).replace('源ノ等幅', tcn[2]).replace(' HW', '')
+	fscn=ojpn.replace('源ノ角ゴシック', scn[0]).replace('源ノ明朝', scn[1]).replace('源ノ等幅', scn[2]).replace(' HW', '')
+	fenn+=hw+locn
+	ftcn+=locnp+hw
+	fscn+=locnp+hw
+	fpsn=(fenn+'-'+fml).replace(' ', '')
+	fbsh=cfg['fontVersion']+';'+cfg['fontID']+';'+fpsn
+	if 'ennzx' in ofn:
+		shen=fenn+' '+fml
+		shtcn=ftcn+' '+fml
+		shscn=fscn+' '+fml
+	else:
+		shen=fenn
+		shtcn=ftcn
+		shscn=fscn
+		
+	for lanid in (1028, 3076):
+		newname+=[
+			{'languageID': lanid,'nameID': 1,'nameString': shtcn}, 
+			{'languageID': lanid,'nameID': 2,'nameString': ofn['enfml']}, 
+			{'languageID': lanid,'nameID': 4,'nameString': shtcn}
+			]
+		if 'ennzx' in ofn:
+			newname+=[
+				{'languageID': lanid,'nameID': 16,'nameString': ftcn}, 
+				{'languageID': lanid,'nameID': 17,'nameString': fml}
+				]
+	newname+=[
+		{'languageID': 2052,'nameID': 1,'nameString': shscn}, 
+		{'languageID': 2052,'nameID': 2,'nameString': ofn['enfml']}, 
+		{'languageID': 2052,'nameID': 4,'nameString': shscn}
+		]
+	if 'ennzx' in ofn:
+		newname+=[
+			{'languageID': 2052,'nameID': 16,'nameString': fscn}, 
+			{'languageID': 2052,'nameID': 17,'nameString': fml}
+			]
+	newname+=[
+		{'languageID': 1033,'nameID': 1,'nameString': shen}, 
+		{'languageID': 1033,'nameID': 2,'nameString': ofn['enfml']}, 
+		{'languageID': 1033,'nameID': 3,'nameString': fbsh}, 
+		{'languageID': 1033,'nameID': 4,'nameString': shen}, 
+		{'languageID': 1033,'nameID': 5,'nameString': 'Version '+cfg['fontVersion']}, 
+		{'languageID': 1033,'nameID': 6,'nameString': fpsn}, 
+		{'languageID': 1033,'nameID': 9,'nameString': cfg['fontDesigner']}, 
+		{'languageID': 1033,'nameID': 10,'nameString': cfg['fontDiscript']}, 
+		{'languageID': 1033,'nameID': 11,'nameString': cfg['fontVURL']}, 
+		{'languageID': 1033,'nameID': 13,'nameString': ofn['cpsp']}, 
+		{'languageID': 1033,'nameID': 14,'nameString': ofn['cpurl']}
+		]
+	if 'ennzx' in ofn:
+		newname+=[
+			{'languageID': 1033,'nameID': 16,'nameString': fenn}, 
+			{'languageID': 1033,'nameID': 17,'nameString': fml}
+			]
+	for nl in newname:
+		nl['platformID']=3
+		nl['encodingID']=1
+	return newname
+
 def step1():
 	jpre=dict()
 	jpvar=[('𰰨', '芲'), ('𩑠', '頙')]
@@ -222,8 +343,11 @@ def step1():
 			a=gettbs(zhstb, scchg, True)
 			tbs.update(a)
 	if len(tbs)>0:
+		repva=dict()
 		for itm in tbs:
-			gettrch(itm[0], itm[1])
+			if itm[0]!=itm[1]:
+				repva[itm[0]]=itm[1]
+		replg(repva)
 	else:
 		print('未找到任何可用的本地化字形！')
 
@@ -421,8 +545,11 @@ def step2():
 		for zhstb in loczhs:
 			a=gettbs(zhstb, simpg, True)
 			tbs.update(a)
+			repsp=dict()
 			for itm in tbs:
-				gettrch(itm[0], itm[1])
+				if itm[0]!=itm[1]:
+					repsp[itm[0]]=itm[1]
+			replg(repsp)
 	if mch=='y':
 		print('正在合并多编码汉字...')
 		vartab=list()
@@ -451,33 +578,10 @@ def step2():
 
 	print('正在设置字体名称...')
 	if setname=='1':
-		nname=list()
-		for nj in font['name']:
-			if nj['languageID']==1041:
-				nk=dict(nj)
-				ns=dict(nj)
-				nt=dict(nj)
-				nh=dict(nj)
-				nk['languageID']=1042
-				nk['nameString']=nk['nameString'].replace('源ノ明朝', '본명조').replace('源ノ角ゴシック', '본고딕').replace('源ノ等幅', '본모노')
-				ns['languageID']=2052
-				ns['nameString']=ns['nameString'].replace('源ノ明朝', '思源宋体').replace('源ノ角ゴシック', '思源黑体').replace('源ノ等幅', '思源等宽')
-				nt['languageID']=1028
-				nt['nameString']=nt['nameString'].replace('源ノ明朝', '思源宋體').replace('源ノ角ゴシック', '思源黑體').replace('源ノ等幅', '思源等寬')
-				nh['languageID']=3076
-				nh['nameString']=nh['nameString'].replace('源ノ明朝', '思源宋體 香港').replace('源ノ角ゴシック', '思源黑體 香港').replace('源ノ等幅', '思源等寬 香港')
-				nname.append(nk)
-				nname.append(ns)
-				nname.append(nt)
-				nname.append(nh)
-		font['name']=font['name']+nname
+		mergeshnm()
 	elif setname=='2':
 		font['OS_2']['achVendID']=cfg['fontID']
 		font['head']['fontRevision']=float(cfg['fontVersion'])
-
-		fnn=cfg['fontName']
-		fnnps=fnn.replace(' ', '')
-		
 		if 'CFF_' in font:
 			font['CFF_']['notice']=''
 			font['CFF_']['fontName']=font['CFF_']['fontName'].replace('SourceHan', fnnps)
@@ -492,69 +596,7 @@ def step2():
 					if 'CFF_fdSelect' in gl:
 						gl['CFF_fdSelect']=gl['CFF_fdSelect'].replace('SourceHan', fnnps)
 
-		scn=[cfg['fontNameSC']+'黑体', cfg['fontNameSC']+'明体', cfg['fontNameSC']+'等宽']
-		tcn=[cfg['fontNameTC']+'黑體', cfg['fontNameTC']+'明體', cfg['fontNameTC']+'等寬']
-		locn=""
-		if mch=='n' and pun=='2'and simp=='2':
-			locn=' SC'
-		elif mch=='n' and pun=='1' and simp=='1':
-			locn=' JP'
-		elif mch=='n' and pun=='3':
-			locn=' TC'
-		locnp=locn.strip()
-		nname=list()
-		for nj in font['name']:
-			if nj['languageID']==1041:
-				ns=dict(nj)
-				nt=dict(nj)
-				nh=dict(nj)
-				if 'JP'==locnp:
-					njn=dict(nj)
-					njn['nameString']=njn['nameString'].replace('源ノ', '尙古')
-					nname.append(njn)
-				ns['languageID']=2052
-				ns['nameString']=ns['nameString'].replace('源ノ角ゴシック', scn[0]+locnp).replace('源ノ明朝', scn[1]+locnp).replace('源ノ等幅', scn[2]+locnp)
-				nt['languageID']=1028
-				nt['nameString']=nt['nameString'].replace('源ノ角ゴシック', tcn[0]+locnp).replace('源ノ明朝', tcn[1]+locnp).replace('源ノ等幅', tcn[2]+locnp)
-				nh['languageID']=3076
-				nh['nameString']=nh['nameString'].replace('源ノ角ゴシック', tcn[0]+locnp).replace('源ノ明朝', tcn[1]+locnp).replace('源ノ等幅', tcn[2]+locnp)
-				nname.append(ns)
-				nname.append(nt)
-				nname.append(nh)
-			#elif nj['nameID']>0 and nj['nameID']<7:
-			elif nj['nameID']==3:
-				ne=dict(nj)
-				ne['nameString']=cfg['fontVersion']+';'+cfg['fontID']+';'+fpn.replace('SourceHan', fnnps).replace('Sans', 'Sans'+locnp).replace('Serif', 'Serif'+locnp).replace('Mono', 'Mono'+locnp)
-				nname.append(ne)
-			elif nj['nameID']==5:
-				ne=dict(nj)
-				ne['nameString']='Version '+cfg['fontVersion']
-				nname.append(ne)
-			elif nj['nameID']==11:
-				ne=dict(nj)
-				ne['nameString']=cfg['fontVURL']
-				nname.append(ne)
-			elif nj['nameID']==0:
-				ne=dict(nj)
-				ne['nameString']=cfg['fontCopyright']
-				nname.append(ne)
-			elif nj['nameID']==10:
-				ne=dict(nj)
-				ne['nameString']=cfg['fontDiscript']
-				nname.append(ne)
-			elif nj['nameID']==9:
-				ne=dict(nj)
-				ne['nameString']=cfg['fontDesigner']
-				nname.append(ne)
-			elif nj['nameID']!=7 and nj['nameID']!=8:
-			#else:
-				ne=dict(nj)
-				if 'Source Han' in ne['nameString']:
-					ne['nameString']=ne['nameString'].replace('Source Han', fnn).replace('Sans', 'Sans'+locn).replace('Serif', 'Serif'+locn).replace('Mono', 'Mono'+locn)
-				elif 'SourceHan' in ne['nameString']:
-					ne['nameString']=ne['nameString'].replace('SourceHan', fnnps).replace('Sans', 'Sans'+locnp).replace('Serif', 'Serif'+locnp).replace('Mono', 'Mono'+locnp)
-				nname.append(ne)
-		font['name']=nname
+		font['name']=mkname()
 
 print('====思源字体（日版）转传承字形====\n')
 inf=str()
@@ -611,12 +653,13 @@ if len(sys.argv)>7:
 cfg=json.load(open(os.path.join(pydir, 'config.json'), 'r', encoding = 'utf-8'))
 print('正在载入字体...')
 font = json.loads(subprocess.check_output((otfccdump, '--no-bom', inf)).decode("utf-8", "ignore"))
-glyph_codes = build_glyph_codes()
 fpn=str()
 for n1 in font['name']:
 	if n1['nameID']==6 and '-' in n1['nameString']:
 		fpn=n1['nameString']
 		break
+fnn=cfg['fontName']
+fnnps=fnn.replace(' ', '')
 
 print('获取本地化替换表...')
 loc=set()
