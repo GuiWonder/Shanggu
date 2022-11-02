@@ -499,7 +499,7 @@ def mkname(hwit=''):
 	ftcn+=locnp+hw
 	fscn+=locnp+hw
 	fpsn=(fenn+'-'+fpn.split('-')[-1]+toit).replace(' ', '')
-	fbsh=cfg['fontVersion']+';'+cfg['fontID']+';'+fpsn
+	fbsh=cfg['fontVersion']+';'+cfg['fontID'].strip()+';'+fpsn
 	if 'ennzx' in ofn:
 		shen=fenn+' '+fml
 		shtcn=ftcn+' '+fml
@@ -508,12 +508,15 @@ def mkname(hwit=''):
 		shen=fenn
 		shtcn=ftcn
 		shscn=fscn
-		
+	bd=''
+	if ofn['enfml']=='Bold':
+		bd=' Bold'
+	
 	for lanid in (1028, 3076):
 		newname+=[
 			{'languageID': lanid,'nameID': 1,'nameString': shtcn}, 
 			{'languageID': lanid,'nameID': 2,'nameString': ofn['enfml']}, 
-			{'languageID': lanid,'nameID': 4,'nameString': shtcn+toitl}
+			{'languageID': lanid,'nameID': 4,'nameString': shtcn+bd+toitl}
 			]
 		if 'ennzx' in ofn:
 			newname+=[
@@ -523,7 +526,7 @@ def mkname(hwit=''):
 	newname+=[
 		{'languageID': 2052,'nameID': 1,'nameString': shscn}, 
 		{'languageID': 2052,'nameID': 2,'nameString': ofn['enfml']}, 
-		{'languageID': 2052,'nameID': 4,'nameString': shscn+toitl}
+		{'languageID': 2052,'nameID': 4,'nameString': shscn+bd+toitl}
 		]
 	if 'ennzx' in ofn:
 		newname+=[
@@ -534,7 +537,7 @@ def mkname(hwit=''):
 		{'languageID': 1033,'nameID': 1,'nameString': shen}, 
 		{'languageID': 1033,'nameID': 2,'nameString': ofn['enfml']}, 
 		{'languageID': 1033,'nameID': 3,'nameString': fbsh}, 
-		{'languageID': 1033,'nameID': 4,'nameString': shen+toitl}, 
+		{'languageID': 1033,'nameID': 4,'nameString': shen+bd+toitl}, 
 		{'languageID': 1033,'nameID': 5,'nameString': 'Version '+cfg['fontVersion']}, 
 		{'languageID': 1033,'nameID': 6,'nameString': fpsn}, 
 		{'languageID': 1033,'nameID': 9,'nameString': cfg['fontDesigner']}, 
@@ -598,7 +601,7 @@ def hwcmap():
 			print('处理', ch)
 			font['cmap'][str(ord(ch))]=hwlk[font['cmap'][str(ord(ch))]]
 		except:
-			print('ERROR: No glyph for', ch)
+			print('WARNING: No glyph for', ch)
 
 def hwgpos():
 	torm=['kern', 'palt', 'vkrn', 'vpal']
@@ -724,8 +727,9 @@ AASC=getvcmp()
 mch, pun, simp='n', '1', '1'
 AAJP=getvcmp()
 print('正在生成字体...')
+exn=inf.split('.')[-1].lower()
 for aa1 in (AA, AATC, AASC, AAJP):
-	aa1['file']=os.path.join(outd, aa1['file']+'.otf')
+	aa1['file']=os.path.join(outd, aa1['file']+'.'+exn)
 	font['cmap']=aa1['cmap']
 	font['name']=aa1['name']
 	aa1['tmp']=tempfile.mktemp('.json')
@@ -735,7 +739,7 @@ for aa1 in (AA, AATC, AASC, AAJP):
 if 'Mono' not in fpn:
 	hwgpos()
 	for aa1 in (AA, AATC, AASC, AAJP):
-		aa1['filehw']=os.path.join(outd, aa1['filehw']+'.otf')
+		aa1['filehw']=os.path.join(outd, aa1['filehw']+'.'+exn)
 		font['cmap']=aa1['cmaphw']
 		font['name']=aa1['namehw']
 		aa1['tmphw']=tempfile.mktemp('.json')
@@ -745,7 +749,7 @@ if 'Mono' not in fpn:
 else:
 	itgsub()
 	for aa1 in (AA, AATC, AASC, AAJP):
-		aa1['fileit']=os.path.join(outd, aa1['fileit']+'.otf')
+		aa1['fileit']=os.path.join(outd, aa1['fileit']+'.'+exn)
 		font['cmap']=aa1['cmapit']
 		font['name']=aa1['nameit']
 		aa1['tmpit']=tempfile.mktemp('.json')
@@ -753,7 +757,7 @@ else:
 			f.write(json.dumps(font))
 		print('=')
 	
-print('正在生成OTFs...')
+print(f'正在生成{exn.upper()}s...')
 del font
 gc.collect()
 for aa1 in (AA, AATC, AASC, AAJP):

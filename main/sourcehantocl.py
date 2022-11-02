@@ -252,7 +252,7 @@ def mkname():
 	ftcn+=locnp+hw
 	fscn+=locnp+hw
 	fpsn=(fenn+'-'+fml).replace(' ', '')
-	fbsh=cfg['fontVersion']+';'+cfg['fontID']+';'+fpsn
+	fbsh=cfg['fontVersion']+';'+cfg['fontID'].strip()+';'+fpsn
 	if 'ennzx' in ofn:
 		shen=fenn+' '+fml
 		shtcn=ftcn+' '+fml
@@ -261,12 +261,15 @@ def mkname():
 		shen=fenn
 		shtcn=ftcn
 		shscn=fscn
-		
+	bd=''
+	if ofn['enfml']=='Bold':
+		bd=' Bold'
+	
 	for lanid in (1028, 3076):
 		newname+=[
 			{'languageID': lanid,'nameID': 1,'nameString': shtcn}, 
 			{'languageID': lanid,'nameID': 2,'nameString': ofn['enfml']}, 
-			{'languageID': lanid,'nameID': 4,'nameString': shtcn}
+			{'languageID': lanid,'nameID': 4,'nameString': shtcn+bd}
 			]
 		if 'ennzx' in ofn:
 			newname+=[
@@ -276,7 +279,7 @@ def mkname():
 	newname+=[
 		{'languageID': 2052,'nameID': 1,'nameString': shscn}, 
 		{'languageID': 2052,'nameID': 2,'nameString': ofn['enfml']}, 
-		{'languageID': 2052,'nameID': 4,'nameString': shscn}
+		{'languageID': 2052,'nameID': 4,'nameString': shscn+bd}
 		]
 	if 'ennzx' in ofn:
 		newname+=[
@@ -287,7 +290,7 @@ def mkname():
 		{'languageID': 1033,'nameID': 1,'nameString': shen}, 
 		{'languageID': 1033,'nameID': 2,'nameString': ofn['enfml']}, 
 		{'languageID': 1033,'nameID': 3,'nameString': fbsh}, 
-		{'languageID': 1033,'nameID': 4,'nameString': shen}, 
+		{'languageID': 1033,'nameID': 4,'nameString': shen+bd}, 
 		{'languageID': 1033,'nameID': 5,'nameString': 'Version '+cfg['fontVersion']}, 
 		{'languageID': 1033,'nameID': 6,'nameString': fpsn}, 
 		{'languageID': 1033,'nameID': 9,'nameString': cfg['fontDesigner']}, 
