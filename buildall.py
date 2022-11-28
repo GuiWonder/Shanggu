@@ -43,6 +43,9 @@ for fod in aa:
 	copy('./LICENSE.txt', f'./fonts/{fnm}{fod}SC/')
 	copy('./LICENSE.txt', f'./fonts/{fnm}{fod}JP/')
 	copy('./LICENSE.txt', f'./fonts/{fnm}{fod}OTCs/')
+	if fod!='Mono':
+		os.makedirs(f'./fonts/{fnm}{fod}FANTI')
+		copy('./LICENSE.txt', f'./fonts/{fnm}{fod}FANTI/')
 
 tocl='python3 ./main/toclmul.py'
 tootc='python3 ./main/otf2otc.py -o'
@@ -57,10 +60,12 @@ for item in os.listdir('./src'):
 				f'./fonts/{fn1}/{fn1}TC-{fn2}', 
 				f'./fonts/{fn1}/{fn1}SC-{fn2}', 
 				f'./fonts/{fn1}/{fn1}JP-{fn2}', 
+				f'./fonts/{fn1}/{fn1}ST-{fn2}',
 				f'./fonts/{fn1}/{fn1}HW-{fn2}', 
 				f'./fonts/{fn1}/{fn1}HWTC-{fn2}', 
 				f'./fonts/{fn1}/{fn1}HWSC-{fn2}', 
-				f'./fonts/{fn1}/{fn1}HWJP-{fn2}'
+				f'./fonts/{fn1}/{fn1}HWJP-{fn2}', 
+				f'./fonts/{fn1}/{fn1}HWST-{fn2}'
 			]
 		else:
 			fn2it=fn2.replace('.', 'It.')
@@ -81,6 +86,7 @@ for fod in ('Mono', 'Sans', 'Serif'):
 	os.system(f'mv ./fonts/{fnm}{fod}/*TC* ./fonts/{fnm}{fod}TC/')
 	os.system(f'mv ./fonts/{fnm}{fod}/*SC* ./fonts/{fnm}{fod}SC/')
 	os.system(f'mv ./fonts/{fnm}{fod}/*JP* ./fonts/{fnm}{fod}JP/')
+	os.system(f'mv ./fonts/{fnm}{fod}/*ST* ./fonts/{fnm}{fod}FANTI/')
 	
 	os.system(f'7z a {fnm}{fod}OTCs.7z ./fonts/{fnm}{fod}OTCs/*')
 	otfs=[
@@ -89,23 +95,9 @@ for fod in ('Mono', 'Sans', 'Serif'):
 		f'./fonts/{fnm}{fod}SC', 
 		f'./fonts/{fnm}{fod}JP'
 		]
+	if fod !='Mono':
+		otfs.append(f'./fonts/{fnm}{fod}FANTI')
 	otff=' '.join(otfs)
 	os.system(f'7z a {fnm}{fod}OTFs.7z {otff} -mx=9 -mfb=256 -md=256m')
-
-os.system('git clone https://github.com/GuiWonder/TCFontCreator.git')
-copytree('./TCFontCreator/main/datas', './main/datas')
-rmtree('./TCFontCreator')
-gototc=('Sans', 'Serif')
-for fod in gototc:
-	os.makedirs(f'./fonts/{fnm}{fod}ST')
-	copy('./LICENSE.txt', f'./fonts/{fnm}{fod}ST/')
-
-totc='python3 ./main/converttotc.py'
-for fod in gototc:
-	for item in os.listdir(f'./fonts/{fnm}{fod}'):
-		if item.lower().split('.')[-1] in ('otf', 'ttf') and 'HW' not in item and 'It.' not in item:
-			os.system(f"{totc} ./fonts/{fnm}{fod}/{item} ./fonts/{fnm}{fod}ST/{item.replace('-', 'ST-')} st")
-	os.system(f'7z a {fnm}{fod}FANTI.7z ./fonts/{fnm}{fod}ST/*')
-rmtree('./main/datas')
 
 rmtree('./fonts')

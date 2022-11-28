@@ -100,6 +100,7 @@ def getscl(font2):
 def getfontgl(filec, cfgf):
 	ofcfg=json.load(open(cfgf, 'r', encoding = 'utf-8'))
 	fontoth = json.loads(subprocess.check_output((otfccdump, '--no-bom', filec)).decode("utf-8", "ignore"))
+	scl = getscl(fontoth)
 	if 'chars' in ofcfg:
 		getotherch(fontoth, ofcfg['chars'])
 	if 'uvs' in ofcfg:
@@ -109,7 +110,7 @@ def getfontgl(filec, cfgf):
 		for ch in spch:
 			g1=gfmloc(font['cmap'][str(ord(ch))], loczhs)
 			g2=fontoth['cmap'][str(ord(ch))]
-			cpglyf(font['glyf'][g1], fontoth['glyf'][g2], 1.0)
+			font['glyf'][g1]=cpglyf(font['glyf'][g1], fontoth['glyf'][g2], scl)
 
 def getotherch(font2, chars):
 	scl = getscl(font2)
@@ -287,6 +288,7 @@ def mkname():
 			{'languageID': 2052,'nameID': 17,'nameString': fml}
 			]
 	newname+=[
+		{'languageID': 1033,'nameID': 0,'nameString': cfg['fontCopyright']}, 
 		{'languageID': 1033,'nameID': 1,'nameString': shen}, 
 		{'languageID': 1033,'nameID': 2,'nameString': ofn['enfml']}, 
 		{'languageID': 1033,'nameID': 3,'nameString': fbsh}, 
@@ -366,14 +368,11 @@ def step1():
 
 	print('正在处理异体字信息...')
 	dv=dict()
-	uvsgly=set()
 	for k in font['cmap_uvs'].keys():
 		c, v=k.split(' ')
 		if c not in dv:
 			dv[c]=dict()
 		dv[c][v]=font['cmap_uvs'][k]
-		if rmun!='3':
-			uvsgly.add(font['cmap_uvs'][k])
 	tv=dict()
 	with open(os.path.join(pydir, 'uvs-get-jp1-MARK.txt'), 'r', encoding='utf-8') as f:
 		for line in f.readlines():
@@ -440,7 +439,7 @@ def step1():
 	usedg=set()
 	usedg.update(font['cmap'].values())
 	if rmun=='2':
-		usedg.update(uvsgly)
+		usedg.update(set(font['cmap_uvs'].values()))
 	pungl=getgname(pzhs+pzht+simpcn)
 	print('正在检查本地化替换表...')
 	for subs in loc:

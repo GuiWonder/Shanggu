@@ -1,4 +1,4 @@
-import os, json, subprocess, platform, tempfile, gc, sys
+import os, json, subprocess, platform, tempfile, gc, sys, copy
 
 pydir = os.path.abspath(os.path.dirname(__file__))
 otfccdump = os.path.join(pydir, 'otfcc/otfccdump')
@@ -100,6 +100,7 @@ def getscl(font2):
 def getfontgl(filec, cfgf):
 	ofcfg=json.load(open(cfgf, 'r', encoding = 'utf-8'))
 	fontoth = json.loads(subprocess.check_output((otfccdump, '--no-bom', filec)).decode("utf-8", "ignore"))
+	scl = getscl(fontoth)
 	if 'chars' in ofcfg:
 		getotherch(fontoth, ofcfg['chars'])
 	if 'uvs' in ofcfg:
@@ -109,7 +110,7 @@ def getfontgl(filec, cfgf):
 		for ch in spch:
 			g1=gfmloc(font['cmap'][str(ord(ch))], loczhs)
 			g2=fontoth['cmap'][str(ord(ch))]
-			cpglyf(font['glyf'][g1], fontoth['glyf'][g2], 1.0)
+			font['glyf'][g1]=cpglyf(font['glyf'][g1], fontoth['glyf'][g2], scl)
 
 def getotherch(font2, chars):
 	scl = getscl(font2)
@@ -236,14 +237,11 @@ def step1():
 
 	print('正在处理异体字信息...')
 	dv=dict()
-	uvsgly=set()
 	for k in font['cmap_uvs'].keys():
 		c, v=k.split(' ')
 		if c not in dv:
 			dv[c]=dict()
 		dv[c][v]=font['cmap_uvs'][k]
-		if rmun!='3':
-			uvsgly.add(font['cmap_uvs'][k])
 	tv=dict()
 	with open(os.path.join(pydir, 'uvs-get-jp1-MARK.txt'), 'r', encoding='utf-8') as f:
 		for line in f.readlines():
@@ -310,7 +308,7 @@ def step1():
 	usedg=set()
 	usedg.update(font['cmap'].values())
 	if rmun=='2':
-		usedg.update(uvsgly)
+		usedg.update(set(font['cmap_uvs'].values()))
 	pungl=getgname(pzhs+pzht+simpcn)
 	print('正在检查本地化替换表...')
 	for subs in loc:
@@ -534,6 +532,7 @@ def mkname(hwit=''):
 			{'languageID': 2052,'nameID': 17,'nameString': fml+toitl}
 			]
 	newname+=[
+		{'languageID': 1033,'nameID': 0,'nameString': cfg['fontCopyright']}, 
 		{'languageID': 1033,'nameID': 1,'nameString': shen}, 
 		{'languageID': 1033,'nameID': 2,'nameString': ofn['enfml']}, 
 		{'languageID': 1033,'nameID': 3,'nameString': fbsh}, 
@@ -660,6 +659,148 @@ def itgsub():
 			del font['GSUB']['lookups'][lk]
 			font['GSUB']['lookupOrder'].remove(lk)
 
+def stlookup():
+	if not 'GSUB' in font:
+		print('Creating empty GSUB!')
+		font['GSUB'] = {
+			'languages': {'hani_DFLT': {'features': []}}, 
+			'features': {}, 
+			'lookups': {}, 
+			'lookupOrder': []}
+	if not 'hani_DFLT' in font['GSUB']['languages']:
+		font['GSUB']['languages']['hani_DFLT'] = {'features': []}
+	for table in font['GSUB']['languages'].values():
+		table['features'].insert(0, 'ccmp_st')
+	font['GSUB']['features']['ccmp_st'] = ['mult', 'sigl']
+	font['GSUB']['lookupOrder']+=['sig1','sig2','sig3','sig4','mult','sigl']
+	with open(os.path.join(pydir, 'stonem.dt'),'r',encoding = 'utf-8') as f:
+		sig1=dict()
+		sig2=dict()
+		sig3=dict()
+		sig4=dict()
+		ltc=dict()
+		subtables=list()
+		for line in f.readlines():
+			if line.strip().startswith('#') or '-' not in line:
+				continue
+			sb=dict()
+			sb['match']=list()
+			ls=line.strip().split(' ')
+			s, t=ls[0].split('-')
+			dics=ls[1:]
+			sg=font['cmap'][str(ord(s))]
+			tg=font['cmap'][str(ord(t))]
+			if sg!=tg and tg not in ltc:
+				if sg not in sig1:
+					sig1[sg]=tg
+					ltc[tg]='sig1'
+				elif sg not in sig2:
+					sig2[sg]=tg
+					ltc[tg]='sig2'
+				elif sg not in sig3:
+					sig3[sg]=tg
+					ltc[tg]='sig3'
+				elif sg not in sig4:
+					sig4[sg]=tg
+					ltc[tg]='sig4'
+			chat=-1
+			for strs in dics:
+				lw=list()
+				if len(strs)==1 and strs[0]==s:
+					chat=dics.index(strs)
+				for ch in strs:
+					codch=str(ord(ch))
+					if codch in font['cmap']:
+						if font['cmap'][codch] not in lw:
+							lw.append(font['cmap'][codch])
+						else:
+							print('Skip', ch)
+				if len(lw)>0:
+					sb['match'].append(lw)
+				else:
+					break
+			if not (s and t) or chat<0:
+				raise RuntimeError(line)
+			if sg==tg:
+				sb['apply']=[]
+			else:
+				sb['apply']=[{'at':chat, 'lookup':ltc[tg]}]
+			sb['inputBegins']=chat
+			sb['inputEnds']=chat+1
+			subtables.append(sb)
+		for ss in ('sig1', 'sig2', 'sig3', 'sig4', 'sigl'):
+			font['GSUB']['lookups'][ss]=dict()
+			font['GSUB']['lookups'][ss]['type']='gsub_single'
+			font['GSUB']['lookups'][ss]['flags']=dict()
+		font['GSUB']['lookups']['sig1']['subtables']=[sig1]
+		font['GSUB']['lookups']['sig2']['subtables']=[sig2]
+		font['GSUB']['lookups']['sig3']['subtables']=[sig3]
+		font['GSUB']['lookups']['sig4']['subtables']=[sig4]
+		font['GSUB']['lookups']['mult']={
+			'type':'gsub_chaining',
+			'flags': {},
+			'subtables':subtables
+		}
+	with open(os.path.join(pydir, 'stoneo.dt'),'r',encoding = 'utf-8') as f:
+		kt = dict()
+		for line in f.readlines():
+			line = line.strip()
+			if line.startswith('#') or '-' not in line:
+				continue
+			s, t = line.strip().split(' ')[0].split('-')
+			s = s.strip()
+			t = t.strip()
+			if s and t and s!=t and str(ord(s)) in font['cmap'] and str(ord(t)) in font['cmap'] and font['cmap'][str(ord(s))]!=font['cmap'][str(ord(t))]:
+				kt[font['cmap'][str(ord(s))]]=font['cmap'][str(ord(t))]
+		font['GSUB']['lookups']['sigl']['subtables']=[kt]
+
+def ckstcmp():
+	with open(os.path.join(pydir, 'stoneo.dt'),'r',encoding = 'utf-8') as f:
+		for line in f.readlines():
+			line = line.strip()
+			if line.startswith('#') or '-' not in line:
+				continue
+			s, t = line.strip().split(' ')[0].split('-')
+			cds = s.strip()
+			cdt = t.strip()
+			if s and t and s != t and str(ord(s)) not in font['cmap'] and str(ord(t)) in font['cmap']:
+				font['cmap'][str(ord(s))]=font['cmap'][str(ord(t))]
+
+def stname():
+	tcn=cfg['fontNameTC']
+	scn=cfg['fontNameSC']
+	newn=list()
+	tc='ST'
+	zhn=' 轉繁體'
+	zhns=' 转繁体'
+	rpln=[
+		(fnn+' Sans', fnn+' Sans '+tc), 
+		(fnn+' Serif', fnn+' Serif '+tc), 
+		(fnn+' Mono', fnn+' Mono '+tc), 
+		(fnnps+'Sans', fnnps+'Sans'+tc), 
+		(fnnps+'Serif', fnnps+'Serif'+tc), 
+		(fnnps+'Mono', fnnps+'Mono'+tc), 
+		(tcn+'黑體', tcn+'黑體'+zhn), 
+		(tcn+'明體', tcn+'明體'+zhn), 
+		(tcn+'等寬', tcn+'等寬'+zhn), 
+		(scn+'黑体', scn+'黑体'+zhns), 
+		(scn+'明体', scn+'明体'+zhns), 
+		(scn+'等宽', scn+'等宽'+zhns), 
+		('ST HW', 'HW ST'), 
+		('STHW', 'HWST')
+	]
+	for nj in font['name']:
+		nn=dict(nj)
+		for rp in rpln:
+			 nn['nameString']=nn['nameString'].replace(rp[0], rp[1])
+		newn.append(nn)
+	fpsn=str()
+	for n1 in newn:
+		if n1['nameID']==6 and '-' in n1['nameString']:
+			fpsn=n1['nameString']
+			break
+	return newn, fpsn
+
 def getvcmp():
 	a1=dict()
 	font['cmap']=dict(orcmp)
@@ -726,6 +867,7 @@ mch, pun, simp='n', '2', '2'
 AASC=getvcmp()
 mch, pun, simp='n', '1', '1'
 AAJP=getvcmp()
+rmloc()
 print('正在生成字体...')
 exn=inf.split('.')[-1].lower()
 for aa1 in (AA, AATC, AASC, AAJP):
@@ -737,7 +879,31 @@ for aa1 in (AA, AATC, AASC, AAJP):
 		f.write(json.dumps(font))
 	print('=')
 if 'Mono' not in fpn:
+	orgsb=copy.deepcopy(font['GSUB'])
+	font['name']=AA['name']
+	font['cmap']=AA['cmap']
+	ckstcmp()
+	stlookup()
+	AA['namest'], AA['filest']=stname()
+	AA['filest']=os.path.join(outd, AA['filest']+'.'+exn)
+	font['name']=AA['namest']
+	AA['tmpst']=tempfile.mktemp('.json')
+	with open(AA['tmpst'], 'w', encoding='utf-8') as f:
+		f.write(json.dumps(font))
+	print('=')
 	hwgpos()
+	font['name']=AA['namehw']
+	AA['namesthw'], AA['filesthw']=stname()
+	AA['filesthw']=os.path.join(outd, AA['filesthw']+'.'+exn)
+	font['name']=AA['namesthw']
+	font['cmap']=AA['cmaphw']
+	ckstcmp()
+	AA['tmpsthw']=tempfile.mktemp('.json')
+	with open(AA['tmpsthw'], 'w', encoding='utf-8') as f:
+		f.write(json.dumps(font))
+	print('=')
+	font['GSUB']=orgsb
+	
 	for aa1 in (AA, AATC, AASC, AAJP):
 		aa1['filehw']=os.path.join(outd, aa1['filehw']+'.'+exn)
 		font['cmap']=aa1['cmaphw']
@@ -769,6 +935,12 @@ if 'Mono' not in fpn:
 		subprocess.run((otfccbuild, '--keep-modified-time', '--keep-average-char-width', '-O2', '-q', '-o', aa1['filehw'], aa1['tmphw']))
 		os.remove(aa1['tmphw'])
 		print('=')
+	subprocess.run((otfccbuild, '--keep-modified-time', '--keep-average-char-width', '-O2', '-q', '-o', AA['filest'], AA['tmpst']))
+	os.remove(AA['tmpst'])
+	print('=')
+	subprocess.run((otfccbuild, '--keep-modified-time', '--keep-average-char-width', '-O2', '-q', '-o', AA['filesthw'], AA['tmpsthw']))
+	os.remove(AA['tmpsthw'])
+	print('=')
 else:
 	for aa1 in (AA, AATC, AASC, AAJP):
 		subprocess.run((otfccbuild, '--keep-modified-time', '--keep-average-char-width', '-O2', '-q', '-o', aa1['fileit'], aa1['tmpit']))

@@ -16,7 +16,7 @@ jobs:
         python3 ./buildall.py
     - uses: actions/upload-artifact@v3
       with:
-        name: out
+        name: AdvocateAncient
         path: "*.7z"
 
     - name: Upload to release
