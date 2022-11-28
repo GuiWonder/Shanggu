@@ -1,13 +1,13 @@
 [繁體中文](https://github.com/GuiWonder/SourceHanToClassic#思源中文傳承化字體) **简体中文**
 
 # 思源中文传承化字体
-由[思源黑体](https://github.com/adobe-fonts/source-han-sans)、[思源宋体](https://github.com/adobe-fonts/source-han-serif)、[思源等宽](https://github.com/adobe-fonts/source-han-mono)日文版修改传承字形（旧字形）字体。1.004 版开始加入思源旧版（1.0x 版）字形。
+由[思源黑体](https://github.com/adobe-fonts/source-han-sans)、[思源宋体](https://github.com/adobe-fonts/source-han-serif)、[思源等宽](https://github.com/adobe-fonts/source-han-mono)日文版修改传承字形（旧字形）字体。1.004 版开始加入思源旧版（1.0x 版）字形，1.010 版开始加入[秋空󠄁黑体CL](https://github.com/ChiuMing-Neko/ChiuKongGothic)字形。
 
 ## 预览
 ![image](./pic/aa0001.png)  
 ![image](./pic/Pic0002.jpg)  
 ## 关于字体
-### 名称
+### 说明
 当前字体命名为“ **尚古 Advocate Ancient Fonts** 。
 #### 1. [多编码汉字](./main/mulcodechar.txt)（如青-靑 尚-尙 兑-兌 温-溫等）合并为旧字形
 > Advocate Ancient Sans | 尙古黑体 | 尙古黑體，<br />
@@ -24,16 +24,22 @@
 > Advocate Ancient Sans JP | 尙古黑体JP | 尙古黑體JP，<br />
 > Advocate Ancient Serif JP | 尙古明体JP | 尙古明體JP，<br />
 > Advocate Ancient Mono JP | 尙古等宽JP | 尙古等寬JP。<br />
-#### 3. 简转繁体，目前使用词汇方案
-> Advocate Ancient Sans ST | 尙古黑體 轉繁體，<br />
-> Advocate Ancient Serif ST | 尙古明體 轉繁體。<br />
+#### 3. 简转繁体
+简入繁出的字体，可根据文字内容动态匹配一简多繁的情况。
+> Advocate Ancient Sans ST | 尙古黑体 转繁体 | 尙古黑體 轉繁體，<br />
+> Advocate Ancient Serif ST | 尙古明体 转繁体 | 尙古明體 轉繁體。<br />
+
+▼ 一简多繁测试，此功能使用 OpenType 特性。<br />
+![image](./pic/FANTI1.png)  
+![image](./pic/FANTI2.png)  
 ### 格式
 目前提供 OTF 与 OTC 两种格式。
 
 ## 下载字体
 1. 可从本站 [Releases](https://github.com/GuiWonder/SourceHanToClassic/releases) 页面下载字体。
 2. 可从[腾讯微云](https://share.weiyun.com/VEoOc5xK)下载 AdvocateAncient 系列字体。
-
+## 授权
+遵循 SIL Open Font License 1.1。
 ## 使用工具生成字体
 ### 1. 运行命令
 运行命令`python sourcehantocl.py`
@@ -48,10 +54,11 @@
 
 ## 特别感谢
 * [Adobe Fonts](https://github.com/adobe-fonts) [思源黑体](https://github.com/adobe-fonts/source-han-sans) [思源宋体](https://github.com/adobe-fonts/source-han-serif) [思源等宽](https://github.com/adobe-fonts/source-han-mono)
+* [秋空󠄁黑体](https://github.com/ChiuMing-Neko/ChiuKongGothic)
 * [otfcc](https://github.com/caryll/otfcc)
 * [I.字坊](https://github.com/ichitenfont)的[傳承字形標準化文件](https://github.com/ichitenfont/inheritedglyphs)及[I.明體](https://github.com/ichitenfont/I.Ming)
 * [Open Chinese Convert](https://github.com/BYVoid/OpenCC) 
-* [《正确实现简转繁字体》](https://ayaka.shn.hk/s2tfont/)
+* [《正确实现简转繁字体》](https://ayaka.shn.hk/s2tfont/)*（旧版转繁体采用的方法）*
 * [AFDKO](https://github.com/adobe-type-tools/afdko/)
 * [Belleve Invis](https://github.com/be5invis) 的 [Source Han Sans TTF](https://github.com/be5invis/source-han-sans-ttf) 及[更纱黑体](https://github.com/be5invis/Sarasa-Gothic)
 ## 关于作者
