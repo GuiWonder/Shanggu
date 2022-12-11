@@ -30,6 +30,8 @@ for u1 in shurl:
 	os.system(f'wget -P src {u1} || exit 1')
 os.system('wget -P ./ https://github.com/Pal3love/Source-Han-TrueType/raw/main/binary/otrebuild_win.exe || exit 1')
 aa=('Mono', 'Sans', 'Serif')
+cfg=json.load(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), './main/config.json'), 'r', encoding = 'utf-8'))
+fnm=cfg['fontName'].replace(' ', '')
 for fod in aa:
 	os.makedirs(f'./fonts/{fnm}{fod}')
 	os.makedirs(f'./fonts/{fnm}{fod}TC')
@@ -44,8 +46,6 @@ for fod in aa:
 	if fod!='Mono':
 		os.makedirs(f'./fonts/{fnm}{fod}FANTI_TTFs')
 		copy('./LICENSE.txt', f'./fonts/{fnm}{fod}FANTI_TTFs/')
-cfg=json.load(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), './main/config.json'), 'r', encoding = 'utf-8'))
-fnm=cfg['fontName'].replace(' ', '')
 
 tocl='python3 ./main/sourcehantocl.py'
 os.makedirs(f'./fonts01')
