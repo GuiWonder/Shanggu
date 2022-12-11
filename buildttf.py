@@ -108,6 +108,6 @@ for fod in ('Mono', 'Sans', 'Serif'):
 	if fod !='Mono':
 		otfs.append(f'./fonts/{fnm}{fod}FANTI_TTFs')
 	otff=' '.join(otfs)
-	os.system(f'7z a {fnm}{fod}TTFs.7z {otff} -mx=9 -mfb=256 -md=256m')
+	os.system(f'7z a {fnm}{fod}TTFs.7z {otff} -mx=9 -mfb=256 -md=512')
 
 rmtree('./fonts')
