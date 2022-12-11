@@ -29,7 +29,6 @@ shurl=[
 for u1 in shurl:
 	os.system(f'wget -P src {u1} || exit 1')
 os.system('wget -P ./ https://github.com/Pal3love/Source-Han-TrueType/raw/main/binary/otrebuild_win.exe || exit 1')
-os.makedirs('./src')
 aa=('Mono', 'Sans', 'Serif')
 for fod in aa:
 	os.makedirs(f'./fonts/{fnm}{fod}')
