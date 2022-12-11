@@ -47,7 +47,7 @@ for fod in aa:
 		os.makedirs(f'./fonts/{fnm}{fod}FANTI')
 		copy('./LICENSE.txt', f'./fonts/{fnm}{fod}FANTI/')
 
-tocl='python3 ./main/toclmul.py'
+tocl='python3 ./main/sourcehantocl.py'
 tootc='python3 ./main/otf2otc.py -o'
 for item in os.listdir('./src'):
 	if item.lower().split('.')[-1] in ('otf', 'ttf'):
