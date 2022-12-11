@@ -92,12 +92,14 @@ for item in os.listdir('./fonts01'):
 			]
 		flstall=' '.join(flst)
 		os.system(f"{tootc} ./fonts/{fn1}TTCs/{fn1}-{fn2.split('.')[0]}.ttc {flstall}")
+rmtree('./fonts01')
 
 for fod in ('Mono', 'Sans', 'Serif'):
 	os.system(f'mv ./fonts/{fnm}{fod}/*TC* ./fonts/{fnm}{fod}TC/')
 	os.system(f'mv ./fonts/{fnm}{fod}/*SC* ./fonts/{fnm}{fod}SC/')
 	os.system(f'mv ./fonts/{fnm}{fod}/*JP* ./fonts/{fnm}{fod}JP/')
-	os.system(f'mv ./fonts/{fnm}{fod}/*ST* ./fonts/{fnm}{fod}FANTI_TTFs/')
+	if fod!='Mono':
+		os.system(f'mv ./fonts/{fnm}{fod}/*ST* ./fonts/{fnm}{fod}FANTI_TTFs/')
 	os.system(f'7z a {fnm}{fod}TTCs.7z ./fonts/{fnm}{fod}TTCs/*')
 	otfs=[
 		f'./fonts/{fnm}{fod}', 
@@ -108,6 +110,6 @@ for fod in ('Mono', 'Sans', 'Serif'):
 	if fod !='Mono':
 		otfs.append(f'./fonts/{fnm}{fod}FANTI_TTFs')
 	otff=' '.join(otfs)
-	os.system(f'7z a {fnm}{fod}TTFs.7z {otff} -mx=9 -mfb=256 -md=512')
+	os.system(f'7z a {fnm}{fod}TTFs.7z {otff} -mx=9 -mfb=256 -md=512m')
 
 rmtree('./fonts')

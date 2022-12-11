@@ -815,7 +815,7 @@ def savetmp(tmppath, fjson):
 		f.write(json.dumps(fjson))
 
 def savefont(fontpath, tmpfl):
-	subprocess.run((otfccbuild, '--keep-modified-time', '--keep-average-char-width', '-O2', '-q', '-o', fontpath, tmpfl))
+	subprocess.run((otfccbuild, '-s', '--keep-modified-time', '--keep-average-char-width', '-O2', '-q', '-o', fontpath, tmpfl))
 	os.remove(tmpfl)
 
 print('====Build Advocate Ancient Fonts====\n')
@@ -921,7 +921,7 @@ if not tomul:
 	sys.exit()
 setinf()
 orcmp=dict(font['cmap'])
-print('Build AA')
+print('Build Fonts')
 mch, pun, simp='y', '3', '2'
 AA=getvcmp()
 mch, pun, simp='n', '3', '1'
