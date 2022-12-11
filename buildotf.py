@@ -53,7 +53,7 @@ for item in os.listdir('./src'):
 	if item.lower().split('.')[-1] in ('otf', 'ttf'):
 		aan=item.replace('SourceHan', fnm)
 		fn1, fn2=aan.split('-')
-		os.system(f"{tocl} ./src/{item} ./fonts/{fn1}")
+		os.system(f"{tocl} ./src/{item} ./fonts/{fn1} m")
 		if 'Mono' not in item:
 			flst=[
 				f'./fonts/{fn1}/{fn1}-{fn2}', 
