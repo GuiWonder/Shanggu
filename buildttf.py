@@ -63,7 +63,7 @@ rmtree('./src')
 for item in os.listdir('./fonts01'):
 	if item.lower().split('.')[-1]=='otf':
 		ttfout=item.split('.')[0]+'.ttf'
-		os.system(f'wine ./otrebuild_win.exe --otf2ttf --UPM 2048 --removeGlyphNames --O1 -o ./fonts01/{ttfout} ./fonts01/{item}')
+		os.system(f'{otrebuild} --otf2ttf --UPM 2048 --removeGlyphNames --O1 -o ./fonts01/{ttfout} ./fonts01/{item}')
 
 tootc='python3 ./main/otf2otc.py -o'
 for item in os.listdir('./fonts01'):
