@@ -234,7 +234,7 @@ def step1():
 	for jco in jpre.keys():
 		font['cmap'][jco]=jpre[jco]
 
-	print('Processing font names...')
+	print('Getting uvs glyphs...')
 	dv=dict()
 	for k in font['cmap_uvs'].keys():
 		c, v=k.split(' ')
@@ -939,7 +939,7 @@ for aa1 in (AA, AATC, AASC, AAJP):
 	font['name']=aa1['name']
 	aa1['tmp']=tempfile.mktemp('.json')
 	savetmp(aa1['tmp'], font)
-	print('=')
+	print('Processing...')
 if 'Mono' not in fpn:
 	orgsb=copy.deepcopy(font['GSUB'])
 	font['name']=AA['name']
@@ -951,7 +951,7 @@ if 'Mono' not in fpn:
 	font['name']=AA['namest']
 	AA['tmpst']=tempfile.mktemp('.json')
 	savetmp(AA['tmpst'], font)
-	print('=')
+	print('Processing...')
 	hwgpos()
 	font['name']=AA['namehw']
 	AA['namesthw'], AA['filesthw']=stname()
@@ -961,7 +961,7 @@ if 'Mono' not in fpn:
 	ckstcmp()
 	AA['tmpsthw']=tempfile.mktemp('.json')
 	savetmp(AA['tmpsthw'], font)
-	print('=')
+	print('Processing...')
 	font['GSUB']=orgsb
 	for aa1 in (AA, AATC, AASC, AAJP):
 		aa1['filehw']=os.path.join(outd, aa1['filehw']+'.'+exn)
@@ -969,7 +969,7 @@ if 'Mono' not in fpn:
 		font['name']=aa1['namehw']
 		aa1['tmphw']=tempfile.mktemp('.json')
 		savetmp(aa1['tmphw'], font)
-		print('=')
+		print('Processing...')
 else:
 	itgsub()
 	for aa1 in (AA, AATC, AASC, AAJP):
@@ -978,23 +978,23 @@ else:
 		font['name']=aa1['nameit']
 		aa1['tmpit']=tempfile.mktemp('.json')
 		savetmp(aa1['tmpit'], font)
-		print('=')
+		print('Processing...')
 print(f'Creating {exn.upper()}s...')
 del font
 gc.collect()
 for aa1 in (AA, AATC, AASC, AAJP):
 	savefont(aa1['file'], aa1['tmp'])
-	print('=')
+	print('Processing...')
 if 'Mono' not in fpn:
 	for aa1 in (AA, AATC, AASC, AAJP):
 		savefont(aa1['filehw'], aa1['tmphw'])
-		print('=')
+		print('Processing...')
 	savefont(AA['filest'], AA['tmpst'])
-	print('=')
+	print('Processing...')
 	savefont(AA['filesthw'], AA['tmpsthw'])
-	print('=')
+	print('Processing...')
 else:
 	for aa1 in (AA, AATC, AASC, AAJP):
 		savefont(aa1['fileit'], aa1['tmpit'])
-		print('=')
+		print('Processing...')
 print('Finished!')

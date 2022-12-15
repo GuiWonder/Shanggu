@@ -26,6 +26,7 @@ jobs:
         tag: "test-ttf-01"
         artifacts: "*.7z"
         allowUpdates: true
+        prerelease: true
         draft: true
         name: "Build Test"
         body: "Advocate Ancient TTF"
