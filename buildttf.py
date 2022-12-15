@@ -1,8 +1,12 @@
-import os, json
+import os, json, platform
 from shutil import copy, rmtree
-
+otrebuild='./bin/otrebuild_win.exe'
+if platform.system() in ('Mac', 'Darwin'):
+	otrebuild='./bin/otrebuild_mac'
+if platform.system()=='Linux':
+	otrebuild='wine '+otrebuild
+##### Get files Begin
 os.system('chmod +x ./main/otfcc/*')
-
 shurl=[
 	"https://github.com/adobe-fonts/source-han-sans/raw/release/OTF/Japanese/SourceHanSans-Bold.otf",
 	"https://github.com/adobe-fonts/source-han-sans/raw/release/OTF/Japanese/SourceHanSans-ExtraLight.otf",
@@ -28,7 +32,9 @@ shurl=[
 ]
 for u1 in shurl:
 	os.system(f'wget -P src {u1} || exit 1')
-os.system('wget -P ./ https://github.com/Pal3love/Source-Han-TrueType/raw/main/binary/otrebuild_win.exe || exit 1')
+os.system('wget -P ./bin https://github.com/Pal3love/Source-Han-TrueType/raw/main/binary/otrebuild_win.exe || exit 1')
+os.system('wget -P ./bin https://github.com/Pal3love/Source-Han-TrueType/raw/main/binary/otrebuild_mac || exit 1')
+##### Get files End
 aa=('Mono', 'Sans', 'Serif')
 cfg=json.load(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), './main/config.json'), 'r', encoding = 'utf-8'))
 fnm=cfg['fontName'].replace(' ', '')
@@ -44,8 +50,8 @@ for fod in aa:
 	copy('./LICENSE.txt', f'./fonts/{fnm}{fod}JP/')
 	copy('./LICENSE.txt', f'./fonts/{fnm}{fod}TTCs/')
 	if fod!='Mono':
-		os.makedirs(f'./fonts/{fnm}{fod}FANTI_TTFs')
-		copy('./LICENSE.txt', f'./fonts/{fnm}{fod}FANTI_TTFs/')
+		os.makedirs(f'./fonts/{fnm}{fod}FANTI')
+		copy('./LICENSE.txt', f'./fonts/{fnm}{fod}FANTI/')
 
 tocl='python3 ./main/sourcehantocl.py'
 os.makedirs(f'./fonts01')
@@ -99,7 +105,7 @@ for fod in ('Mono', 'Sans', 'Serif'):
 	os.system(f'mv ./fonts/{fnm}{fod}/*SC* ./fonts/{fnm}{fod}SC/')
 	os.system(f'mv ./fonts/{fnm}{fod}/*JP* ./fonts/{fnm}{fod}JP/')
 	if fod!='Mono':
-		os.system(f'mv ./fonts/{fnm}{fod}/*ST* ./fonts/{fnm}{fod}FANTI_TTFs/')
+		os.system(f'mv ./fonts/{fnm}{fod}/*ST* ./fonts/{fnm}{fod}FANTI/')
 	os.system(f'7z a {fnm}{fod}TTCs.7z ./fonts/{fnm}{fod}TTCs/*')
 	otfs=[
 		f'./fonts/{fnm}{fod}', 
@@ -108,7 +114,7 @@ for fod in ('Mono', 'Sans', 'Serif'):
 		f'./fonts/{fnm}{fod}JP'
 		]
 	if fod !='Mono':
-		otfs.append(f'./fonts/{fnm}{fod}FANTI_TTFs')
+		otfs.append(f'./fonts/{fnm}{fod}FANTI')
 	otff=' '.join(otfs)
 	os.system(f'7z a {fnm}{fod}TTFs.7z {otff} -mx=9 -mfb=256 -md=512m')
 
