@@ -50,37 +50,22 @@ def getgname(s):
 
 def setpun(pzh, loczh):
 	pg=getgname(pzh)
-	zhp=list()
-	etb=set()
-	ztb=set()
+	rplg=dict()
 	for tb in loczh:
-		allen=0
-		for ctb in font['GSUB']['lookups'][tb]['subtables']:
-			allen+=len(ctb)
-		if allen>60:
-			ztb.add(tb)
-		else:
-			etb.add(tb)
-	for tb in ztb:
-		for subtable in font['GSUB']['lookups'][tb]['subtables']:
-			for j, t in list(subtable.items()):
-				for p1 in pzh:
-					cod=str(ord(p1))
-					if cod in font['cmap']:
-						g=font['cmap'][cod]
-						if g==j:
-							zhp.append((cod, t))
-	for tb in etb:
-		a=gettbs(tb, pg, True)
-		if len(a)>0:
-			relp=dict()
-			for itm in a:
-				if itm[0]!=itm[1]:
-					relp[itm[0]]=itm[1]
-			replg(relp)
-	for punzh in zhp:
-		print('Processing', chr(int(punzh[0])))
-		font['cmap'][punzh[0]]=punzh[1]
+		if tb in locjan:
+			continue
+		for glin in pg:
+			for subtable in font['GSUB']['lookups'][tb]['subtables']:
+				if glin in subtable:
+					rplg[glin]=subtable[glin]
+	for tb in locjan:
+		if tb not in loczh:
+			continue
+		for glin in pg:
+			for subtable in font['GSUB']['lookups'][tb]['subtables']:
+				if glin not in rplg and glin in subtable:
+					rplg[glin]=subtable[glin]
+	replg(rplg)
 
 def gfmloc(g, loczh):
 	for zhtb in loczh:
@@ -882,6 +867,7 @@ for n1 in font['name']:
 		break
 print('Getting the localized lookups table...')
 loc=set()
+locjan=set()
 lockor=set()
 loczhs=set()
 loczht=set()
@@ -890,7 +876,9 @@ for lang in font['GSUB']['languages'].keys():
 	for fs in font['GSUB']['languages'][lang]['features']:
 		if fs.split('_')[0]=='locl':
 			loc.update(set(font['GSUB']['features'][fs]))
-			if lang.split('_')[-1].strip()=='KOR':
+			if lang.split('_')[-1].strip()=='JAN':
+				locjan.update(set(font['GSUB']['features'][fs]))
+			elif lang.split('_')[-1].strip()=='KOR':
 				lockor.update(set(font['GSUB']['features'][fs]))
 			elif lang.split('_')[-1].strip()=='ZHS':
 				loczhs.update(set(font['GSUB']['features'][fs]))
@@ -932,7 +920,7 @@ mch, pun, simp='n', '1', '1'
 AAJP=getvcmp()
 rmloc()
 exn=inf.split('.')[-1].lower()
-print(f'Generating {exn.upper()}...')
+print('Generating fonts...')
 for aa1 in (AA, AATC, AASC, AAJP):
 	aa1['file']=os.path.join(outd, aa1['file']+'.'+exn)
 	font['cmap']=aa1['cmap']
