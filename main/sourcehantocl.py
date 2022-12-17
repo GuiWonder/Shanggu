@@ -471,7 +471,10 @@ def mkname(hwit=''):
 		ojpn=ofn['jpn']
 		fml=ofn['enfml']
 	if isit:
-		ofn['enfml']=toitl.strip()
+		if 'Bold' in ofn['enfml']:
+			ofn['enfml']='Bold Italic'
+		else:
+			ofn['enfml']='Italic'
 	fenn=oenn.replace('Source Han', fnn)
 	ftcn=ojpn.replace('源ノ角ゴシック', tcn[0]).replace('源ノ明朝', tcn[1]).replace('源ノ等幅', tcn[2])
 	fscn=ojpn.replace('源ノ角ゴシック', scn[0]).replace('源ノ明朝', scn[1]).replace('源ノ等幅', scn[2])
@@ -489,7 +492,7 @@ def mkname(hwit=''):
 		shtcn=ftcn
 		shscn=fscn
 	bd=''
-	if ofn['enfml']=='Bold':
+	if 'Bold' in ofn['enfml']:
 		bd=' Bold'
 	
 	for lanid in (1028, 3076):
