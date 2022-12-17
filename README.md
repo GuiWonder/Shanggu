@@ -36,7 +36,7 @@
 原版格式。
 #### 2. TrueType 格式(TTF/TTC)
 基於 [Source-Han-TrueType](https://github.com/Pal3love/Source-Han-TrueType) 無損轉換，兼容性更好。
-#### 3. TrueType hented (TTF/TTC)
+#### 3. TrueType hinted (TTF/TTC)
 基於 [Source Han Sans TTF](https://github.com/be5invis/source-han-sans-ttf) 可實現 Windows 下低解析度小字清晰，建議僅在 Windows 下使用。
 
 ## 下載字型
