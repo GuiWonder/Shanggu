@@ -171,15 +171,8 @@ def step1():
 		if str(ord(chs[1])) in font['cmap']:
 			jpre[str(ord(chs[0]))]=font['cmap'][str(ord(chs[1]))]
 	shset=json.load(open(os.path.join(pydir, 'sourcehan.json'), 'r', encoding='utf-8'))
-	krch=shset['krgl']
-	tcch=shset['tcgl']
-	hcch=shset['hcgl']
-	scch=shset['scgl']
+	krch, tcch, hcch, scch=shset['krgl'], shset['tcgl'], shset['hcgl'], shset['scgl']
 	tbs=set()
-	#for krtb in lockor:
-	#	a=gettbs(krtb, xkrchg, False)
-	#	if len(a)>200:
-	#		tbs.update(a)
 	if len(krch)>0:
 		krchg=getgname(krch)
 		for zhktb in lockor:
@@ -584,7 +577,7 @@ def hwcmap():
 			print('Processing', ch)
 			font['cmap'][str(ord(ch))]=hwlk[font['cmap'][str(ord(ch))]]
 		except:
-			print('WARNING: No glyph for', ch)
+			print('WARNING: No HW glyph for', ch)
 
 def hwgpos():
 	torm=['kern', 'palt', 'vkrn', 'vpal']
@@ -623,7 +616,7 @@ def itcmap():
 		try:
 			font['cmap'][str(ord(ch))]=itlk[font['cmap'][str(ord(ch))]]
 		except:
-			print('WARNING: No glyph for', ch)
+			print('WARNING: No It glyph for', ch)
 	for uv in font['cmap_uvs']:
 		if font['cmap_uvs'][uv] in itlk:
 			font['cmap_uvs'][uv]=itlk[font['cmap_uvs'][uv]]
@@ -699,7 +692,7 @@ def stlookup():
 				if len(lw)>0:
 					sb['match'].append(lw)
 				else:
-					break
+					raise RuntimeError(line)
 			if not (s and t) or chat<0:
 				raise RuntimeError(line)
 			if sg==tg:
@@ -729,8 +722,7 @@ def stlookup():
 			if '-' not in litm:
 				continue
 			s, t=litm.split(' ')[0].split('-')
-			s=s.strip()
-			t=t.strip()
+			s, t=s.strip(), t.strip()
 			if s and t and s!=t and str(ord(s)) in font['cmap'] and str(ord(t)) in font['cmap'] and font['cmap'][str(ord(s))]!=font['cmap'][str(ord(t))]:
 				kt[font['cmap'][str(ord(s))]]=font['cmap'][str(ord(t))]
 		font['GSUB']['lookups']['sigl']['subtables']=[kt]
@@ -742,8 +734,7 @@ def ckstcmp():
 			if '-' not in litm:
 				continue
 			s, t=litm.split(' ')[0].split('-')
-			s=s.strip()
-			t=t.strip()
+			s, t=s.strip(), t.strip()
 			if s and t and s!=t and str(ord(s)) not in font['cmap'] and str(ord(t)) in font['cmap']:
 				font['cmap'][str(ord(s))]=font['cmap'][str(ord(t))]
 
@@ -784,18 +775,18 @@ def stname():
 
 def getvcmp():
 	a1=dict()
-	font['cmap']=dict(orcmp)
+	font['cmap']=copy.deepcopy(orcmp)
 	a1['name'], a1['file']=mkname()
 	mkcmap()
-	a1['cmap']=dict(font['cmap'])
+	a1['cmap']=copy.deepcopy(font['cmap'])
 	if 'Mono' not in fpn:
 		a1['namehw'], a1['filehw']=mkname('hw')
 		hwcmap()
-		a1['cmaphw']=dict(font['cmap'])
+		a1['cmaphw']=copy.deepcopy(font['cmap'])
 	else:
 		a1['nameit'], a1['fileit']=mkname('it')
 		itcmap()
-		a1['cmapit']=dict(font['cmap'])
+		a1['cmapit']=copy.deepcopy(font['cmap'])
 	return a1
 
 def savetmp(tmppath, fjson):
@@ -869,12 +860,7 @@ for n1 in font['name']:
 		fpn=n1['nameString']
 		break
 print('Getting the localized lookups table...')
-loc=set()
-locjan=set()
-lockor=set()
-loczhs=set()
-loczht=set()
-loczhhk=set()
+loc, locjan, lockor, loczhs, loczht, loczhhk=(set() for i in range(6))
 for lang in font['GSUB']['languages'].keys():
 	for fs in font['GSUB']['languages'][lang]['features']:
 		if fs.split('_')[0]=='locl':
@@ -911,7 +897,7 @@ if not tomul:
 	print('Finished!')
 	sys.exit()
 setinf()
-orcmp=dict(font['cmap'])
+orcmp=copy.deepcopy(font['cmap'])
 print('Build Fonts')
 mch, pun, simp='y', '3', '2'
 AA=getvcmp()
@@ -926,7 +912,7 @@ exn=inf.split('.')[-1].lower()
 print('Generating fonts...')
 for aa1 in (AA, AATC, AASC, AAJP):
 	aa1['file']=os.path.join(outd, aa1['file']+'.'+exn)
-	font['cmap']=aa1['cmap']
+	font['cmap']=copy.deepcopy(aa1['cmap'])
 	font['name']=aa1['name']
 	aa1['tmp']=tempfile.mktemp('.json')
 	savetmp(aa1['tmp'], font)
@@ -934,7 +920,7 @@ for aa1 in (AA, AATC, AASC, AAJP):
 if 'Mono' not in fpn:
 	orgsb=copy.deepcopy(font['GSUB'])
 	font['name']=AA['name']
-	font['cmap']=AA['cmap']
+	font['cmap']=copy.deepcopy(AA['cmap'])
 	ckstcmp()
 	stlookup()
 	AA['namest'], AA['filest']=stname()
@@ -948,15 +934,15 @@ if 'Mono' not in fpn:
 	AA['namesthw'], AA['filesthw']=stname()
 	AA['filesthw']=os.path.join(outd, AA['filesthw']+'.'+exn)
 	font['name']=AA['namesthw']
-	font['cmap']=AA['cmaphw']
+	font['cmap']=copy.deepcopy(AA['cmaphw'])
 	ckstcmp()
 	AA['tmpsthw']=tempfile.mktemp('.json')
 	savetmp(AA['tmpsthw'], font)
 	print('Processing...')
-	font['GSUB']=orgsb
+	font['GSUB']=copy.deepcopy(orgsb)
 	for aa1 in (AA, AATC, AASC, AAJP):
 		aa1['filehw']=os.path.join(outd, aa1['filehw']+'.'+exn)
-		font['cmap']=aa1['cmaphw']
+		font['cmap']=copy.deepcopy(aa1['cmaphw'])
 		font['name']=aa1['namehw']
 		aa1['tmphw']=tempfile.mktemp('.json')
 		savetmp(aa1['tmphw'], font)
@@ -965,7 +951,7 @@ else:
 	itgsub()
 	for aa1 in (AA, AATC, AASC, AAJP):
 		aa1['fileit']=os.path.join(outd, aa1['fileit']+'.'+exn)
-		font['cmap']=aa1['cmapit']
+		font['cmap']=copy.deepcopy(aa1['cmapit'])
 		font['name']=aa1['nameit']
 		aa1['tmpit']=tempfile.mktemp('.json')
 		savetmp(aa1['tmpit'], font)
