@@ -2,7 +2,32 @@ name: Build vf
 
 on:
   workflow_dispatch:
+  #push:
+    #branches: [ "main" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install afdko
+      run: pip3 install afdko
+    - name: Begin
+      run: python3 ./buildvf.py
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: AdvocateAncientVFs
+        path: "*.7z"
+
+    - name: Upload to release
+      uses: ncipollo/release-action@v1
+      with:
+        token: "${{ secrets.GITHUB_TOKEN }}"
+        tag: "test-vf-01"
+        artifacts: "*.7z"
+        allowUpdates: true
+        prerelease: true
+        draft: true
+        name: "Build Test"
+        body: "Advocate Ancient VF"
