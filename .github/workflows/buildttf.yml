@@ -10,10 +10,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    - name: Install afdko
+      run: pip3 install afdko
+    - name: Install wine
+      run: sudo apt update && sudo apt install wine
     - name: Begin
-      run: |
-        sudo apt install wine
-        python3 ./buildttf.py
+      run: python3 ./buildttf.py
+
     - uses: actions/upload-artifact@v3
       with:
         name: AdvocateAncientTTFs

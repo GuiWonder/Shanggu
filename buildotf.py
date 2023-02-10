@@ -1,6 +1,10 @@
-import os, json
-from shutil import copy, copytree, rmtree
+import os, json, threading
+from shutil import copy, rmtree
 
+os.makedirs('./tmp')
+os.makedirs('./src')
+os.makedirs('./main/sourcehan10')
+os.makedirs('./main/ChiuKongGothic-CL')
 shurl=[
 	"https://github.com/adobe-fonts/source-han-sans/raw/release/OTF/Japanese/SourceHanSans-Bold.otf",
 	"https://github.com/adobe-fonts/source-han-sans/raw/release/OTF/Japanese/SourceHanSans-ExtraLight.otf",
@@ -24,12 +28,31 @@ shurl=[
 	"https://github.com/adobe-fonts/source-han-mono/raw/master/Normal/OTC/SourceHanMono-Normal.otf",
 	"https://github.com/adobe-fonts/source-han-mono/raw/master/Regular/OTC/SourceHanMono-Regular.otf"
 ]
-os.makedirs('./src')
+shurl10=[
+	"https://github.com/adobe-fonts/source-han-sans/raw/1.004R/OTF/Japanese/SourceHanSans-Bold.otf",
+	"https://github.com/adobe-fonts/source-han-sans/raw/1.004R/OTF/Japanese/SourceHanSans-ExtraLight.otf",
+	"https://github.com/adobe-fonts/source-han-sans/raw/1.004R/OTF/Japanese/SourceHanSans-Heavy.otf",
+	"https://github.com/adobe-fonts/source-han-sans/raw/1.004R/OTF/Japanese/SourceHanSans-Light.otf",
+	"https://github.com/adobe-fonts/source-han-sans/raw/1.004R/OTF/Japanese/SourceHanSans-Medium.otf",
+	"https://github.com/adobe-fonts/source-han-sans/raw/1.004R/OTF/Japanese/SourceHanSans-Normal.otf",
+	"https://github.com/adobe-fonts/source-han-sans/raw/1.004R/OTF/Japanese/SourceHanSans-Regular.otf",
+	"https://github.com/adobe-fonts/source-han-serif/raw/1.001R/OTF/Japanese/SourceHanSerif-Bold.otf",
+	"https://github.com/adobe-fonts/source-han-serif/raw/1.001R/OTF/Japanese/SourceHanSerif-ExtraLight.otf",
+	"https://github.com/adobe-fonts/source-han-serif/raw/1.001R/OTF/Japanese/SourceHanSerif-Heavy.otf",
+	"https://github.com/adobe-fonts/source-han-serif/raw/1.001R/OTF/Japanese/SourceHanSerif-Light.otf",
+	"https://github.com/adobe-fonts/source-han-serif/raw/1.001R/OTF/Japanese/SourceHanSerif-Medium.otf",
+	"https://github.com/adobe-fonts/source-han-serif/raw/1.001R/OTF/Japanese/SourceHanSerif-Regular.otf",
+	"https://github.com/adobe-fonts/source-han-serif/raw/1.001R/OTF/Japanese/SourceHanSerif-SemiBold.otf"
+]
+ckgurl='https://github.com/ChiuMing-Neko/ChiuKongGothic/releases/download/v.1.300/ChiuKongGothic-CL.zip'
 for u1 in shurl:
-	os.system(f'wget -P src {u1} || exit 1')
+	os.system(f'wget -P src {u1}')
+for u1 in shurl10:
+	os.system(f'wget -P ./main/sourcehan10 {u1}')
+os.system(f'wget -P tmp https://github.com/ChiuMing-Neko/ChiuKongGothic/releases/download/v.1.300/ChiuKongGothic-CL.zip')
+os.system('7z e ./tmp/ChiuKongGothic-CL.zip -o./main/ChiuKongGothic-CL -aoa')
 
-os.system('chmod +x ./main/otfcc/*') 
-cfg=json.load(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), './main/config.json'), 'r', encoding = 'utf-8'))
+cfg=json.load(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), './main/configs/config.json'), 'r', encoding = 'utf-8'))
 fnm=cfg['fontName'].replace(' ', '')
 aa=('Mono', 'Sans', 'Serif')
 for fod in aa:
@@ -47,13 +70,31 @@ for fod in aa:
 		os.makedirs(f'./fonts/{fnm}{fod}FANTI')
 		copy('./LICENSE.txt', f'./fonts/{fnm}{fod}FANTI/')
 
-tocl='python3 ./main/sourcehantocl.py'
-tootc='python3 ./main/otf2otc.py -o'
-for item in os.listdir('./src'):
+step01='python3 ./main/step01.py'
+step02='python3 ./main/step02.py'
+tootc='otf2otc -o'
+
+os.makedirs('./tmp/tmp01')
+def tosp1(stl):
+	for item in os.listdir('./src'):
+		if stl in item and item.lower().split('.')[-1] in ('otf', 'ttf'):
+			os.system(f"{step01} ./src/{item} ./tmp/tmp01/{item}")
+
+thsans=threading.Thread(target=tosp1, args=('Sans', ))
+thserif=threading.Thread(target=tosp1, args=('Serif', ))
+thmono=threading.Thread(target=tosp1, args=('Mono', ))
+thsans.start()
+thserif.start()
+thmono.start()
+thsans.join()
+thserif.join()
+thmono.join()
+
+for item in os.listdir('./tmp/tmp01'):
 	if item.lower().split('.')[-1] in ('otf', 'ttf'):
 		aan=item.replace('SourceHan', fnm)
 		fn1, fn2=aan.split('-')
-		os.system(f"{tocl} ./src/{item} ./fonts/{fn1} m")
+		os.system(f"{step02} ./tmp/tmp01/{item} ./fonts/{fn1}")
 		if 'Mono' not in item:
 			flst=[
 				f'./fonts/{fn1}/{fn1}-{fn2}', 
@@ -102,3 +143,4 @@ for fod in ('Mono', 'Sans', 'Serif'):
 	os.system(f'7z a {fnm}{fod}OTFs.7z {otff} -mx=9 -mfb=256 -md=512m')
 
 rmtree('./fonts')
+rmtree('./tmp')

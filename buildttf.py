@@ -1,12 +1,16 @@
-import os, json, platform
+import os, json, platform, threading
 from shutil import copy, rmtree
+
 otrebuild='./bin/otrebuild_win.exe'
 if platform.system() in ('Mac', 'Darwin'):
 	otrebuild='./bin/otrebuild_mac'
 if platform.system()=='Linux':
 	otrebuild='wine '+otrebuild
-##### Get files Begin
-os.system('chmod +x ./main/otfcc/*')
+
+os.makedirs('./tmp')
+os.makedirs('./src')
+os.makedirs('./main/sourcehan10')
+os.makedirs('./main/ChiuKongGothic-CL')
 shurl=[
 	"https://github.com/adobe-fonts/source-han-sans/raw/release/OTF/Japanese/SourceHanSans-Bold.otf",
 	"https://github.com/adobe-fonts/source-han-sans/raw/release/OTF/Japanese/SourceHanSans-ExtraLight.otf",
@@ -30,14 +34,36 @@ shurl=[
 	"https://github.com/adobe-fonts/source-han-mono/raw/master/Normal/OTC/SourceHanMono-Normal.otf",
 	"https://github.com/adobe-fonts/source-han-mono/raw/master/Regular/OTC/SourceHanMono-Regular.otf"
 ]
+shurl10=[
+	"https://github.com/adobe-fonts/source-han-sans/raw/1.004R/OTF/Japanese/SourceHanSans-Bold.otf",
+	"https://github.com/adobe-fonts/source-han-sans/raw/1.004R/OTF/Japanese/SourceHanSans-ExtraLight.otf",
+	"https://github.com/adobe-fonts/source-han-sans/raw/1.004R/OTF/Japanese/SourceHanSans-Heavy.otf",
+	"https://github.com/adobe-fonts/source-han-sans/raw/1.004R/OTF/Japanese/SourceHanSans-Light.otf",
+	"https://github.com/adobe-fonts/source-han-sans/raw/1.004R/OTF/Japanese/SourceHanSans-Medium.otf",
+	"https://github.com/adobe-fonts/source-han-sans/raw/1.004R/OTF/Japanese/SourceHanSans-Normal.otf",
+	"https://github.com/adobe-fonts/source-han-sans/raw/1.004R/OTF/Japanese/SourceHanSans-Regular.otf",
+	"https://github.com/adobe-fonts/source-han-serif/raw/1.001R/OTF/Japanese/SourceHanSerif-Bold.otf",
+	"https://github.com/adobe-fonts/source-han-serif/raw/1.001R/OTF/Japanese/SourceHanSerif-ExtraLight.otf",
+	"https://github.com/adobe-fonts/source-han-serif/raw/1.001R/OTF/Japanese/SourceHanSerif-Heavy.otf",
+	"https://github.com/adobe-fonts/source-han-serif/raw/1.001R/OTF/Japanese/SourceHanSerif-Light.otf",
+	"https://github.com/adobe-fonts/source-han-serif/raw/1.001R/OTF/Japanese/SourceHanSerif-Medium.otf",
+	"https://github.com/adobe-fonts/source-han-serif/raw/1.001R/OTF/Japanese/SourceHanSerif-Regular.otf",
+	"https://github.com/adobe-fonts/source-han-serif/raw/1.001R/OTF/Japanese/SourceHanSerif-SemiBold.otf"
+]
+ckgurl='https://github.com/ChiuMing-Neko/ChiuKongGothic/releases/download/v.1.300/ChiuKongGothic-CL.zip'
 for u1 in shurl:
-	os.system(f'wget -P src {u1} || exit 1')
-os.system('wget -P ./bin https://github.com/Pal3love/Source-Han-TrueType/raw/main/binary/otrebuild_win.exe || exit 1')
-os.system('wget -P ./bin https://github.com/Pal3love/Source-Han-TrueType/raw/main/binary/otrebuild_mac || exit 1')
-##### Get files End
-aa=('Mono', 'Sans', 'Serif')
-cfg=json.load(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), './main/config.json'), 'r', encoding = 'utf-8'))
+	os.system(f'wget -P src {u1}')
+for u1 in shurl10:
+	os.system(f'wget -P ./main/sourcehan10 {u1}')
+os.system(f'wget -P tmp https://github.com/ChiuMing-Neko/ChiuKongGothic/releases/download/v.1.300/ChiuKongGothic-CL.zip')
+os.system('7z e ./tmp/ChiuKongGothic-CL.zip -o./main/ChiuKongGothic-CL -aoa')
+
+os.system('wget -P ./bin https://github.com/Pal3love/Source-Han-TrueType/raw/main/binary/otrebuild_win.exe')
+os.system('wget -P ./bin https://github.com/Pal3love/Source-Han-TrueType/raw/main/binary/otrebuild_mac')
+
+cfg=json.load(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), './main/configs/config.json'), 'r', encoding = 'utf-8'))
 fnm=cfg['fontName'].replace(' ', '')
+aa=('Mono', 'Sans', 'Serif')
 for fod in aa:
 	os.makedirs(f'./fonts/{fnm}{fod}')
 	os.makedirs(f'./fonts/{fnm}{fod}TC')
@@ -53,24 +79,47 @@ for fod in aa:
 		os.makedirs(f'./fonts/{fnm}{fod}FANTI')
 		copy('./LICENSE.txt', f'./fonts/{fnm}{fod}FANTI/')
 
-tocl='python3 ./main/sourcehantocl.py'
-os.makedirs(f'./fonts01')
-for item in os.listdir('./src'):
-	if item.lower().split('.')[-1]=='otf':
-		os.system(f"{tocl} ./src/{item} ./fonts01/{item} s2")
-rmtree('./src')
+step01='python3 ./main/step01.py'
+step02='python3 ./main/step02.py'
+tootc='otf2otc -o'
+os.makedirs('./tmp/tmp01')
 
-for item in os.listdir('./fonts01'):
-	if item.lower().split('.')[-1]=='otf':
-		ttfout=item.split('.')[0]+'.ttf'
-		os.system(f'{otrebuild} --otf2ttf --UPM 2048 --removeGlyphNames --O1 -o ./fonts01/{ttfout} ./fonts01/{item}')
+def tosp1(stl):
+	for item in os.listdir('./src'):
+		if stl in item and item.lower().split('.')[-1]=='otf':
+			os.system(f"{step01} ./src/{item} ./tmp/tmp01/{item}")
 
-tootc='python3 ./main/otf2otc.py -o'
-for item in os.listdir('./fonts01'):
+th1sans=threading.Thread(target=tosp1, args=('Sans', ))
+th1serif=threading.Thread(target=tosp1, args=('Serif', ))
+th1mono=threading.Thread(target=tosp1, args=('Mono', ))
+th1sans.start()
+th1serif.start()
+th1mono.start()
+th1sans.join()
+th1serif.join()
+th1mono.join()
+
+def tottf(stl):
+	for item in os.listdir('./tmp/tmp01'):
+		if stl in item and item.lower().split('.')[-1]=='otf':
+			ttfout=item.split('.')[0]+'.ttf'
+			os.system(f'{otrebuild} --otf2ttf --UPM 2048 --removeGlyphNames --O1 -o ./tmp/tmp01/{ttfout} ./tmp/tmp01/{item}')
+
+thsans=threading.Thread(target=tottf, args=('Sans', ))
+thserif=threading.Thread(target=tottf, args=('Serif', ))
+thmono=threading.Thread(target=tottf, args=('Mono', ))
+thsans.start()
+thserif.start()
+thmono.start()
+thsans.join()
+thserif.join()
+thmono.join()
+
+for item in os.listdir('./tmp/tmp01'):
 	if item.lower().split('.')[-1]=='ttf':
 		aan=item.replace('SourceHan', fnm)
 		fn1, fn2=aan.split('-')
-		os.system(f"{tocl} ./fonts01/{item} ./fonts/{fn1} m 2")
+		os.system(f"{step02} ./tmp/tmp01/{item} ./fonts/{fn1}")
 		if 'Mono' not in item:
 			flst=[
 				f'./fonts/{fn1}/{fn1}-{fn2}', 
@@ -98,7 +147,7 @@ for item in os.listdir('./fonts01'):
 			]
 		flstall=' '.join(flst)
 		os.system(f"{tootc} ./fonts/{fn1}TTCs/{fn1}-{fn2.split('.')[0]}.ttc {flstall}")
-rmtree('./fonts01')
+rmtree('./src')
 
 for fod in ('Mono', 'Sans', 'Serif'):
 	os.system(f'mv ./fonts/{fnm}{fod}/*TC* ./fonts/{fnm}{fod}TC/')
@@ -119,3 +168,4 @@ for fod in ('Mono', 'Sans', 'Serif'):
 	os.system(f'7z a {fnm}{fod}TTFs.7z {otff} -mx=9 -mfb=256 -md=512m')
 
 rmtree('./fonts')
+rmtree('./tmp')
