@@ -102,6 +102,10 @@ def uvstab():
 						uvsdc[cg[0]][vsl]=cg[1]
 						allgls.add(cg[1])
 				table.uvsDict[vsl]=newl
+			glgcn=glfrloc(cmap[ord('关')], lkzhs)
+			if (ord('关'), glgcn) not in table.uvsDict[int('E0101', 16)]:
+				table.uvsDict[int('E0101', 16)].append((ord('关'), glgcn))
+				allgls.add(glgcn)
 	return uvsdc, allgls
 def ftuvstab():
 	cmap=font.getBestCmap()
@@ -347,6 +351,10 @@ def subgl():
 							stbl.ligatures[li].remove(lg)
 					if len(stbl.ligatures[li])<1:
 						del stbl.ligatures[li]
+			elif lktp==5:
+				if hasattr(stbl, 'Coverage'):
+					for tb in stbl.Coverage:
+						usedg.update(tb.glyphs)
 			elif lktp==6:
 				for tb in stbl.BacktrackCoverage:
 					usedg.update(tb.glyphs)
@@ -399,6 +407,39 @@ def subgl():
 	elif 'glyf' in font:
 		font['glyf'].glyphs={g:font['glyf'].glyphs[g] for g in set(nnnd)}
 	font.setGlyphOrder(nnnd)
+def ckcngg():
+	cmap=font.getBestCmap()
+	for table in font["cmap"].tables:
+		if table.format==14:
+			cdg=ord('关')
+			if int('E0102', 16) in table.uvsDict and (cdg, None) in table.uvsDict[int('E0102', 16)]:
+				return
+			for uv in table.uvsDict[int('E0101', 16)]:
+				if uv[0]==cdg:
+					cngg=uv[1]
+					break
+			if not cngg: return
+			table.uvsDict[int('E0100', 16)]=[uv for uv in table.uvsDict[int('E0100', 16)] if uv[0]!=cdg]
+			table.uvsDict[int('E0101', 16)]=[uv for uv in table.uvsDict[int('E0101', 16)] if uv[0]!=cdg]
+			table.uvsDict[int('E0100', 16)].append((cdg, cmap[cdg]))
+			table.uvsDict[int('E0101', 16)].append((cdg, None))
+			print('Remaping', '关')
+			setcg(cdg, cngg)
+def sctcg():
+	cmap=font.getBestCmap()
+	nwlc=dict()
+	glh=cmap[ord('画')]
+	nwlc[glh]=glfrloc(glh, lkzht)
+	if not nwlc[glh]: return
+	for lki in lkzhs:
+		for st in font["GSUB"].table.LookupList.Lookup[lki].SubTable:
+			if st.LookupType==7 and st.ExtSubTable.LookupType==1:
+				tabl=st.ExtSubTable.mapping
+			elif st.LookupType==1:
+				tabl=st.mapping
+			for gl in nwlc.keys():
+				if gl in tabl:
+					tabl[gl]=nwlc[gl]
 
 print('*'*50)
 print('====Build Advocate Ancient Fonts====\n')
@@ -438,10 +479,12 @@ uvsvar()
 ftuvstab()
 print('Processing radicals...')
 radicv()
+sctcg()
 print('Getting glyphs from other fonts...')
 cksh10()
 if ssty=='Sans':
 	ckckg()
+ckcngg()
 print('Checking for unused glyphs...')
 subgl()
 print('Saving font...')

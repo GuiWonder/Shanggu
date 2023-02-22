@@ -167,8 +167,7 @@ def rmlk(tbnm, i):
 	if tbnm=='GSUB':
 		for lkp in font[tbnm].table.LookupList.Lookup:
 			for st in lkp.SubTable:
-				if st.LookupType==6:
-					if not hasattr(st, 'SubstLookupRecord'): continue
+				if st.LookupType in (5, 6) and hasattr(st, 'SubstLookupRecord'):
 					for sbrcd in st.SubstLookupRecord:
 						if sbrcd.LookupListIndex>i:
 							sbrcd.LookupListIndex-=1
@@ -227,8 +226,12 @@ def mkcmp():
 	cmap=font.getBestCmap()
 	if pun=='2':
 		setpun(pzhs, lkzhs)
+		dfltvt('ZHS')
 	elif pun=='3':
 		setpun(pzht, lkzht)
+		dfltvt('ZHT')
+	else:
+		dfltvt('JAN')
 	if simp=='2':
 		repsp=dict()
 		simpg=glfrtxt(simpcn)
@@ -257,8 +260,7 @@ def hwcmp():
 			hwlk.update(ki.Feature.LookupListIndex)
 	for i in hwlk:
 		for st in font["GSUB"].table.LookupList.Lookup[i].SubTable:
-			if st.LookupType!=1:
-				raise
+			assert st.LookupType==1
 			tabl=st.mapping
 			for ch in hw:
 				gl=cmap[ord(ch)]
@@ -297,8 +299,7 @@ def itcmp():
 	itft.sort(reverse=True)
 	for i in itlk:
 		for st in font["GSUB"].table.LookupList.Lookup[i].SubTable:
-			if st.LookupType!=1:
-				raise
+			assert st.LookupType==1
 			tabl=st.mapping
 			glyrepl(tabl)
 	for i in itft:
@@ -363,8 +364,7 @@ def stlks():
 		ltc=dict()
 		for line in f.readlines():
 			litm=line.split('#')[0].strip()
-			if '-' not in litm:
-				continue
+			if '-' not in litm: continue
 			sb=dict()
 			ls=litm.strip().split(' ')
 			s, t=ls[0].split('-')
@@ -421,8 +421,7 @@ def stlks():
 	with open(os.path.join(pydir, 'configs/stoneo.dt'),'r',encoding='utf-8') as f:
 		for line in f.readlines():
 			litm=line.split('#')[0].strip()
-			if '-' not in litm:
-				continue
+			if '-' not in litm: continue
 			s, t=litm.split(' ')[0].split('-')
 			s, t=s.strip(), t.strip()
 			if s and t and s!=t and ord(s) in cmap and ord(t) in cmap and cmap[ord(s)]!=cmap[ord(t)]:
@@ -430,8 +429,7 @@ def stlks():
 	sgsb.mapping=sgtb
 	for lkp in font["GSUB"].table.LookupList.Lookup:
 		for st in lkp.SubTable:
-			if st.LookupType==6:
-				if not hasattr(st, 'SubstLookupRecord'): continue
+			if st.LookupType in (5, 6) and hasattr(st, 'SubstLookupRecord'):
 				for sbrcd in st.SubstLookupRecord:
 					sbrcd.LookupListIndex+=len(stlkups)
 	for ft in font["GSUB"].table.FeatureList.FeatureRecord:
@@ -453,8 +451,7 @@ def stcmp():
 	with open(os.path.join(pydir, 'configs/stoneo.dt'),'r',encoding='utf-8') as f:
 		for line in f.readlines():
 			litm=line.split('#')[0].strip()
-			if '-' not in litm:
-				continue
+			if '-' not in litm: continue
 			s, t=litm.split(' ')[0].split('-')
 			s, t=s.strip(), t.strip()
 			if s and t and s!=t and ord(s) not in cmap and ord(t) in cmap:
@@ -552,8 +549,7 @@ def svfonts():
 def vfname(hw=''):
 	ishw='hw'in hw.lower()
 	hwm=str()
-	if ishw:
-		hwm=' HW'
+	if ishw: hwm=' HW'
 	locn=str()
 	if mch=='n' and pun=='2'and simp=='2':
 		locn=' SC'
@@ -628,13 +624,32 @@ def mkname(ithw=''):
 		return vfname(ithw)
 	else:
 		return nfname(ithw)
+def dfltvt(lng):
+	for posub in ('GSUB', 'GPOS'):
+		vtzh=list()
+		for sr in font[posub].table.ScriptList.ScriptRecord:
+			for lsr in sr.Script.LangSysRecord:
+				if lsr.LangSysTag.strip()==lng:
+					for ki in lsr.LangSys.FeatureIndex:
+						if vtzh: break
+						if font[posub].table.FeatureList.FeatureRecord[ki].FeatureTag=='vert':
+							vtzh=font[posub].table.FeatureList.FeatureRecord[ki].Feature.LookupListIndex
+		for sr in font[posub].table.ScriptList.ScriptRecord:
+			for lsr in sr.Script.DefaultLangSys.FeatureIndex:
+				if font[posub].table.FeatureList.FeatureRecord[lsr].FeatureTag=='vert':
+					font[posub].table.FeatureList.FeatureRecord[lsr].Feature.LookupListIndex=vtzh
+					break
+			for lsr in sr.Script.LangSysRecord:
+					for ki in lsr.LangSys.FeatureIndex:
+						if font[posub].table.FeatureList.FeatureRecord[ki].FeatureTag=='vert':
+							font[posub].table.FeatureList.FeatureRecord[ki].Feature.LookupListIndex=vtzh
+							break
 
 print('*'*50)
 print('====Build Advocate Ancient Fonts====\n')
 infile=sys.argv[1]
 outdir=sys.argv[2]
 font=TTFont(infile)
-#cmap=font.getBestCmap()
 pen='"\'—‘’‚“”„‼⁇⁈⁉⸺⸻'
 pzhs='·’‘”“•≤≥≮≯！：；？'+pen
 pzht='·’‘”“•、。，．'+pen
