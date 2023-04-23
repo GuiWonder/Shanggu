@@ -15,73 +15,50 @@ def glfrtxt(txt):
 		if ord(ch) in cmap and cmap[ord(ch)] not in glys:
 			glys.append(cmap[ord(ch)])
 	return glys
-def getlki(fture):
-	lks=list()
-	for ki in fture:
-		ftg=font["GSUB"].table.FeatureList.FeatureRecord[ki].FeatureTag
-		if ftg=='locl':
-			lks+=font["GSUB"].table.FeatureList.FeatureRecord[ki].Feature.LookupListIndex
-	return list(dict.fromkeys(lks))
-def getlkdef():
-	lks=list()
-	for sr in font["GSUB"].table.ScriptList.ScriptRecord:
-		for lsr in sr.Script.DefaultLangSys.FeatureIndex:
-			ftg=font["GSUB"].table.FeatureList.FeatureRecord[lsr].FeatureTag
-			if ftg=='locl':
-				lks+=font["GSUB"].table.FeatureList.FeatureRecord[lsr].Feature.LookupListIndex
-	return list(dict.fromkeys(lks))
-def locllk():
-	fjan, fkor, fzhs, fzht, fzhh=(list() for i in range(5))
-	for sr in font["GSUB"].table.ScriptList.ScriptRecord:
-		for lsr in sr.Script.LangSysRecord:
-			if lsr.LangSysTag.strip()=='JAN':
-				fjan+=lsr.LangSys.FeatureIndex
-			elif lsr.LangSysTag.strip()=='KOR':
-				fkor+=lsr.LangSys.FeatureIndex
-			elif lsr.LangSysTag.strip()=='ZHS':
-				fzhs+=lsr.LangSys.FeatureIndex
-			elif lsr.LangSysTag.strip()=='ZHT':
-				fzht+=lsr.LangSys.FeatureIndex
-			elif lsr.LangSysTag.strip()=='ZHH':
-				fzhh+=lsr.LangSys.FeatureIndex
-	return getlki(fjan), getlki(fkor), getlki(fzhs), getlki(fzht), getlki(fzhh)
 def glyrepl(repdic):
 	for table in font["cmap"].tables:
 		for cd in table.cmap:
 			if table.cmap[cd] in repdic:
 				table.cmap[cd]=repdic[table.cmap[cd]]
-				print('Remaping', chr(cd))
+				print('Remapping', chr(cd))
+def locllki(ftgsub, lan):
+	ftl, lkl=list(), list()
+	for sr in ftgsub.table.ScriptList.ScriptRecord:
+		for lsr in sr.Script.LangSysRecord:
+			if lsr.LangSysTag.strip()==lan:
+				ftl+=lsr.LangSys.FeatureIndex
+	for ki in ftl:
+		ftg=ftgsub.table.FeatureList.FeatureRecord[ki].FeatureTag
+		if ftg=='locl':
+			lkl+=ftgsub.table.FeatureList.FeatureRecord[ki].Feature.LookupListIndex
+	return list(dict.fromkeys(lkl))
+def getloclk(ckfont, lan):
+	locdics=list()
+	for lki in locllki(ckfont["GSUB"], lan):
+		locrpl=dict()
+		for st in ckfont["GSUB"].table.LookupList.Lookup[lki].SubTable:
+			if st.LookupType==7 and st.ExtSubTable.LookupType==1:
+				tabl=st.ExtSubTable.mapping
+			elif st.LookupType==1:
+				tabl=st.mapping
+			for g1 in tabl:
+				locrpl[g1]=tabl[g1]
+		locdics.append(locrpl)
+	return locdics
 def glfrloc(gl, loclk):
-	for lki in loclk:
-		for st in font["GSUB"].table.LookupList.Lookup[lki].SubTable:
-			if st.LookupType==7 and st.ExtSubTable.LookupType==1:
-				tabl=st.ExtSubTable.mapping
-			elif st.LookupType==1:
-				tabl=st.mapping
-			if gl in tabl:
-				return tabl[gl]
-	return ''
+	for dc in loclk:
+		if gl in dc: return dc[gl]
 
-def getlkdic(locgls, glyfs, lkps):
-	for lki in lkps:
-		for st in font["GSUB"].table.LookupList.Lookup[lki].SubTable:
-			if st.LookupType==7 and st.ExtSubTable.LookupType==1:
-				tabl=st.ExtSubTable.mapping
-			elif st.LookupType==1:
-				tabl=st.mapping
-			for k1 in tabl.keys():
-				if k1 in glyfs:
-					if k1 in locgls: raise
-					locgls[k1]=tabl[k1]
-def getlocrpl():
+def locglrpl():
 	locgls=dict()
 	shset=json.load(open(os.path.join(pydir, 'configs/sourcehan.json'), 'r', encoding='utf-8'))
 	if ssty in ('Sans', 'Mono'): shset['hcgl']+=shset['hcglsans']
 	krgl, scgl, tcgl, hcgl=glfrtxt(shset['krgl']), glfrtxt(shset['scgl']), glfrtxt(shset['tcgl']), glfrtxt(shset['hcgl'])
-	getlkdic(locgls, krgl, lkkor)
-	getlkdic(locgls, scgl, lkzhs)
-	getlkdic(locgls, tcgl, lkzht)
-	getlkdic(locgls, hcgl, lkzhh)
+	for glloc in ((krgl, lockor), (scgl, loczhs), (tcgl, loczht), (hcgl, loczhh)):
+		for g1 in glloc[0]:
+			assert g1 not in locgls, g1
+			g2=glfrloc(g1, glloc[1])
+			if g2: locgls[g1]=g2
 	return locgls
 def uvstab():
 	cmap=font.getBestCmap()
@@ -102,9 +79,9 @@ def uvstab():
 						uvsdc[cg[0]][vsl]=cg[1]
 						allgls.add(cg[1])
 				table.uvsDict[vsl]=newl
-			glgcn=glfrloc(cmap[ord('关')], lkzhs)
-			if (ord('关'), glgcn) not in table.uvsDict[int('E0101', 16)]:
-				table.uvsDict[int('E0101', 16)].append((ord('关'), glgcn))
+			glgcn=glfrloc(cmap[ord('关')], loczhs)
+			if glgcn and (ord('关'), glgcn) not in table.uvsDict[0xE0101]:
+				table.uvsDict[0xE0101].append((ord('关'), glgcn))
 				allgls.add(glgcn)
 	return uvsdc, allgls
 def ftuvstab():
@@ -136,10 +113,10 @@ def setuvs():
 	uvcfg=json.load(open(os.path.join(pydir, 'configs/uvs.json'), 'r', encoding='utf-8'))
 	tv=dict()
 	for ch in uvcfg.keys():
-		tv[ord(ch)]=int(uvcfg[ch].strip('X'), 16)
+		tv[ord(ch)]=int(uvcfg[ch], 16)
 	for k in uvdic.keys():
 		if k in tv and tv[k] in uvdic[k]:
-			print('Remaping uvs', chr(k))
+			print('Remapping uvs', chr(k))
 			setcg(k, uvdic[k][tv[k]])
 def getother(font2, repdict):
 	print('Processing...')
@@ -225,7 +202,7 @@ def locvar():
 	locscv=[('𫜹', '彐'), ('𣽽', '潸')]
 	for lv1 in locscv:
 		if ord(lv1[1]) in cmap:
-			gv2=glfrloc(cmap[ord(lv1[1])], lkzhs)
+			gv2=glfrloc(cmap[ord(lv1[1])], loczhs)
 			if gv2:
 				print('Processing', lv1[0])
 				setcg(ord(lv1[0]), gv2)
@@ -256,6 +233,19 @@ def cksh10():
 			if ord(ch10) in cmap and ord(ch10) in cmap10:
 				print('Find', ch10)
 				get10[cmap[ord(ch10)]]=cmap10[ord(ch10)]
+		lockor10, loczht10=getloclk(font10, 'KOR'), getloclk(font10, 'ZHT')
+		for ch10 in sh10set['KR']:
+			gll=glfrloc(cmap10[ord(ch10)], lockor10)
+			if ord(ch10) in cmap and gll:
+				print('Find', ch10)
+				get10[cmap[ord(ch10)]]=gll
+		if ssty!='Serif':
+			for ch10 in sh10set['SansTC']:
+				gll=glfrloc(cmap10[ord(ch10)], loczht10)
+				print(ch10, gll)
+				if ord(ch10) in cmap and gll:
+					print('Find', ch10)
+					get10[cmap[ord(ch10)]]=gll
 		getother(font10, get10)
 		font10.close()
 	else: print('SourceHan 1.0x Failed!')
@@ -288,7 +278,7 @@ def ckckg():
 			spch=ofcfg['charssp']
 			for ch in spch:
 				print('Find', ch)
-				g1=glfrloc(cmap[ord(ch)], lkzhs)
+				g1=glfrloc(cmap[ord(ch)], loczhs)
 				g2=cmapck[ord(ch)]
 				getckg[g1]=g2
 		getother(fontck, getckg)
@@ -306,7 +296,11 @@ def subgl():
 	usedg.update(uvgls)
 	pungl=glfrtxt(pzhs+pzht+simpcn)
 	print('Checking Lookup table...')
-	for lki in set(lkdef+lkjan+lkkor+lkzhs+lkzht+lkzhh):
+	loclks=list()
+	for i in range(len(font["GSUB"].table.FeatureList.FeatureRecord)):
+		if font["GSUB"].table.FeatureList.FeatureRecord[i].FeatureTag=='locl':
+			loclks+=font["GSUB"].table.FeatureList.FeatureRecord[i].Feature.LookupListIndex
+	for lki in set(loclks):
 		for st in font["GSUB"].table.LookupList.Lookup[lki].SubTable:
 			if st.LookupType==7:
 				stbl=st.ExtSubTable
@@ -412,26 +406,25 @@ def ckcngg():
 	for table in font["cmap"].tables:
 		if table.format==14:
 			cdg=ord('关')
-			if int('E0102', 16) in table.uvsDict and (cdg, None) in table.uvsDict[int('E0102', 16)]:
-				return
-			for uv in table.uvsDict[int('E0101', 16)]:
+			if 0xE0102 in table.uvsDict and (cdg, None) in table.uvsDict[0xE0102]: return
+			for uv in table.uvsDict[0xE0101]:
 				if uv[0]==cdg:
 					cngg=uv[1]
 					break
 			if not cngg: return
-			table.uvsDict[int('E0100', 16)]=[uv for uv in table.uvsDict[int('E0100', 16)] if uv[0]!=cdg]
-			table.uvsDict[int('E0101', 16)]=[uv for uv in table.uvsDict[int('E0101', 16)] if uv[0]!=cdg]
-			table.uvsDict[int('E0100', 16)].append((cdg, cmap[cdg]))
-			table.uvsDict[int('E0101', 16)].append((cdg, None))
-			print('Remaping', '关')
+			table.uvsDict[0xE0100]=[uv for uv in table.uvsDict[0xE0100] if uv[0]!=cdg]
+			table.uvsDict[0xE0101]=[uv for uv in table.uvsDict[0xE0101] if uv[0]!=cdg]
+			table.uvsDict[0xE0100].append((cdg, cmap[cdg]))
+			table.uvsDict[0xE0101].append((cdg, None))
+			print('Remapping', '关')
 			setcg(cdg, cngg)
 def sctcg():
 	cmap=font.getBestCmap()
 	nwlc=dict()
 	glh=cmap[ord('画')]
-	nwlc[glh]=glfrloc(glh, lkzht)
+	nwlc[glh]=glfrloc(glh, loczht)
 	if not nwlc[glh]: return
-	for lki in lkzhs:
+	for lki in locllki(font["GSUB"], 'ZHS'):
 		for st in font["GSUB"].table.LookupList.Lookup[lki].SubTable:
 			if st.LookupType==7 and st.ExtSubTable.LookupType==1:
 				tabl=st.ExtSubTable.mapping
@@ -440,6 +433,32 @@ def sctcg():
 			for gl in nwlc.keys():
 				if gl in tabl:
 					tabl[gl]=nwlc[gl]
+def glfruv(ch, uv):
+	cmap=font.getBestCmap()
+	for table in font["cmap"].tables:
+		if table.format==14 and uv in table.uvsDict:
+			for cg in table.uvsDict[uv]:
+				if cg[0]==ord(ch):
+					if cg[1]==None: return cmap[cg[0]]
+					else: return cg[1]
+	raise RuntimeError(ch)
+def ckdlg():
+	rplg=dict()
+	for ch in '月成':
+		rplg[glfruv(ch, 0xE0100)]=glfruv(ch, 0xE0101)
+	dllk=set()
+	for ki in font["GSUB"].table.FeatureList.FeatureRecord:
+		if ki.FeatureTag=='dlig': dllk.update(ki.Feature.LookupListIndex)
+	for i in dllk:
+		for st in font["GSUB"].table.LookupList.Lookup[i].SubTable:
+			if st.LookupType==7: stbl=st.ExtSubTable
+			else: stbl=st
+			if stbl.LookupType!=4: continue
+			for lgg in list(stbl.ligatures):
+				for lg in list(stbl.ligatures[lgg]):
+					for ilin in range(len(lg.Component)):
+						if lg.Component[ilin] in rplg:
+							lg.Component[ilin]=rplg[lg.Component[ilin]]
 
 print('*'*50)
 print('====Build Advocate Ancient Fonts====\n')
@@ -458,12 +477,11 @@ wtn={250:'ExtraLight', 300:'Light', 350:'Normal', 400:'Regular', 500:'Medium', 6
 wt=wtn[font['OS/2'].usWeightClass]
 if 'VF' in fpsn: wt='VF'
 cffinf()
+
 jpvar=getjpv()
 print('Getting the localized lookups table...')
-lkdef=getlkdef()
-lkjan, lkkor, lkzhs, lkzht, lkzhh=locllk()
-print('Lookup index', lkdef, lkjan, lkkor, lkzhs, lkzht, lkzhh)
-locgls=getlocrpl()
+lockor, loczhs, loczht, loczhh=getloclk(font, 'KOR'), getloclk(font, 'ZHS'), getloclk(font, 'ZHT'), getloclk(font, 'ZHH')
+locgls=locglrpl()
 print('Getting uvs...')
 uvdic, uvgls=uvstab()
 print('Processing localized glyphs...')
@@ -480,6 +498,7 @@ ftuvstab()
 print('Processing radicals...')
 radicv()
 sctcg()
+ckdlg()
 print('Getting glyphs from other fonts...')
 cksh10()
 if ssty=='Sans':

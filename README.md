@@ -1,7 +1,7 @@
-**正體中文** [简体中文](./README-SC.md#传承化中文字体)
+**正體中文** [简体中文](./README-SC.md#传承字形泛中日韩字体)
 
-# 傳承化中文字型
-基於[思源黑體](https://github.com/adobe-fonts/source-han-sans)、[思源宋體](https://github.com/adobe-fonts/source-han-serif)、[思源等寬](https://github.com/adobe-fonts/source-han-mono)日文版修改傳承字形（舊字形）字體。1.004 版開始加入思源舊版（1.0x 版）字形，1.010 版開始加入[秋空󠄁黑體CL](https://github.com/ChiuMing-Neko/ChiuKongGothic)字形。
+# 傳承字形泛中日韓字型
+一套傳承字形泛中日韓字型，基於[思源黑體](https://github.com/adobe-fonts/source-han-sans)、[思源宋體](https://github.com/adobe-fonts/source-han-serif)、[思源等寬](https://github.com/adobe-fonts/source-han-mono)日文版及[秋空󠄁黑體CL](https://github.com/ChiuMing-Neko/ChiuKongGothic)。本開放原始碼專案提供了多種不同風格、不同格式的字型以滿足不同需要，本專案還提供了建置這些字型時的所有原始碼。
 
 ## 預覽
 ![image](./pictures/Pic0001.png)  
@@ -30,8 +30,8 @@
 > Advocate Ancient Serif ST | 尙古明体 转繁体 | 尙古明體 轉繁體。<br />
 
 ▼ 一簡多繁測試，此功能使用 OpenType 特性。<br />
-![image](./pictures/FANTI1.png)  
-![image](./pictures/FANTI2.png)  
+![image](./pictures/FANTI.png)  
+
 ### 格式說明
 #### 1. OpenType 格式(OTF/OTC)
 原版格式。
@@ -46,9 +46,6 @@
 2. 可從[騰訊微雲](https://share.weiyun.com/VEoOc5xK)下載 AdvocateAncient 系列字型。
 ## 授權
 遵循 [SIL Open Font License 1.1](./LICENSE.txt)。
-## 構建字型檔
-
-安裝 [AFDKO](https://github.com/adobe-type-tools/afdko/)，執行命令`python3 buildotf.py` 或 `python3 buildttf.py`  執行環境為 Linux，需要足夠存儲空間，構建 ttf 還需要 wine。
 
 ## 特別感謝
 #### 1. 字圖來源
@@ -59,9 +56,11 @@
 #### 2. 字型處理工具
 - [FontTools](https://github.com/fonttools/fonttools)
 - [AFDKO](https://github.com/adobe-type-tools/afdko/)
-#### 3. TrueType 格式轉換
+- [otfcc](https://github.com/caryll/otfcc)
+#### 3. TrueType 格式轉換及處理
 - [Source-Han-TrueType](https://github.com/Pal3love/Source-Han-TrueType)
 - [Source Han Sans TTF](https://github.com/be5invis/source-han-sans-ttf)
+- [Resource-Han-Rounded](https://github.com/CyanoHao/Resource-Han-Rounded)
 #### 4. 字形參考
 - [傳承字形標準化文件](https://github.com/ichitenfont/inheritedglyphs) [I.明體](https://github.com/ichitenfont/I.Ming)
 - [zi.tools 字統网](https://zi.tools/)
@@ -69,7 +68,6 @@
 #### 5. 簡轉繁參考
 - [OpenCC 開放中文轉換](https://github.com/BYVoid/OpenCC)
 #### 6. 舊版用到的工具或參考
-- [otfcc](https://github.com/caryll/otfcc)
 - [《正確實現簡轉繁字型》](https://ayaka.shn.hk/s2tfont/hant/)
 ## 關於作者
 - **Email：** chunfengfly@outlook.com
