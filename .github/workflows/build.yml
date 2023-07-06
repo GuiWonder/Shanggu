@@ -16,14 +16,18 @@ jobs:
     - uses: actions/upload-artifact@v3
       with:
         name: AdvocateAncientOTFs
-        path: "*.7z"
+        path: |
+          *.7z
+          *.zip
 
     - name: Upload to release
       uses: ncipollo/release-action@v1
       with:
         token: "${{ secrets.GITHUB_TOKEN }}"
         tag: "test-01"
-        artifacts: "*.7z"
+        artifacts: |
+          *.zip
+          *.7z
         allowUpdates: true
         prerelease: true
         draft: true

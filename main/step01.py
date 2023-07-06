@@ -120,23 +120,38 @@ def setuvs():
 			setcg(k, uvdic[k][tv[k]])
 def getother(font2, repdict):
 	print('Processing...')
-	cff=font['CFF '].cff
-	cff2=font2['CFF '].cff
-	cff2.desubroutinize()
-	for fontname in cff.keys():
-		fontsub=cff[fontname]
-		cs=fontsub.CharStrings
-		for fontname2 in cff2.keys():
-			fontsub2=cff2[fontname2]
-			cs2=fontsub2.CharStrings
-			for gl in repdict.keys():
-				cs[gl]=cs2[repdict[gl]]
-				font['hmtx'][gl]=font2['hmtx'][repdict[gl]]
-				font['vmtx'][gl]=font2['vmtx'][repdict[gl]]
-				if repdict[gl] in set(font2['VORG'].VOriginRecords.keys()):
-					font['VORG'].VOriginRecords[gl]=font['VORG'].VOriginRecords[repdict[gl]]
-				elif gl in set(font['VORG'].VOriginRecords.keys()):
-					del font['VORG'].VOriginRecords[gl]
+	if 'CFF ' in font or 'CFF2' in font:
+		if 'CFF2' in font:
+			cff=font['CFF2'].cff
+			cff2=font2['CFF2'].cff
+		else:
+			cff=font['CFF '].cff
+			cff2=font2['CFF '].cff
+		cff2.desubroutinize()
+		for fontname in cff.keys():
+			fontsub=cff[fontname]
+			cs=fontsub.CharStrings
+			for fontname2 in cff2.keys():
+				fontsub2=cff2[fontname2]
+				cs2=fontsub2.CharStrings
+				for gl in repdict.keys():
+					cs[gl]=cs2[repdict[gl]]
+					font['hmtx'][gl]=font2['hmtx'][repdict[gl]]
+					font['vmtx'][gl]=font2['vmtx'][repdict[gl]]
+					if repdict[gl] in set(font2['VORG'].VOriginRecords.keys()):
+						font['VORG'].VOriginRecords[gl]=font['VORG'].VOriginRecords[repdict[gl]]
+					elif gl in set(font['VORG'].VOriginRecords.keys()):
+						del font['VORG'].VOriginRecords[gl]
+	elif 'glyf' in font:
+		for gl in repdict.keys():
+			font['glyf'].glyphs[gl]=font2['glyf'].glyphs[repdict[gl]]
+			font['hmtx'][gl]=font2['hmtx'][repdict[gl]]
+			font['vmtx'][gl]=font2['vmtx'][repdict[gl]]
+			font['gvar'].variations[gl]=font2['gvar'].variations[repdict[gl]]
+			if 'VORG' in font:
+				font['VORG'].VOriginRecords[gl]=font2['VORG'].VOriginRecords[repdict[gl]]
+	else:
+		raise
 def subcff(cfftb, glyphs):
 	ftcff=cfftb.cff
 	for fontname in ftcff.keys():
@@ -242,7 +257,6 @@ def cksh10():
 		if ssty!='Serif':
 			for ch10 in sh10set['SansTC']:
 				gll=glfrloc(cmap10[ord(ch10)], loczht10)
-				print(ch10, gll)
 				if ord(ch10) in cmap and gll:
 					print('Find', ch10)
 					get10[cmap[ord(ch10)]]=gll
@@ -252,6 +266,7 @@ def cksh10():
 def ckckg():
 	print('Getting glyphs from ChiuKongGothic...')
 	cmap=font.getBestCmap()
+	isvf=wt=='VF'
 	filec=os.path.join(pydir, f'ChiuKongGothic-CL/ChiuKongGothic-CL-{wt}{exn}')
 	ckgcf=os.path.join(pydir, 'configs/ChiuKongGothic-CL.json')
 	if os.path.isfile(filec) and os.path.isfile(ckgcf):
@@ -260,6 +275,7 @@ def ckckg():
 		cmapck=fontck.getBestCmap()
 		ofcfg=json.load(open(ckgcf, 'r', encoding='utf-8'))
 		if 'chars' in ofcfg:
+			if isvf:ofcfg['chars']+='偯刽吆嗦嘟嚎垒垦实宪恳惦团尘愣挎䊢叼咓啕嗨囔㑒㑹㪘啥吔嗧奰幙幠慔沎艼哋嘀乒乓孢嚐'
 			for ckch in ofcfg['chars']:
 				if ord(ckch) in cmap and ord(ckch) in cmapck:
 					print('Find', ckch)
@@ -289,7 +305,7 @@ def subgl():
 	pen='"\'—‘’‚“”„‼⁇⁈⁉⸺⸻'
 	pzhs='·’‘”“•≤≥≮≯！：；？'+pen
 	pzht='·’‘”“•、。，．'+pen
-	simpcn='蒋残浅践写泻惮禅箪蝉恋峦蛮挛栾滦弯湾径茎弥称滞画遥瑶'#変将与
+	simpcn='蒋残浅践写泻惮禅箪蝉恋峦蛮挛栾滦弯湾径茎滞画遥瑶'#変将与弥称
 	usedg=set()
 	usedg.add('.notdef')
 	usedg.update(cmap.values())

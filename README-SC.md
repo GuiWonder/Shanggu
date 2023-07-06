@@ -40,7 +40,8 @@
 #### ~3. TrueType hinted (TTF/TTC)~
 ~基于 [Source Han Sans TTF](https://github.com/be5invis/source-han-sans-ttf) 可实现 Windows 下低分辨率小字清晰，建议仅在 Windows 下使用。~
 #### 4. 可变字体
-仅包含[思源黑体](https://github.com/adobe-fonts/source-han-sans) v2.004、[思源宋体](https://github.com/adobe-fonts/source-han-serif) v2.001 内部的字图。
+包括 OpenType 和 TrueType 格式。由于资源限制，此版本不包含旧版思源黑体、思源宋体的字图。
+
 ## 下载字体
 1. 可从本站 [Releases](https://github.com/GuiWonder/SourceHanToClassic/releases) 页面下载字体（推荐）。
 2. 可从[腾讯微云](https://share.weiyun.com/VEoOc5xK)下载 AdvocateAncient 系列字体。
@@ -71,3 +72,13 @@
 - [《正确实现简转繁字体》](https://ayaka.shn.hk/s2tfont/)
 ## 关于作者
 - **Email：** chunfengfly@outlook.com
+
+## 小工具使用说明
+小工具位于`main/tools/`目录，使用时需要安装 [FontTools](https://github.com/fonttools/fonttools)。此工具仅适用于本字体及**一部分**其他字体。
+#### 1. [多编码汉字](./main/configs/mulcodechar.dt)（如青-靑 尚-尙 兑-兌 温-溫等）合并为旧字形工具
+由于此处理方法常常带有争议性，此工具可满足一些特殊需求。  
+使用前可根据个人需要修改 [mulcodechar.dt](./main/configs/mulcodechar.dt)。此工具一般可在 2 秒内完成。  
+使用方法：运行 `python mulcodechar.py InFont.otf OutFont.otf`  
+#### 2. 差集提取工具
+此工具可提取本字体与思源不同的字形。  
+使用方法：运行 `python finddiffers.py -o OutFont.otf AdvocateAncientSansTC-Regular.otf SourceHanSans-Regular.otf`

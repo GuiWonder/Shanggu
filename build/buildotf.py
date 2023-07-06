@@ -4,7 +4,7 @@ from shutil import copy, rmtree
 os.makedirs('./tmp')
 os.makedirs('./src')
 os.makedirs('./main/sourcehan10')
-os.makedirs('./main/ChiuKongGothic-CL')
+#os.makedirs('./main/ChiuKongGothic-CL')
 wtsans=['Bold', 'ExtraLight', 'Heavy', 'Light', 'Medium', 'Normal', 'Regular']
 wtserif=['Bold', 'ExtraLight', 'Heavy', 'Light', 'Medium', 'Regular', 'SemiBold']
 ckgurl='https://github.com/ChiuMing-Neko/ChiuKongGothic/releases/download/v.1.300/ChiuKongGothic-CL.zip'
@@ -31,8 +31,6 @@ os.makedirs('./tmp/tmp01')
 for item in os.listdir('./src'):
 	if item.lower().split('.')[-1]=='otf':
 		os.system(f"{step01} ./src/{item} ./tmp/tmp01/{item}")
-rmtree('./src')
-
 
 xtf, xtc='otf', 'OTC'
 for fod in aa:
@@ -48,7 +46,7 @@ for item in os.listdir('./tmp/tmp01'):
 		fn1, fn2=aan.split('-')
 		os.system(f"{step02} ./tmp/tmp01/{item} ./fonts/{fn1}")
 
-for fod in ('Mono', 'Sans', 'Serif'):
+for fod in aa:
 	os.system(f'mv ./fonts/{fnm}{fod}/*.ttc ./fonts/{fnm}{fod}{xtc}s/')
 	os.system(f'mv ./fonts/{fnm}{fod}/*TC* ./fonts/{fnm}{fod}TC/')
 	os.system(f'mv ./fonts/{fnm}{fod}/*SC* ./fonts/{fnm}{fod}SC/')
@@ -62,5 +60,16 @@ for fod in ('Mono', 'Sans', 'Serif'):
 		otfs.append(f'./fonts/{fnm}{fod}FANTI')
 	otff=' '.join(otfs)
 	os.system(f'7z a ./{fnm}{fod}{xtf.upper()}s.7z {otff} -mx=9 -mfb=256 -md=512m')
+
+os.makedirs('./subset-differs-from-SHS-JP')
+os.makedirs('./subset-differs-from-SHS-KR')
+finddiffers='python3 ./main/tools/finddiffers.py'
+for wt in wtsans:
+	os.system(f'wget -P ./src https://github.com/adobe-fonts/source-han-sans/raw/release/OTF/Korean/SourceHanSansK-{wt}.otf')
+	os.system(f"{finddiffers} -o ./subset-differs-from-SHS-JP/{fnm}SansTC-{wt}-subset.otf ./fonts/{fnm}SansTC/{fnm}SansTC-{wt}.otf ./src/SourceHanSans-{wt}.otf")
+	os.system(f"{finddiffers} -o ./subset-differs-from-SHS-KR/{fnm}SansTC-{wt}-subset.otf ./fonts/{fnm}SansTC/{fnm}SansTC-{wt}.otf ./src/SourceHanSansK-{wt}.otf")
+os.system(f'7z a ./subset-differs-from-SHS-JP.zip ./subset-differs-from-SHS-JP/*')
+os.system(f'7z a ./subset-differs-from-SHS-KR.zip ./subset-differs-from-SHS-KR/*')
+
 
 rmtree('./tmp')

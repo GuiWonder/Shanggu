@@ -4,7 +4,7 @@ from shutil import copy, rmtree
 os.makedirs('./tmp')
 os.makedirs('./src')
 os.makedirs('./main/sourcehan10')
-os.makedirs('./main/ChiuKongGothic-CL')
+#os.makedirs('./main/ChiuKongGothic-CL')
 ckgurl='https://github.com/ChiuMing-Neko/ChiuKongGothic/releases/download/v.1.300/ChiuKongGothic-CL.zip'
 
 wtsans=['Bold', 'ExtraLight', 'Heavy', 'Light', 'Medium', 'Normal', 'Regular']
