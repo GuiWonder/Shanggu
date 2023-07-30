@@ -138,10 +138,11 @@ def getother(font2, repdict):
 					cs[gl]=cs2[repdict[gl]]
 					font['hmtx'][gl]=font2['hmtx'][repdict[gl]]
 					font['vmtx'][gl]=font2['vmtx'][repdict[gl]]
-					if repdict[gl] in set(font2['VORG'].VOriginRecords.keys()):
-						font['VORG'].VOriginRecords[gl]=font['VORG'].VOriginRecords[repdict[gl]]
-					elif gl in set(font['VORG'].VOriginRecords.keys()):
-						del font['VORG'].VOriginRecords[gl]
+					if 'VORG' in font and 'VORG' in font2:
+						if repdict[gl] in set(font2['VORG'].VOriginRecords.keys()):
+							font['VORG'].VOriginRecords[gl]=font2['VORG'].VOriginRecords[repdict[gl]]
+						elif gl in set(font['VORG'].VOriginRecords.keys()):
+							del font['VORG'].VOriginRecords[gl]
 	elif 'glyf' in font:
 		for gl in repdict.keys():
 			font['glyf'].glyphs[gl]=font2['glyf'].glyphs[repdict[gl]]
@@ -300,6 +301,36 @@ def ckckg():
 		getother(fontck, getckg)
 		fontck.close()
 	else: print('ChiuKongGothic Failed!')
+def ckesm():
+	print('Getting glyphs from EarlySummerMincho...')
+	cmap=font.getBestCmap()
+	fileesm=os.path.join(pydir, f'EarlySummerMincho/EarlySummerMincho-{wt}{exn}')
+	if os.path.isfile(fileesm):
+		getesm=dict()
+		esmset=json.load(open(os.path.join(pydir, 'configs/EarlySummerMincho.json'), 'r', encoding='utf-8'))
+		fontesm=TTFont(fileesm)
+		cmapesm=fontesm.getBestCmap()
+		chars=esmset['chars']
+		isvf=wt=='VF'
+		if isvf:
+			chars+=esmset['charvf']
+		for chesm in chars:
+			if ord(chesm) in cmap and ord(chesm) in cmapesm:
+				print('Find', chesm)
+				getesm[cmap[ord(chesm)]]=cmapesm[ord(chesm)]
+		loczhsesm=getloclk(fontesm, 'ZHS')
+		for chesm in '禅遥瑶恋峦蛮挛栾滦弯湾':
+			gll=glfrloc(cmapesm[ord(chesm)], loczhsesm)
+			if ord(chesm) in cmap and gll:
+				print('Find', chesm)
+				getesm[glfrloc(cmap[ord(chesm)], loczhs)]=gll
+		for chesm in '写泻':
+			if ord(chesm) in cmap:
+				print('Find', chesm)
+				getesm[glfrloc(cmap[ord(chesm)], loczhs)]=cmapesm[ord(chesm)]
+		getother(fontesm, getesm)
+		fontesm.close()
+	else: print('EarlySummerMincho Failed!')
 def subgl():
 	cmap=font.getBestCmap()
 	pen='"\'—‘’‚“”„‼⁇⁈⁉⸺⸻'
@@ -519,6 +550,8 @@ print('Getting glyphs from other fonts...')
 cksh10()
 if ssty=='Sans':
 	ckckg()
+elif ssty=='Serif':
+	ckesm()
 ckcngg()
 print('Checking for unused glyphs...')
 subgl()

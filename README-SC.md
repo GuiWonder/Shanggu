@@ -1,7 +1,7 @@
 [正體中文](../../#傳承字形泛中日韓字型) **简体中文**
 
 # 传承字形泛中日韩字体
-一套传承字形泛中日韩字体，基于[思源黑体](https://github.com/adobe-fonts/source-han-sans)、[思源宋体](https://github.com/adobe-fonts/source-han-serif)、[思源等宽](https://github.com/adobe-fonts/source-han-mono)日文版及[秋空󠄁黑体CL](https://github.com/ChiuMing-Neko/ChiuKongGothic)。本开源项目提供了多种不同风格、不同格式的字体以满足不同需要，本项目还提供了创建这些字体时的所有源代码。
+一套传承字形泛中日韩字体，基于[思源黑体](https://github.com/adobe-fonts/source-han-sans)、[思源宋体](https://github.com/adobe-fonts/source-han-serif)、[思源等宽](https://github.com/adobe-fonts/source-han-mono)以及思源系列衍生字体。本开源项目提供了多种不同风格、不同格式的字体以满足不同需要，本项目还提供了创建这些字体时的所有源代码。
 
 ## 预览
 ![image](./pictures/Pic0001.png)  
@@ -54,6 +54,7 @@
 - [思源宋体](https://github.com/adobe-fonts/source-han-serif) v2.001 v1.001
 - [思源等宽](https://github.com/adobe-fonts/source-han-mono) v1.002
 - [秋空󠄁黑体CL](https://github.com/ChiuMing-Neko/ChiuKongGothic) v1.300
+- [初夏明朝体](https://github.com/GuiWonder/EarlySummerMincho) v1.000
 #### 2. 字体处理工具
 - [FontTools](https://github.com/fonttools/fonttools)
 - [AFDKO](https://github.com/adobe-type-tools/afdko/)
@@ -76,7 +77,7 @@
 ## 小工具使用说明
 小工具位于`main/tools/`目录，使用时需要安装 [FontTools](https://github.com/fonttools/fonttools)。此工具仅适用于本字体及**一部分**其他字体。
 #### 1. [多编码汉字](./main/configs/mulcodechar.dt)（如青-靑 尚-尙 兑-兌 温-溫等）合并为旧字形工具
-由于此处理方法常常带有争议性，此工具可满足一些特殊需求。  
+由于此处理方法常常带有争议性，此工具可满足一些需求。  
 使用前可根据个人需要修改 [mulcodechar.dt](./main/configs/mulcodechar.dt)。此工具一般可在 2 秒内完成。  
 使用方法：运行 `python mulcodechar.py InFont.otf OutFont.otf`  
 #### 2. 差集提取工具
