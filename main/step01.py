@@ -208,7 +208,7 @@ def chguvs(newu):
 def getjpv():
 	cmap=font.getBestCmap()
 	jpvar=dict()
-	jpvch=[('𰰨', '芲'), ('𩑠', '頙')]
+	jpvch=[('𰰨', '芲'), ('𩑠', '頙'), ('𥄳', '眔')]
 	for chs in jpvch:
 		if ord(chs[1]) in cmap:
 			jpvar[ord(chs[0])]=cmap[ord(chs[1])]
