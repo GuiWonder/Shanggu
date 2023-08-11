@@ -324,7 +324,7 @@ def ckesm():
 			if ord(chesm) in cmap and gll:
 				print('Find', chesm)
 				getesm[glfrloc(cmap[ord(chesm)], loczhs)]=gll
-		for chesm in '写泻':
+		for chesm in '写泻画':
 			if ord(chesm) in cmap:
 				print('Find', chesm)
 				getesm[glfrloc(cmap[ord(chesm)], loczhs)]=cmapesm[ord(chesm)]
@@ -465,21 +465,6 @@ def ckcngg():
 			table.uvsDict[0xE0101].append((cdg, None))
 			print('Remapping', '关')
 			setcg(cdg, cngg)
-def sctcg():
-	cmap=font.getBestCmap()
-	nwlc=dict()
-	glh=cmap[ord('画')]
-	nwlc[glh]=glfrloc(glh, loczht)
-	if not nwlc[glh]: return
-	for lki in locllki(font["GSUB"], 'ZHS'):
-		for st in font["GSUB"].table.LookupList.Lookup[lki].SubTable:
-			if st.LookupType==7 and st.ExtSubTable.LookupType==1:
-				tabl=st.ExtSubTable.mapping
-			elif st.LookupType==1:
-				tabl=st.mapping
-			for gl in nwlc.keys():
-				if gl in tabl:
-					tabl[gl]=nwlc[gl]
 def glfruv(ch, uv):
 	cmap=font.getBestCmap()
 	for table in font["cmap"].tables:
@@ -544,14 +529,11 @@ uvsvar()
 ftuvstab()
 print('Processing radicals...')
 radicv()
-sctcg()
 ckdlg()
 print('Getting glyphs from other fonts...')
 cksh10()
-if ssty=='Sans':
-	ckckg()
-elif ssty=='Serif':
-	ckesm()
+if ssty=='Sans': ckckg()
+elif ssty=='Serif': ckesm()
 ckcngg()
 print('Checking for unused glyphs...')
 subgl()
