@@ -54,7 +54,7 @@
 - [思源宋體](https://github.com/adobe-fonts/source-han-serif) v2.001 v1.001
 - [思源等寬](https://github.com/adobe-fonts/source-han-mono) v1.002
 - [秋空󠄁黑體CL](https://github.com/ChiuMing-Neko/ChiuKongGothic) v1.300
-- [初夏明朝體](https://github.com/GuiWonder/EarlySummerMincho) v1.000
+- [初夏明朝體](https://github.com/GuiWonder/EarlySummerMincho) v1.002
 #### 2. 字型處理工具
 - [FontTools](https://github.com/fonttools/fonttools)
 - [AFDKO](https://github.com/adobe-type-tools/afdko/)
