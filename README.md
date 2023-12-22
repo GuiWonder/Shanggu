@@ -1,7 +1,7 @@
-**正體中文** [简体中文](./README-SC.md#传承字形泛中日韩字体)
+**正體中文** [简体中文](./README-SC.md#advocate-ancient-fonts)
 
-# 傳承字形泛中日韓字型
-一套傳承字形泛中日韓字型，基於[思源黑體](https://github.com/adobe-fonts/source-han-sans)、[思源宋體](https://github.com/adobe-fonts/source-han-serif)、[思源等寬](https://github.com/adobe-fonts/source-han-mono)以及思源系列衍生字型。本開放原始碼專案提供了多種不同風格、不同格式的字型以滿足不同需要，本專案還提供了建置這些字型時的所有原始碼。
+# Advocate Ancient Fonts
+一套開放原始碼泛中日韓字型，基於[思源黑體](https://github.com/adobe-fonts/source-han-sans)、[思源宋體](https://github.com/adobe-fonts/source-han-serif)、[思源等寬](https://github.com/adobe-fonts/source-han-mono)以及思源系列衍生字型。本開放原始碼專案提供了多種不同風格、不同格式的字型以滿足不同需要，本專案還提供了建置這些字型時的所有原始碼。
 
 ## 預覽
 ![image](./pictures/Pic0001.png)  
@@ -40,7 +40,7 @@
 #### ~3. TrueType hinted (TTF/TTC)~
 ~基於 [Source Han Sans TTF](https://github.com/be5invis/source-han-sans-ttf) 可實現 Windows 下低解析度小字清晰，建議僅在 Windows 下使用。~
 #### 4. 可變字型
-包括 OpenType 和 TrueType 格式。由於資源限制，此版本不包含舊版思源黑體、思源宋體的字圖。
+包括 OpenType 和 TrueType 格式。由於資源限制，此版本未使用舊版思源黑體、思源宋體的字圖。
 
 ## 下載字型
 1. 可從本站 [Releases](https://github.com/GuiWonder/SourceHanToClassic/releases) 頁面下載字型（推薦）。
@@ -50,11 +50,10 @@
 
 ## 特別感謝
 #### 1. 字圖來源
-- [思源黑體](https://github.com/adobe-fonts/source-han-sans) v2.004 v1.004
-- [思源宋體](https://github.com/adobe-fonts/source-han-serif) v2.001 v1.001
-- [思源等寬](https://github.com/adobe-fonts/source-han-mono) v1.002
-- [秋空󠄁黑體CL](https://github.com/ChiuMing-Neko/ChiuKongGothic) v1.300
-- [初夏明朝體](https://github.com/GuiWonder/EarlySummerMincho) v1.002
+- [思源黑體](https://github.com/adobe-fonts/source-han-sans)
+- [思源宋體](https://github.com/adobe-fonts/source-han-serif)
+- [思源等寬](https://github.com/adobe-fonts/source-han-mono)
+- [秋空󠄁黑體CL](https://github.com/ChiuMing-Neko/ChiuKongGothic)
 #### 2. 字型處理工具
 - [FontTools](https://github.com/fonttools/fonttools)
 - [AFDKO](https://github.com/adobe-type-tools/afdko/)
@@ -74,12 +73,4 @@
 ## 關於作者
 - **Email：** chunfengfly@outlook.com
 
-## 小工具使用說明
-小工具位於`main/tools/`目錄，使用時需要安裝 [FontTools](https://github.com/fonttools/fonttools)。此工具僅適用於本字型及**一部分**其他字型。
-#### 1. [多編碼漢字](./main/configs/mulcodechar.dt)（如青-靑 尚-尙 兑-兌 温-溫等）合併為舊字形工具
-由於此處理方法常常帶有爭議性，此工具可满足一些需求。  
-使用前可根據個人需要修改 [mulcodechar.dt](./main/configs/mulcodechar.dt)。此工具一般可在 2 秒內完成。  
-使用方法：執行 `python mulcodechar.py InFont.otf OutFont.otf`  
-#### 2. 差集提取工具
-此工具可提取本字型與思源不同的字形。  
-使用方法：執行 `python finddiffers.py -o OutFont.otf AdvocateAncientSansTC-Regular.otf SourceHanSans-Regular.otf`
+

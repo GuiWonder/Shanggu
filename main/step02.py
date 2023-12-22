@@ -300,7 +300,8 @@ def mkcmp(locn):
 		dfltvt('ZHT')
 	elif locn=='JP':
 		dfltvt('JAN')
-	if locn=='SC' or locn=='':
+	#if locn=='SC' or locn=='':
+	if locn!='JP':
 		repsp=dict()
 		simpg=glfrtxt(simpcn)
 		for gc in simpg:
@@ -574,6 +575,9 @@ def svfont(svcmp, svnm, svgs, svgp, svfile, toit=False):
 	fontsv['name']=svnm
 	fontsv['GSUB']=svgs
 	fontsv['GPOS']=svgp
+	if 'glyf' in fontsv:
+		fontsv["head"].yMax = fontsv["hhea"].ascender
+		fontsv["head"].yMin = fontsv["hhea"].descender
 	print('Saving ', svfile)
 	fontsv.save(svfile)
 	fontsv.close()

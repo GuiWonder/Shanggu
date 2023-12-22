@@ -1,3 +1,5 @@
+# Please visit https://github.com/CyanoHao/Resource-Han-Rounded
+
 import json
 import sys
 import math

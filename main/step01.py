@@ -250,11 +250,6 @@ def cksh10():
 				print('Find', ch10)
 				get10[cmap[ord(ch10)]]=cmap10[ord(ch10)]
 		lockor10, loczht10=getloclk(font10, 'KOR'), getloclk(font10, 'ZHT')
-		for ch10 in sh10set['KR']:
-			gll=glfrloc(cmap10[ord(ch10)], lockor10)
-			if ord(ch10) in cmap and gll:
-				print('Find', ch10)
-				get10[cmap[ord(ch10)]]=gll
 		if ssty!='Serif':
 			for ch10 in sh10set['SansTC']:
 				gll=glfrloc(cmap10[ord(ch10)], loczht10)
@@ -267,7 +262,6 @@ def cksh10():
 def ckckg():
 	print('Getting glyphs from ChiuKongGothic...')
 	cmap=font.getBestCmap()
-	isvf=wt=='VF'
 	filec=os.path.join(pydir, f'ChiuKongGothic-CL/ChiuKongGothic-CL-{wt}{exn}')
 	ckgcf=os.path.join(pydir, 'configs/ChiuKongGothic-CL.json')
 	if os.path.isfile(filec) and os.path.isfile(ckgcf):
@@ -276,7 +270,6 @@ def ckckg():
 		cmapck=fontck.getBestCmap()
 		ofcfg=json.load(open(ckgcf, 'r', encoding='utf-8'))
 		if 'chars' in ofcfg:
-			if isvf:ofcfg['chars']+='偯刽吆嗦嘟嚎垒垦实宪恳惦团尘愣挎䊢叼咓啕嗨囔㑒㑹㪘啥吔嗧奰幙幠慔沎艼哋嘀乒乓孢嚐'
 			for ckch in ofcfg['chars']:
 				if ord(ckch) in cmap and ord(ckch) in cmapck:
 					print('Find', ckch)
@@ -291,46 +284,38 @@ def ckckg():
 					if ord(ckch) in uvdic:
 						newu[ord(ckch)]=int(ofcfg['uvs'][ckch], 16)
 			chguvs(newu)
-		if 'charssp' in ofcfg:
-			spch=ofcfg['charssp']
-			for ch in spch:
-				print('Find', ch)
-				g1=glfrloc(cmap[ord(ch)], loczhs)
-				g2=cmapck[ord(ch)]
-				getckg[g1]=g2
 		getother(fontck, getckg)
 		fontck.close()
 	else: print('ChiuKongGothic Failed!')
-def ckesm():
-	print('Getting glyphs from EarlySummerMincho...')
+def getnewg():
+	print('Getting new glyphs...')
 	cmap=font.getBestCmap()
-	fileesm=os.path.join(pydir, f'EarlySummerMincho/EarlySummerMincho-{wt}{exn}')
-	if os.path.isfile(fileesm):
-		getesm=dict()
-		esmset=json.load(open(os.path.join(pydir, 'configs/EarlySummerMincho.json'), 'r', encoding='utf-8'))
-		fontesm=TTFont(fileesm)
-		cmapesm=fontesm.getBestCmap()
-		chars=esmset['chars']
-		isvf=wt=='VF'
-		if isvf:
-			chars+=esmset['charvf']
-		for chesm in chars:
-			if ord(chesm) in cmap and ord(chesm) in cmapesm:
-				print('Find', chesm)
-				getesm[cmap[ord(chesm)]]=cmapesm[ord(chesm)]
-		loczhsesm=getloclk(fontesm, 'ZHS')
-		for chesm in '禅遥瑶恋峦蛮挛栾滦弯湾':
-			gll=glfrloc(cmapesm[ord(chesm)], loczhsesm)
-			if ord(chesm) in cmap and gll:
-				print('Find', chesm)
-				getesm[glfrloc(cmap[ord(chesm)], loczhs)]=gll
-		for chesm in '写泻画':
-			if ord(chesm) in cmap:
-				print('Find', chesm)
-				getesm[glfrloc(cmap[ord(chesm)], loczhs)]=cmapesm[ord(chesm)]
-		getother(fontesm, getesm)
-		fontesm.close()
-	else: print('EarlySummerMincho Failed!')
+	filenew=os.path.join(pydir, f'New/New{ssty}-{wt}{exn}')
+	if os.path.isfile(filenew):
+		getnew=dict()
+		fontnew=TTFont(filenew)
+		cmapnew=fontnew.getBestCmap()
+		cnsp='写泻画瑶恋峦蛮挛栾滦弯湾'
+		for ncd in cmapnew.keys():
+			if ncd==0x20 or ncd not in cmap:continue
+			chn=chr(ncd)
+			print('Find', chn)
+			if chn in cnsp:
+				g1=glfrloc(cmap[ncd], loczhs)
+			else:
+				g1=cmap[ncd]
+			g2=cmapnew[ncd]
+			getnew[g1]=g2
+		loczhsnew=getloclk(fontnew, 'ZHS')
+		for chn in '禅遥':
+			print('Find', chn)
+			g1=glfrloc(cmap[ord(chn)], loczhs)
+			g2=glfrloc(cmapnew[ord(chn)], loczhsnew)
+			getnew[g1]=g2
+		getother(fontnew, getnew)
+		fontnew.close()
+	else: print('Getting new glyphs Failed!')
+
 def subgl():
 	cmap=font.getBestCmap()
 	pen='"\'—‘’‚“”„‼⁇⁈⁉⸺⸻'
@@ -531,9 +516,9 @@ print('Processing radicals...')
 radicv()
 ckdlg()
 print('Getting glyphs from other fonts...')
-cksh10()
 if ssty=='Sans': ckckg()
-elif ssty=='Serif': ckesm()
+getnewg()
+cksh10()
 ckcngg()
 print('Checking for unused glyphs...')
 subgl()
