@@ -53,7 +53,7 @@
 - [思源黑体](https://github.com/adobe-fonts/source-han-sans)
 - [思源宋体](https://github.com/adobe-fonts/source-han-serif)
 - [思源等宽](https://github.com/adobe-fonts/source-han-mono)
-- [秋空󠄁黑体CL](https://github.com/ChiuMing-Neko/ChiuKongGothic)
+- [秋空󠄁黑体](https://github.com/ChiuMing-Neko/ChiuKongGothic)
 #### 2. 字体处理工具
 - [FontTools](https://github.com/fonttools/fonttools)
 - [AFDKO](https://github.com/adobe-type-tools/afdko/)

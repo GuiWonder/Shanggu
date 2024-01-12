@@ -290,6 +290,7 @@ def ckckg():
 def getnewg():
 	print('Getting new glyphs...')
 	cmap=font.getBestCmap()
+	chdgl=set()
 	filenew=os.path.join(pydir, f'New/New{ssty}-{wt}{exn}')
 	if os.path.isfile(filenew):
 		getnew=dict()
@@ -304,6 +305,7 @@ def getnewg():
 				g1=glfrloc(cmap[ncd], loczhs)
 			else:
 				g1=cmap[ncd]
+				chdgl.add(ncd)
 			g2=cmapnew[ncd]
 			getnew[g1]=g2
 		loczhsnew=getloclk(fontnew, 'ZHS')
@@ -314,6 +316,13 @@ def getnewg():
 			getnew[g1]=g2
 		getother(fontnew, getnew)
 		fontnew.close()
+		for table in font["cmap"].tables:
+			if table.format==14:
+				for un1 in chdgl:
+					for uv in set(table.uvsDict.keys()):
+						if (un1, None) in table.uvsDict[uv]:
+							print('remove uvs for new', chr(un1))
+							table.uvsDict[uv].remove((un1, None))
 	else: print('Getting new glyphs Failed!')
 
 def subgl():
@@ -433,23 +442,6 @@ def subgl():
 	elif 'glyf' in font:
 		font['glyf'].glyphs={g:font['glyf'].glyphs[g] for g in set(nnnd)}
 	font.setGlyphOrder(nnnd)
-def ckcngg():
-	cmap=font.getBestCmap()
-	for table in font["cmap"].tables:
-		if table.format==14:
-			cdg=ord('关')
-			if 0xE0102 in table.uvsDict and (cdg, None) in table.uvsDict[0xE0102]: return
-			for uv in table.uvsDict[0xE0101]:
-				if uv[0]==cdg:
-					cngg=uv[1]
-					break
-			if not cngg: return
-			table.uvsDict[0xE0100]=[uv for uv in table.uvsDict[0xE0100] if uv[0]!=cdg]
-			table.uvsDict[0xE0101]=[uv for uv in table.uvsDict[0xE0101] if uv[0]!=cdg]
-			table.uvsDict[0xE0100].append((cdg, cmap[cdg]))
-			table.uvsDict[0xE0101].append((cdg, None))
-			print('Remapping', '关')
-			setcg(cdg, cngg)
 def glfruv(ch, uv):
 	cmap=font.getBestCmap()
 	for table in font["cmap"].tables:
@@ -519,7 +511,6 @@ print('Getting glyphs from other fonts...')
 if ssty=='Sans': ckckg()
 getnewg()
 cksh10()
-ckcngg()
 print('Checking for unused glyphs...')
 subgl()
 print('Saving font...')
