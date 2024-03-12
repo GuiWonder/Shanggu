@@ -80,7 +80,7 @@ def nfname(locn, ithw=''):
 		scn=cfg['fontNameSC']+'等宽'+locn.strip()+hwm
 		tcn=cfg['fontNameTC']+'等寬'+locn.strip()+hwm
 	elif 'Rounded' in fpsn:
-		fmlName=cfg['fontName']+' Rounded'+hwm+locn
+		fmlName=cfg['fontName']+' Round'+hwm+locn
 		scn=cfg['fontNameSC']+'圆体'+locn.strip()+hwm
 		tcn=cfg['fontNameTC']+'圓體'+locn.strip()+hwm
 	else: raise
@@ -150,11 +150,11 @@ def stnm(nameobj):
 		(fnn+' Sans', fnn+' Sans '+tc), 
 		(fnn+' Serif', fnn+' Serif '+tc), 
 		(fnn+' Mono', fnn+' Mono '+tc), 
-		(fnn+' Rounded', fnn+' Rounded '+tc), 
+		(fnn+' Round', fnn+' Round '+tc), 
 		(fnnp+'Sans', fnnp+'Sans'+tc), 
 		(fnnp+'Serif', fnnp+'Serif'+tc), 
 		(fnnp+'Mono', fnnp+'Mono'+tc), 
-		(fnnp+'Rounded', fnnp+'Rounded'+tc), 
+		(fnnp+'Round', fnnp+'Round'+tc), 
 		('黑體', '黑體'+zhnt), 
 		('明體', '明體'+zhnt), 
 		('等寬', '等寬'+zhnt), 
@@ -386,7 +386,7 @@ def itcmp():
 			glyrepl(tabl)
 	for i in itft: rmft('GSUB', i)
 	for i in itlk: rmlk('GSUB', i)
-def stlks():
+def stlks(chrdic, phrdic):
 	cmap=font.getBestCmap()
 	glod=font.getGlyphOrder()
 	stmul=otTables.Lookup()
@@ -410,74 +410,62 @@ def stlks():
 	stmul.SubTable=list()
 	stmul.LookupType=6
 	stmul.LookupFlag=0
-	with open(os.path.join(pydir, 'configs/stonem.dt'),'r',encoding='utf-8') as f:
-		bkcov=list()
-		lahcov=list()
-		ltc=dict()
-		for line in f.readlines():
-			litm=line.split('#')[0].strip()
-			if '-' not in litm: continue
-			sb=dict()
-			ls=litm.strip().split(' ')
-			s, t=ls[0].split('-')
-			dics=ls[1:]
-			sg=cmap[ord(s)]
-			tg=cmap[ord(t)]
-			i=dics.index(s)
-			assert i>-1
-			bkcov=dics[0:i]
-			bkcov.reverse()
-			lahcov=dics[i+1:]
-			if sg!=tg and tg not in ltc:
-				if sg not in sgtb1:
-					sgtb1[sg]=tg
-					ltc[tg]=2
-				elif sg not in sgtb2:
-					sgtb2[sg]=tg
-					ltc[tg]=3
-				elif sg not in sgtb3:
-					sgtb3[sg]=tg
-					ltc[tg]=4
-				else:
-					raise
-			bklst=list()
-			for strs in bkcov:
-				cvobjbk=otTables.Coverage()
-				cvobjbk.glyphs=list(set([cmap[ord(ch)] for ch in strs]))
-				assert len(cvobjbk.glyphs)>0, strs
-				cvobjbk.glyphs=list(sorted([g for g in cvobjbk.glyphs], key=lambda g:glod.index(g)))
-				bklst.append(cvobjbk)
-			ahlst=list()
-			for strs in lahcov:
-				cvobjah=otTables.Coverage()
-				cvobjah.glyphs=list(set([cmap[ord(ch)] for ch in strs]))
-				assert len(cvobjah.glyphs)>0, strs
-				cvobjah.glyphs=list(sorted([g for g in cvobjah.glyphs], key=lambda g:glod.index(g)))
-				ahlst.append(cvobjah)
-			cvobjip=otTables.Coverage()
-			cvobjip.glyphs=[cmap[ord(s)]]
-			mulsb=otTables.ChainContextSubst()
-			mulsb.Format=3
-			mulsb.BacktrackCoverage=bklst
-			mulsb.InputCoverage=[cvobjip]
-			mulsb.LookAheadCoverage=ahlst
-			if sg!=tg:
-				sblrd=otTables.SubstLookupRecord()
-				sblrd.SequenceIndex=0
-				sblrd.LookupListIndex=ltc[tg]
-				mulsb.SubstLookupRecord=[sblrd]
-			stmul.SubTable.append(mulsb)
+	ltc=dict()
+	for phdc in phrdic:
+		s, t=phdc['s'], phdc['t']
+		dics=phdc['p']
+		sg=cmap[ord(s)]
+		tg=cmap[ord(t)]
+		i=dics.index(s)
+		assert i>-1
+		bkcov=dics[0:i]
+		bkcov.reverse()
+		lahcov=dics[i+1:]
+		if sg!=tg and tg not in ltc:
+			if sg not in sgtb1:
+				sgtb1[sg]=tg
+				ltc[tg]=2
+			elif sg not in sgtb2:
+				sgtb2[sg]=tg
+				ltc[tg]=3
+			elif sg not in sgtb3:
+				sgtb3[sg]=tg
+				ltc[tg]=4
+			else:
+				raise
+		bklst=list()
+		for strs in bkcov:
+			cvobjbk=otTables.Coverage()
+			cvobjbk.glyphs=list(set([cmap[ord(ch)] for ch in strs]))
+			assert len(cvobjbk.glyphs)>0, strs
+			cvobjbk.glyphs=list(sorted([g for g in cvobjbk.glyphs], key=lambda g:glod.index(g)))
+			bklst.append(cvobjbk)
+		ahlst=list()
+		for strs in lahcov:
+			cvobjah=otTables.Coverage()
+			cvobjah.glyphs=list(set([cmap[ord(ch)] for ch in strs]))
+			assert len(cvobjah.glyphs)>0, strs
+			cvobjah.glyphs=list(sorted([g for g in cvobjah.glyphs], key=lambda g:glod.index(g)))
+			ahlst.append(cvobjah)
+		cvobjip=otTables.Coverage()
+		cvobjip.glyphs=[cmap[ord(s)]]
+		mulsb=otTables.ChainContextSubst()
+		mulsb.Format=3
+		mulsb.BacktrackCoverage=bklst
+		mulsb.InputCoverage=[cvobjip]
+		mulsb.LookAheadCoverage=ahlst
+		if sg!=tg:
+			sblrd=otTables.SubstLookupRecord()
+			sblrd.SequenceIndex=0
+			sblrd.LookupListIndex=ltc[tg]
+			mulsb.SubstLookupRecord=[sblrd]
+		stmul.SubTable.append(mulsb)
 	sgsb1.mapping=sgtb1
 	sgsb2.mapping=sgtb2
 	sgsb3.mapping=sgtb3
-	with open(os.path.join(pydir, 'configs/stoneo.dt'),'r',encoding='utf-8') as f:
-		for line in f.readlines():
-			litm=line.split('#')[0].strip()
-			if '-' not in litm: continue
-			s, t=litm.split(' ')[0].split('-')
-			s, t=s.strip(), t.strip()
-			if s and t and s!=t and ord(s) in cmap and ord(t) in cmap and cmap[ord(s)]!=cmap[ord(t)]:
-				sgtb[cmap[ord(s)]]=cmap[ord(t)]
+	for s, t in list(chrdic.items()):
+		if ord(s) in cmap and ord(t) in cmap and cmap[ord(s)]!=cmap[ord(t)]:
+			sgtb[cmap[ord(s)]]=cmap[ord(t)]
 	sgsb.mapping=sgtb
 	for lkp in font["GSUB"].table.LookupList.Lookup:
 		for st in lkp.SubTable:
@@ -498,16 +486,35 @@ def stlks():
 		for lsr in sr.Script.LangSysRecord:
 			lsr.LangSys.FeatureIndex=[i+1 for i in lsr.LangSys.FeatureIndex]
 			lsr.LangSys.FeatureIndex.insert(0, 0)
-def stcmp():
+def stcmp(chrdic):
 	cmap=font.getBestCmap()
+	for s, t in list(chrdic.items()):
+		if ord(s) not in cmap and ord(t) in cmap:
+			setcg(ord(s), cmap[ord(t)])
+def getstdic():
+	newdic=dict()
 	with open(os.path.join(pydir, 'configs/stoneo.dt'),'r',encoding='utf-8') as f:
 		for line in f.readlines():
 			litm=line.split('#')[0].strip()
 			if '-' not in litm: continue
 			s, t=litm.split(' ')[0].split('-')
 			s, t=s.strip(), t.strip()
-			if s and t and s!=t and ord(s) not in cmap and ord(t) in cmap:
-				setcg(ord(s), cmap[ord(t)])
+			if s and t and s!=t:
+				newdic[s]=t
+	for s, t in list(newdic.items()):
+		if t in newdic: newdic[s]=newdic[t]
+	newlst=list()
+	with open(os.path.join(pydir, 'configs/stonem.dt'),'r',encoding='utf-8') as f:
+		for line in f.readlines():
+			litm=line.split('#')[0].strip()
+			if '-' not in litm: continue
+			dic1=dict()
+			ls=litm.strip().split(' ')
+			s, t=ls[0].split('-')
+			dic1['s'], dic1['t']=s, t
+			dic1['p']=ls[1:]
+			newlst.append(dic1)
+	return newdic, newlst
 def flpth(flnm):
 	if 'VF' in flnm:
 		flnm=flnm.split('-')[0].replace('VF', '-VF')
@@ -545,8 +552,9 @@ def getstmap():
 	font['GSUB']=copy.deepcopy(AA['GSUB'])
 	font['GPOS']=copy.deepcopy(AA['GPOS'])
 	cmap=font.getBestCmap()
-	stcmp()
-	stlks()
+	chrdic, phrdic=getstdic()
+	stcmp(chrdic)
+	stlks(chrdic, phrdic)
 	AA['namest']=stnm(copy.deepcopy(AA['name']))
 	AA['filest']=flpth(AA['namest'].getDebugName(6))
 	AA['cmapst']=copy.deepcopy(font['cmap'])
@@ -595,7 +603,7 @@ def svfonts():
 	else: cfnm=AA['file'][:AA['file'].rindex('.')]+'.ttc'
 	ttcarg=['-o', cfnm]
 	if 'Mono' not in fpsn:
-		ttcarg+=[AA['file'], AATC['file'], AASC['file'], AAJP['file'], AA['filest'], AA['filehw'], AATC['filehw'], AASC['filehw'], AAJP['filehw'], AA['filest2']]
+		ttcarg+=[AA['file'], AA['filehw'], AATC['file'], AATC['filehw'], AASC['file'], AASC['filehw'], AAJP['file'], AAJP['filehw'], AA['filest'], AA['filest2']]
 	else:
 		ttcarg+=[AA['file'], AA['fileit'], AATC['file'], AATC['fileit'], AASC['file'], AASC['fileit'], AAJP['file'], AAJP['fileit']]
 	otf2otc.run(ttcarg)

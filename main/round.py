@@ -25,7 +25,8 @@ def Get(contour, index, advance = 0):
 
 def Del(contour, index, advance = 0):
 	index += advance
-	del contour[index % len(contour)]
+	if len(contour)!=0:
+		del contour[index % len(contour)]
 
 def InClosedInterval(x, a, b):
 	return x >= a and x <= b

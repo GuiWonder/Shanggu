@@ -16,7 +16,7 @@ os.system('7z e ./tmp/ChiuKongGothic-CL.zip -o./main/ChiuKongGothic-CL -aoa')
 
 cfg=json.load(open('./main/configs/config.json', 'r', encoding = 'utf-8'))
 fnm=cfg['fontName'].replace(' ', '')
-fod='Rounded'
+fod='Round'
 
 step01='python3 ./main/step01.py'
 step02='python3 ./main/step02.py'

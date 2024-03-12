@@ -8,4 +8,4 @@
 使用方法：執行 `python mulcodechar.py InFont.otf OutFont.otf`  
 #### 2. 差集提取工具
 此工具可提取本字型與思源不同的字形。  
-使用方法：執行 `python finddiffers.py -o OutFont.otf AdvocateAncientSansTC-Regular.otf SourceHanSans-Regular.otf`
+使用方法：執行 `python finddiffers.py -o OutFont.otf ShangguSansTC-Regular.otf SourceHanSans-Regular.otf`

@@ -7,18 +7,11 @@ jobs:
   buildotf:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Install afdko
       run: pip3 install afdko
     - name: Begin
       run: python3 ./build/buildotf.py
-
-    - uses: actions/upload-artifact@v3
-      with:
-        name: AdvocateAncientOTFs
-        path: |
-          *.7z
-          *.zip
 
     - name: Upload to release
       uses: ncipollo/release-action@v1
@@ -32,12 +25,19 @@ jobs:
         prerelease: true
         draft: true
         name: "Build Test"
-        body: "Advocate Ancient"
+        body: "Shanggu"
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ShangguOTFs
+        path: |
+          *.7z
+          *.zip
 
   buildttf:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Install afdko
       run: pip3 install afdko
     - name: Install wine
@@ -45,11 +45,6 @@ jobs:
     - name: Begin
       run: python3 ./build/buildttf.py
 
-    - uses: actions/upload-artifact@v3
-      with:
-        name: AdvocateAncientTTFs
-        path: "*.7z"
-
     - name: Upload to release
       uses: ncipollo/release-action@v1
       with:
@@ -60,22 +55,22 @@ jobs:
         prerelease: true
         draft: true
         name: "Build Test"
-        body: "Advocate Ancient"
+        body: "Shanggu"
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ShangguTTFs
+        path: "*.7z"
 
   buildvf:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Install afdko
       run: pip3 install afdko
     - name: Begin
       run: python3 ./build/buildvf.py
 
-    - uses: actions/upload-artifact@v3
-      with:
-        name: AdvocateAncientVFs
-        path: "*.7z"
-
     - name: Upload to release
       uses: ncipollo/release-action@v1
       with:
@@ -86,12 +81,17 @@ jobs:
         prerelease: true
         draft: true
         name: "Build Test"
-        body: "Advocate Ancient"
+        body: "Shanggu"
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ShangguVFs
+        path: "*.7z"
 
   buildrd:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Install afdko
       run: pip3 install afdko
 
@@ -108,10 +108,10 @@ jobs:
         prerelease: true
         draft: true
         name: "Build Test"
-        body: "Advocate Ancient"
+        body: "Shanggu"
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
-        name: AdvocateAncientRounded
+        name: ShangguRound
         path: "*.7z"
 
