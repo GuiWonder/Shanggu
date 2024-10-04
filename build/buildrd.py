@@ -4,15 +4,11 @@ from shutil import copy, rmtree
 os.makedirs('./tmp')
 os.makedirs('./src')
 os.makedirs('./main/sourcehan10')
-#os.makedirs('./main/ChiuKongGothic-CL')
-ckgurl='https://github.com/ChiuMing-Neko/ChiuKongGothic/releases/download/v.1.300/ChiuKongGothic-CL.zip'
 
 wtsans=['Bold', 'ExtraLight', 'Heavy', 'Light', 'Medium', 'Normal', 'Regular']
 for wt in wtsans:
 	os.system(f'wget -P ./src https://github.com/adobe-fonts/source-han-sans/raw/release/OTF/Japanese/SourceHanSans-{wt}.otf')
 	os.system(f'wget -P ./main/sourcehan10 https://github.com/adobe-fonts/source-han-sans/raw/1.004R/OTF/Japanese/SourceHanSans-{wt}.otf')
-os.system(f'wget -P tmp {ckgurl}')
-os.system('7z e ./tmp/ChiuKongGothic-CL.zip -o./main/ChiuKongGothic-CL -aoa')
 
 cfg=json.load(open('./main/configs/config.json', 'r', encoding = 'utf-8'))
 fnm=cfg['fontName'].replace(' ', '')

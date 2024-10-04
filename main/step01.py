@@ -52,7 +52,6 @@ def glfrloc(gl, loclk):
 def locglrpl():
 	locgls=dict()
 	shset=json.load(open(os.path.join(pydir, 'configs/sourcehan.json'), 'r', encoding='utf-8'))
-	if ssty in ('Sans', 'Mono'): shset['hcgl']+=shset['hcglsans']
 	krgl, scgl, tcgl, hcgl=glfrtxt(shset['krgl']), glfrtxt(shset['scgl']), glfrtxt(shset['tcgl']), glfrtxt(shset['hcgl'])
 	for glloc in ((krgl, lockor), (scgl, loczhs), (tcgl, loczht), (hcgl, loczhh)):
 		for g1 in glloc[0]:
@@ -208,7 +207,7 @@ def chguvs(newu):
 def getjpv():
 	cmap=font.getBestCmap()
 	jpvar=dict()
-	jpvch=[('𰰨', '芲'), ('𩑠', '頙'), ('𥄳', '眔')]
+	jpvch=[('𰰨', '芲'), ('𩑠', '頙'), ('鄉', '鄕'), ('唧', '喞'), ('𥄳', '眔')]
 	for chs in jpvch:
 		if ord(chs[1]) in cmap:
 			jpvar[ord(chs[0])]=cmap[ord(chs[1])]
@@ -223,7 +222,7 @@ def locvar():
 				print('Processing', lv1[0])
 				setcg(ord(lv1[0]), gv2)
 def uvsvar():
-	uvsmul=[('⺼', '月', 'E0100'), ('𱍐', '示', 'E0100'), ('䶹', '屮', 'E0101'), ('𠾖', '器', 'E0100'), ('𡐨', '壄', 'E0100'), ('𤥨', '琢', 'E0101'), ('𦤀', '臭', 'E0100'), ('𨺓', '隆', 'E0100'), ('𫜸', '叱', 'E0101')]
+	uvsmul=[('⺼', '月', 'E0100'), ('𱍐', '示', 'E0100'), ('䶹', '屮', 'E0101'), ('𠾖', '器', 'E0100'), ('𡐨', '壄', 'E0100'), ('𤥨', '琢', 'E0101'), ('𦤀', '臭', 'E0100'), ('𨺓', '隆', 'E0100'), ('𫜸', '叱', 'E0101'), ('暨', '曁', 'E0101'), ('廄', '廏', 'E0101')]
 	for uvm in uvsmul:
 		u1, u2, usel=ord(uvm[0]), ord(uvm[1]), int(uvm[2], 16)
 		if u2 in uvdic and usel in uvdic[u2]:
@@ -259,34 +258,6 @@ def cksh10():
 		getother(font10, get10)
 		font10.close()
 	else: print('SourceHan 1.0x Failed!')
-def ckckg():
-	print('Getting glyphs from ChiuKongGothic...')
-	cmap=font.getBestCmap()
-	filec=os.path.join(pydir, f'ChiuKongGothic-CL/ChiuKongGothic-CL-{wt}{exn}')
-	ckgcf=os.path.join(pydir, 'configs/ChiuKongGothic-CL.json')
-	if os.path.isfile(filec) and os.path.isfile(ckgcf):
-		getckg=dict()
-		fontck=TTFont(filec)
-		cmapck=fontck.getBestCmap()
-		ofcfg=json.load(open(ckgcf, 'r', encoding='utf-8'))
-		if 'chars' in ofcfg:
-			for ckch in ofcfg['chars']:
-				if ord(ckch) in cmap and ord(ckch) in cmapck:
-					print('Find', ckch)
-					getckg[cmap[ord(ckch)]]=cmapck[ord(ckch)]
-		if 'uvs' in ofcfg:
-			newu=dict()
-			ckuvs=getuvs(fontck, cmapck)
-			for ckch in ofcfg['uvs'].keys():
-				if ord(ckch) in cmap and ord(ckch) in ckuvs:
-					print('Find', ckch)
-					getckg[cmap[ord(ckch)]]=ckuvs[ord(ckch)][int(ofcfg['uvs'][ckch], 16)]
-					if ord(ckch) in uvdic:
-						newu[ord(ckch)]=int(ofcfg['uvs'][ckch], 16)
-			chguvs(newu)
-		getother(fontck, getckg)
-		fontck.close()
-	else: print('ChiuKongGothic Failed!')
 def getnewg():
 	print('Getting new glyphs...')
 	cmap=font.getBestCmap()
@@ -508,7 +479,6 @@ print('Processing radicals...')
 radicv()
 ckdlg()
 print('Getting glyphs from other fonts...')
-if ssty=='Sans': ckckg()
 getnewg()
 cksh10()
 print('Checking for unused glyphs...')
