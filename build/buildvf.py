@@ -22,20 +22,20 @@ for fod in aa:
 step01='python3 ./main/step01.py'
 step02='python3 ./main/step02.py'
 
-os.makedirs('./tmp/tmp01')
+os.makedirs('./tmp/tmpvf')
 for item in os.listdir('./src'):
 	if item.lower().split('.')[-1] in ('otf', 'ttf'):
-		os.system(f"{step01} ./src/{item} ./tmp/tmp01/{item}")
+		os.system(f"{step01} ./src/{item} ./tmp/tmpvf/{item}")
 rmtree('./src')
 
 vrf=['', 'TC', 'SC', 'JP']
-for item in os.listdir('./tmp/tmp01'):
+for item in os.listdir('./tmp/tmpvf'):
 	if item.lower().split('.')[-1] in ('otf', 'ttf'):
 		aan=item.replace('SourceHan', fnm)
 		fn1, fn2=aan.split('.')
 		ftn=aan.split('-')[0]
 		outd=f'{fn1}_{fn2.upper()}s'
-		os.system(f"{step02} ./tmp/tmp01/{item} ./fonts/{outd}")
+		os.system(f"{step02} ./tmp/tmpvf/{item} ./fonts/{outd}")
 		os.system(f'mv ./fonts/{outd}/*.ttc ./fonts/{fn1}_OTCTTC/')
 
 for fod in aa:
@@ -43,4 +43,3 @@ for fod in aa:
 	os.system(f'7z a ./{fnm}{fod}_TTFs.7z ./fonts/{fnm}{fod}_TTFs/* -mx=9 -mfb=256 -md=512m')
 	os.system(f'7z a ./{fnm}{fod}_OTCTTC.7z ./fonts/{fnm}{fod}_OTCTTC/*')
 
-rmtree('./tmp')

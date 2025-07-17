@@ -34,7 +34,8 @@ def subft(font, subst):
 			if 'gvar' in font and fl in font['gvar'].variations:
 				del font['gvar'].variations[fl]
 			del font['hmtx'][fl]
-			del font['vmtx'][fl]
+			if 'vmtx' in font:
+				del font['vmtx'][fl]
 	if 'CFF ' in font:
 		subcff(font['CFF '], set(nnnd))
 	elif 'CFF2' in font:
@@ -83,7 +84,7 @@ def ckgl(cod):
 	g1.draw(p1)
 	g2.draw(p2)
 
-	return p1.value==p2.value	
+	return p1.value==p2.value
 
 outfile, fontList=parseflnm(sys.argv[1:])
 file1, file2=fontList[0], fontList[1]

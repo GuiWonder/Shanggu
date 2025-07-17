@@ -4,14 +4,14 @@ on:
   workflow_dispatch:
 
 jobs:
-  buildotf:
+  build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - name: Install afdko
       run: pip3 install afdko
     - name: Begin
-      run: python3 ./build/buildotf.py
+      run: python3 ./build/buildstatic.py
 
     - name: Upload to release
       uses: ncipollo/release-action@v1
@@ -29,38 +29,10 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: ShangguOTFs
+        name: ShangguStatic
         path: |
           *.7z
           *.zip
-
-  buildttf:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - name: Install afdko
-      run: pip3 install afdko
-    - name: Install wine
-      run: sudo apt update && sudo apt install wine
-    - name: Begin
-      run: python3 ./build/buildttf.py
-
-    - name: Upload to release
-      uses: ncipollo/release-action@v1
-      with:
-        token: "${{ secrets.GITHUB_TOKEN }}"
-        tag: "test-01"
-        artifacts: "*.7z"
-        allowUpdates: true
-        prerelease: true
-        draft: true
-        name: "Build Test"
-        body: "Shanggu"
-
-    - uses: actions/upload-artifact@v4
-      with:
-        name: ShangguTTFs
-        path: "*.7z"
 
   buildvf:
     runs-on: ubuntu-latest
@@ -85,33 +57,6 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: ShangguVFs
-        path: "*.7z"
-
-  buildrd:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - name: Install afdko
-      run: pip3 install afdko
-
-    - name: Begin
-      run: python3 ./build/buildrd.py
-
-    - name: Upload to release
-      uses: ncipollo/release-action@v1
-      with:
-        token: "${{ secrets.GITHUB_TOKEN }}"
-        tag: "test-01"
-        artifacts: "*.7z"
-        allowUpdates: true
-        prerelease: true
-        draft: true
-        name: "Build Test"
-        body: "Shanggu"
-
-    - uses: actions/upload-artifact@v4
-      with:
-        name: ShangguRound
+        name: ShangguVF
         path: "*.7z"
 

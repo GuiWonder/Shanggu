@@ -22,7 +22,7 @@ def glyrepl(repdic):
 		for cd in table.cmap:
 			if table.cmap[cd] in repdic:
 				table.cmap[cd]=repdic[table.cmap[cd]]
-				print('Remapping', chr(cd))
+				print('Remap', chr(cd))
 def locllki(lan):
 	ftl, lkl=list(), list()
 	for sr in font["GSUB"].table.ScriptList.ScriptRecord:
@@ -67,22 +67,28 @@ def nfname(locn, ithw=''):
 	itml, itm, hwm=str(), str(), str()
 	if ishw: hwm=' HW'
 	if isit: itml, itm=' Italic', 'It'
+	locadd=locn.strip()
+	if locadd=='ST':
+		loctc=' 簡轉繁'
+		locsc=' 简转繁'
+	else:
+		loctc=locsc=locadd
 	if 'Sans' in fpsn:
 		fmlName=cfg['fontName']+' Sans'+hwm+locn
-		scn=cfg['fontNameSC']+'黑体'+locn.strip()+hwm
-		tcn=cfg['fontNameTC']+'黑體'+locn.strip()+hwm
+		scn=cfg['fontNameSC']+'黑体'+locsc+hwm
+		tcn=cfg['fontNameTC']+'黑體'+loctc+hwm
 	elif 'Serif' in fpsn:
 		fmlName=cfg['fontName']+' Serif'+hwm+locn
-		scn=cfg['fontNameSC']+'明体'+locn.strip()+hwm
-		tcn=cfg['fontNameTC']+'明體'+locn.strip()+hwm
+		scn=cfg['fontNameSC']+'明体'+locsc+hwm
+		tcn=cfg['fontNameTC']+'明體'+loctc+hwm
 	elif 'Mono' in fpsn:
 		fmlName=cfg['fontName']+' Mono'+hwm+locn
-		scn=cfg['fontNameSC']+'等宽'+locn.strip()+hwm
-		tcn=cfg['fontNameTC']+'等寬'+locn.strip()+hwm
+		scn=cfg['fontNameSC']+'等宽'+locsc+hwm
+		tcn=cfg['fontNameTC']+'等寬'+loctc+hwm
 	elif 'Rounded' in fpsn:
 		fmlName=cfg['fontName']+' Round'+hwm+locn
-		scn=cfg['fontNameSC']+'圆体'+locn.strip()+hwm
-		tcn=cfg['fontNameTC']+'圓體'+locn.strip()+hwm
+		scn=cfg['fontNameSC']+'圆体'+locsc+hwm
+		tcn=cfg['fontNameTC']+'圓體'+loctc+hwm
 	else: raise
 	ftName=fmlName
 	ftNamesc=scn
@@ -140,54 +146,28 @@ def nfname(locn, ithw=''):
 		newnane.setName(scn, 16, 3, 1, 2052)
 		newnane.setName(wt+itml, 17, 3, 1, 2052)
 	return newnane
-def stnm(nameobj):
-	fnn=cfg['fontName']
-	fnnp=fnn.replace(' ', '')
-	tc='ST'
-	zhnt=' 轉繁體'
-	zhns=' 转繁体'
-	rpln=[
-		(fnn+' Sans', fnn+' Sans '+tc), 
-		(fnn+' Serif', fnn+' Serif '+tc), 
-		(fnn+' Mono', fnn+' Mono '+tc), 
-		(fnn+' Round', fnn+' Round '+tc), 
-		(fnnp+'Sans', fnnp+'Sans'+tc), 
-		(fnnp+'Serif', fnnp+'Serif'+tc), 
-		(fnnp+'Mono', fnnp+'Mono'+tc), 
-		(fnnp+'Round', fnnp+'Round'+tc), 
-		('黑體', '黑體'+zhnt), 
-		('明體', '明體'+zhnt), 
-		('等寬', '等寬'+zhnt), 
-		('黑体', '黑体'+zhns), 
-		('明体', '明体'+zhns), 
-		('等宽', '等宽'+zhns), 
-		('圓體', '圓體'+zhnt), 
-		('圆体', '圆体'+zhns), 
-		('ST HW', 'HW ST'), 
-		('STHW', 'HWST')
-	]
-	for n1 in nameobj.names:
-		nstr=str(n1)
-		for rp in rpln:
-			 nstr=nstr.replace(rp[0], rp[1])
-		nameobj.setName(nstr, n1.nameID, n1.platformID, n1.platEncID, n1.langID)
-	return nameobj
 def vfname(locn, hw=''):
 	ishw='hw' in hw.lower()
 	hwm=str()
 	if ishw: hwm=' HW'
+	locadd=locn.strip()
+	if locadd=='ST':
+		loctc=' 簡轉繁'
+		locsc=' 简转繁'
+	else:
+		loctc=locsc=locadd
 	if 'Sans' in fpsn:
 		fmlName=cfg['fontName']+' Sans'+hwm+locn
-		scn=cfg['fontNameSC']+'黑体'+locn.strip()+hwm+' VF'
-		tcn=cfg['fontNameTC']+'黑體'+locn.strip()+hwm+' VF'
+		scn=cfg['fontNameSC']+'黑体'+locsc+hwm+' VF'
+		tcn=cfg['fontNameTC']+'黑體'+loctc+hwm+' VF'
 	elif 'Serif' in fpsn:
 		fmlName=cfg['fontName']+' Serif'+hwm+locn
-		scn=cfg['fontNameSC']+'明体'+locn.strip()+hwm+' VF'
-		tcn=cfg['fontNameTC']+'明體'+locn.strip()+hwm+' VF'
+		scn=cfg['fontNameSC']+'明体'+locsc+hwm+' VF'
+		tcn=cfg['fontNameTC']+'明體'+loctc+hwm+' VF'
 	elif 'Mono' in fpsn:
 		fmlName=cfg['fontName']+' Mono'+hwm+locn
-		scn=cfg['fontNameSC']+'等宽'+locn.strip()+hwm+' VF'
-		tcn=cfg['fontNameTC']+'等寬'+locn.strip()+hwm+' VF'
+		scn=cfg['fontNameSC']+'等宽'+locsc+hwm+' VF'
+		tcn=cfg['fontNameTC']+'等寬'+loctc+hwm+' VF'
 	else:
 		raise
 	ftNamesc=scn
@@ -530,6 +510,10 @@ def getvarmap(locn):
 	a1['GSUB']=copy.deepcopy(font['GSUB'])
 	a1['GPOS']=copy.deepcopy(font['GPOS'])
 	a1['cmap']=copy.deepcopy(font['cmap'])
+	for table in a1['cmap'].tables:
+		if table.format==6:
+			if locn in ('','TC'): table.platEncID=2
+			elif locn=='SC': table.platEncID=25
 	if 'Mono' not in fpsn:
 		hwcmp()
 		hwgps()
@@ -551,11 +535,10 @@ def getstmap():
 	font['cmap']=copy.deepcopy(AA['cmap'])
 	font['GSUB']=copy.deepcopy(AA['GSUB'])
 	font['GPOS']=copy.deepcopy(AA['GPOS'])
-	cmap=font.getBestCmap()
 	chrdic, phrdic=getstdic()
 	stcmp(chrdic)
 	stlks(chrdic, phrdic)
-	AA['namest']=stnm(copy.deepcopy(AA['name']))
+	AA['namest']=mkname('ST', '')
 	AA['filest']=flpth(AA['namest'].getDebugName(6))
 	AA['cmapst']=copy.deepcopy(font['cmap'])
 	AA['GSUBst']=copy.deepcopy(font['GSUB'])
@@ -563,10 +546,10 @@ def getstmap():
 	if 'Mono' not in fpsn:
 		hwcmp()
 		hwgps()
-		AA['namest2']=stnm(copy.deepcopy(AA['namehw']))
+		AA['namest2']=mkname('ST', 'hw')
 	else:
 		itcmp()
-		AA['namest2']=stnm(copy.deepcopy(AA['nameit']))
+		AA['namest2']=mkname('ST', 'it')
 	AA['filest2']=flpth(AA['namest2'].getDebugName(6))
 	AA['cmapst2']=copy.deepcopy(font['cmap'])
 	AA['GSUBst2']=copy.deepcopy(font['GSUB'])
@@ -609,7 +592,7 @@ def svfonts():
 	otf2otc.run(ttcarg)
 
 print('*'*50)
-print('====Build Advocate Ancient Fonts====\n')
+print('====Build Shanggu Fonts====\n')
 infile=sys.argv[1]
 outdir=sys.argv[2]
 exn=infile.split('.')[-1].lower()
@@ -621,6 +604,7 @@ pzht=pzht.replace('’', '').replace('‘', '').replace('”', '').replace('“'
 simpcn='蒋残浅践写泻惮禅箪蝉恋峦蛮挛栾滦弯湾径茎滞画遥瑶'#変将与弥称
 fpsn=font["name"].getDebugName(6)
 print('Getting the localized lookups table...')
+locl={'ZHS': getloclk('ZHS'), 'ZHT':getloclk('ZHT')}
 loczhs, loczht=getloclk('ZHS'), getloclk('ZHT')
 font.close()
 AA=getvarmap('')

@@ -8,7 +8,7 @@
 ![image](./pictures/pic0002.png)  
 ## 关于字体
 ### 说明
-本项目字体名称为“ **尚古 Shanggu Fonts** ”*或“尙古 Advocate Ancient Fonts ”*。
+本项目字体名称为“ **尙古 Shanggu Fonts** ”。“尙古”通常也写作“尚古”，*字体安装后系统显示字体名称为“尙古”而非“尚古”*。
 #### 1. [新旧异体字](./main/configs/mulcodechar.dt)（如青-靑 尚-尙 兑-兌 温-溫等）合并为旧字形
 > Shanggu Sans | 尙古黑体 | 尙古黑體，<br />
 > Shanggu Serif | 尙古明体 | 尙古明體，<br />
@@ -29,8 +29,8 @@
 > NOTE: 字体名称中的 TC、SC、JP 仅代表地区标点的不同，本字体不使用地区的字形标准。
 #### 3. 简转繁体
 简入繁出的字体，可根据文本内容动态匹配一简多繁的情况。
-> Shanggu Sans ST | 尙古黑体 转繁体 | 尙古黑體 轉繁體，<br />
-> Shanggu Serif ST | 尙古明体 转繁体 | 尙古明體 轉繁體。<br />
+> Shanggu Sans ST | 尙古黑体 简转繁 | 尙古黑體 簡轉繁，<br />
+> Shanggu Serif ST | 尙古明体 简转繁 | 尙古明體 簡轉繁。<br />
 
 ▼ 一简多繁测试，此功能使用 OpenType 特性。<br />
 ![image](./pictures/pic0003.png)  
@@ -39,9 +39,9 @@
 #### 1. OpenType 格式(OTF/OTC)
 原版格式。
 #### 2. TrueType 格式(TTF/TTC)
-基于 [Source-Han-TrueType](https://github.com/Pal3love/Source-Han-TrueType)，具有良好的兼容性。
+兼容性较好。
 #### 3. 可变字体
-包括 OpenType 和 TrueType 格式。
+包括 OpenType (CFF2) 和 TrueType 格式。
 
 ## 下载字体
 1. 可从本站 [Releases](https://github.com/GuiWonder/Shanggu/releases) 页面下载字体（推荐）。
@@ -57,11 +57,10 @@
 - [秋空󠄁黑体](https://github.com/ChiuMing-Neko/ChiuKongGothic)
 #### 2. 字体处理工具
 - [FontTools](https://github.com/fonttools/fonttools)
-- [AFDKO](https://github.com/adobe-type-tools/afdko/)
+- [AFDKO](https://github.com/adobe-type-tools/afdko)
+- [fontmake](https://github.com/googlefonts/fontmake)
 - [otfcc](https://github.com/caryll/otfcc)
-#### 3. TrueType 格式转换及处理
-- [Source-Han-TrueType](https://github.com/Pal3love/Source-Han-TrueType)
-- [Source Han Sans TTF](https://github.com/be5invis/source-han-sans-ttf)
+#### 3. 圆体转换
 - [Resource-Han-Rounded](https://github.com/CyanoHao/Resource-Han-Rounded)
 #### 4. 字形参考
 - [传承字形标准化文件](https://github.com/ichitenfont/inheritedglyphs) [I.明体](https://github.com/ichitenfont/I.Ming)

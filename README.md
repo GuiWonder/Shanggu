@@ -8,13 +8,14 @@
 ![image](./pictures/pic0002.png)  
 ## 關於字型
 ### 說明
-本專案字型名稱為「 **尚古 Shanggu Fonts** 」*或「尙古 Advocate Ancient Fonts 」*。
+本專案字型名稱為「 **尙古 Shanggu Fonts** 」。「尙古」通常也寫作「尚古」，*字型安裝後系統顯示字型名稱為「尙古」而非「尚古」*。
 #### 1. [新舊異體字](./main/configs/mulcodechar.dt)（如青-靑 尚-尙 兑-兌 温-溫等）合併為舊字形
 > Shanggu Sans | 尙古黑体 | 尙古黑體，<br />
 > Shanggu Serif | 尙古明体 | 尙古明體，<br />
 > Shanggu Mono | 尙古等宽 | 尙古等寬。<br />
 #### 2. [新舊異體字](./main/configs/mulcodechar.dt)遵從 Unicode 分開編碼
 根據地區標點和簡化字的不同，分為TC、SC、JP三種。<br />
+
 > Shanggu Sans TC | 尙古黑体TC | 尙古黑體TC，<br />
 > Shanggu Serif TC | 尙古明体TC | 尙古明體TC，<br />
 > Shanggu Mono TC | 尙古等宽TC | 尙古等寬TC<br />
@@ -28,8 +29,8 @@
 > NOTE: 字型名稱中的 TC、SC、JP 僅代表地區標點的不同，本字型不使用地區的字形標準。
 #### 3. 簡轉繁體
 簡入繁出的字型，可根據文字内容動態匹配一簡多繁的情況。
-> Shanggu Sans ST | 尙古黑体 转繁体 | 尙古黑體 轉繁體，<br />
-> Shanggu Serif ST | 尙古明体 转繁体 | 尙古明體 轉繁體。<br />
+> Shanggu Sans ST | 尙古黑体 简转繁 | 尙古黑體 簡轉繁，<br />
+> Shanggu Serif ST | 尙古明体 简转繁 | 尙古明體 簡轉繁。<br />
 
 ▼ 一簡多繁測試，此功能使用 OpenType 特性。<br />
 ![image](./pictures/pic0003.png)  
@@ -38,9 +39,9 @@
 #### 1. OpenType 格式(OTF/OTC)
 原版格式。
 #### 2. TrueType 格式(TTF/TTC)
-基於 [Source-Han-TrueType](https://github.com/Pal3love/Source-Han-TrueType)，具有良好的兼容性。
+相容性較好。
 #### 3. 可變字型
-包括 OpenType 和 TrueType 格式。
+包括 OpenType (CFF2) 和 TrueType 格式。
 
 ## 下載字型
 1. 可從本站 [Releases](https://github.com/GuiWonder/Shanggu/releases) 頁面下載字型（推薦）。
@@ -56,11 +57,10 @@
 - [秋空󠄁黑體](https://github.com/ChiuMing-Neko/ChiuKongGothic)
 #### 2. 字型處理工具
 - [FontTools](https://github.com/fonttools/fonttools)
-- [AFDKO](https://github.com/adobe-type-tools/afdko/)
+- [AFDKO](https://github.com/adobe-type-tools/afdko)
+- [fontmake](https://github.com/googlefonts/fontmake)
 - [otfcc](https://github.com/caryll/otfcc)
-#### 3. TrueType 格式轉換及處理
-- [Source-Han-TrueType](https://github.com/Pal3love/Source-Han-TrueType)
-- [Source Han Sans TTF](https://github.com/be5invis/source-han-sans-ttf)
+#### 3. 圓體轉換
 - [Resource-Han-Rounded](https://github.com/CyanoHao/Resource-Han-Rounded)
 #### 4. 字形參考
 - [傳承字形標準化文件](https://github.com/ichitenfont/inheritedglyphs) [I.明體](https://github.com/ichitenfont/I.Ming)

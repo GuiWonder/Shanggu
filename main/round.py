@@ -139,7 +139,7 @@ def SeperateConjunctionImpl(glyph, maxDistance, visited):
 							vec3 = ComplexVector(pPrev, p)
 							vec4 = ComplexVector(p, pNext)
 
-							if cmath.phase(vec4 / vec3) > math.pi / 3 and Dot(ComplexVector(point, p), vec1) >= 0 and Dot(ComplexVector(point, p), vec4) >= 0:
+							if vec3!=0 and cmath.phase(vec4 / vec3) > math.pi / 3 and Dot(ComplexVector(point, p), vec1) >= 0 and Dot(ComplexVector(point, p), vec4) >= 0:
 								# case 1
 								if abs(cmath.phase(vec4 / vec1)) < math.pi / 30 and InClosedInterval(cmath.phase(vec2 / vec3), -math.pi * 2 / 3, -math.pi / 3) and abs(cmath.phase(ComplexVector(point, p) / vec1)) < math.pi / 12:
 									mu = (vec3.imag * (p['x'] - point['x']) - vec3.real * (p['y'] - point['y'])) / (vec2.real * vec3.imag - vec2.imag * vec3.real)
