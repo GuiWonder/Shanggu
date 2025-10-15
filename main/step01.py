@@ -243,7 +243,7 @@ def subgl():
 	pen='"\'—‘’‚“”„‼⁇⁈⁉⸺⸻'
 	pzhs='·’‘”“•≤≥≮≯！：；？'+pen
 	pzht='·’‘”“•、。，．'+pen
-	simpcn='蒋残浅践写泻惮禅箪蝉恋峦蛮挛栾滦弯湾径茎滞画遥瑶'#変将与弥称
+	simpcn='蒋将残浅践写泻惮禅箪蝉恋峦蛮挛栾滦弯湾径茎滞画遥瑶'#変与弥称
 	usedg=set()
 	usedg.add('.notdef')
 	usedg.update(cmap.values())

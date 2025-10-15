@@ -7,6 +7,10 @@ on:
 jobs:
   stale:
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      issues: write
+      pull-requests: write
     steps:
       - uses: actions/stale@v8
         with:
@@ -16,6 +20,9 @@ jobs:
           close-issue-reason: completed
   clean:
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
     steps:
       - name: Delete workflow runs
         uses: Mattraks/delete-workflow-runs@main

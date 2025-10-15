@@ -601,7 +601,7 @@ pen='"\'—‘’‚“”„‼⁇⁈⁉⸺⸻'
 pzhs='·’‘”“•≤≥≮≯！：；？'+pen
 pzht='·’‘”“•、。，．'+pen
 pzht=pzht.replace('’', '').replace('‘', '').replace('”', '').replace('“', '')
-simpcn='蒋残浅践写泻惮禅箪蝉恋峦蛮挛栾滦弯湾径茎滞画遥瑶'#変将与弥称
+simpcn='蒋将残浅践写泻惮禅箪蝉恋峦蛮挛栾滦弯湾径茎滞画遥瑶'#変与弥称
 fpsn=font["name"].getDebugName(6)
 print('Getting the localized lookups table...')
 locl={'ZHS': getloclk('ZHS'), 'ZHT':getloclk('ZHT')}
