@@ -39,7 +39,7 @@ for item in os.listdir('./tmp/tmpvf'):
 		os.system(f'mv ./fonts/{outd}/*.ttc ./fonts/{fn1}_OTCTTC/')
 
 for fod in aa:
-	os.system(f'7z a ./{fnm}{fod}_OTFs.7z ./fonts/{fnm}{fod}_OTFs/* -mx=9 -mfb=256 -md=512m')
-	os.system(f'7z a ./{fnm}{fod}_TTFs.7z ./fonts/{fnm}{fod}_TTFs/* -mx=9 -mfb=256 -md=512m')
-	os.system(f'7z a ./{fnm}{fod}_OTCTTC.7z ./fonts/{fnm}{fod}_OTCTTC/*')
+	os.system(f'7z a ./{fnm}{fod}_OTFs.7z ./fonts/{fnm}{fod}_OTFs/* -mx=9 -mfb=256 -md=512m -mmt=2')
+	os.system(f'7z a ./{fnm}{fod}_TTFs.7z ./fonts/{fnm}{fod}_TTFs/* -mx=9 -mfb=256 -md=512m -mmt=2')
+	os.system(f'7z a ./{fnm}{fod}_OTCTTC.7z ./fonts/{fnm}{fod}_OTCTTC/* -mmt=2')
 

@@ -87,14 +87,14 @@ for fmt in('otf', 'ttf', 'rd'):
 		stls=('Round', )
 
 	for stl in stls:
-		os.system(f'7z a ./{fnm}{stl}{xtc}s.7z ./fonts/{fmt}/{fnm}{stl}{xtc}s/*')
+		os.system(f'7z a ./{fnm}{stl}{xtc}s.7z ./fonts/{fmt}/{fnm}{stl}{xtc}s/* -mmt=2')
 		otfs=list()
 		for vr in ['', 'TC', 'SC', 'JP']:
 			otfs.append(f'./fonts/{fmt}/{fnm}{stl}{vr}')
 		if stl!='Mono':
 			otfs.append(f'./fonts/{fmt}/{fnm}{stl}FANTI')
 		otff=' '.join(otfs)
-		os.system(f'7z a ./{fnm}{stl}{fmt.replace("rd", "ttf").upper()}s.7z {otff} -mx=9 -mfb=256 -md=512m')
+		os.system(f'7z a ./{fnm}{stl}{fmt.replace("rd", "ttf").upper()}s.7z {otff} -mx=9 -mfb=256 -md=512m -mmt=2')
 
 	rmtree(f'./tmp/tmp{fmt}')
 
