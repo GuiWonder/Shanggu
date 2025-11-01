@@ -44,8 +44,8 @@
 包括 OpenType (CFF2) 和 TrueType 格式。
 
 ## 下载字体
-1. 可从本站 [Releases](https://github.com/GuiWonder/Shanggu/releases) 页面下载字体（推荐）。
-2. 可从[腾讯微云](https://share.weiyun.com/VEoOc5xK)下载 Shanggu 字体。
+1. 可从本站 [Releases](https://github.com/GuiWonder/Shanggu/releases) 页面下载字体。
+
 ## 授权
 遵循 [SIL Open Font License 1.1](./LICENSE.txt)。
 
