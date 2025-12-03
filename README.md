@@ -10,11 +10,12 @@
 ### 說明
 本專案字型名稱為「 **尙古 Shanggu Fonts** 」。「尙古」通常也寫作「尚古」，*字型安裝後系統顯示字型名稱為「尙古」而非「尚古」*。
 #### 1. [新舊異體字](./main/configs/mulcodechar.dt)（如青-靑 尚-尙 兑-兌 温-溫等）合併為舊字形
+包含一個變體，採用繁體中文置中標點。
 > Shanggu Sans | 尙古黑体 | 尙古黑體，<br />
 > Shanggu Serif | 尙古明体 | 尙古明體，<br />
 > Shanggu Mono | 尙古等宽 | 尙古等寬。<br />
 #### 2. [新舊異體字](./main/configs/mulcodechar.dt)遵從 Unicode 分開編碼
-根據地區標點和簡化字的不同，分為TC、SC、JP三種。<br />
+包含三個變體，根據地區標點和簡化字的不同，分為TC、SC、JP三種。<br />
 
 > Shanggu Sans TC | 尙古黑体TC | 尙古黑體TC，<br />
 > Shanggu Serif TC | 尙古明体TC | 尙古明體TC，<br />
@@ -25,8 +26,10 @@
 > Shanggu Sans JP | 尙古黑体JP | 尙古黑體JP，<br />
 > Shanggu Serif JP | 尙古明体JP | 尙古明體JP，<br />
 > Shanggu Mono JP | 尙古等宽JP | 尙古等寬JP。<br />
-> 
-> NOTE: 字型名稱中的 TC、SC、JP 僅代表地區標點的不同，本字型不使用地區的字形標準。
+
+
+> NOTE1: 字型名稱中的 TC、SC、JP 僅代表地區標點的不同，本字型不使用地區的字形標準。<br />
+> NOTE2: JP 版的「将蒋残浅践写泻惮禅箪蝉恋峦蛮挛栾滦弯湾径茎滞画遥瑶」與其他版本有所不同。
 #### 3. 簡轉繁體
 簡入繁出的字型，可根據文字内容動態匹配一簡多繁的情況。
 > Shanggu Sans ST | 尙古黑体 简转繁 | 尙古黑體 簡轉繁，<br />
@@ -34,6 +37,8 @@
 
 ▼ 一簡多繁測試，此功能使用 OpenType 特性。<br />
 ![image](./pictures/pic0003.png)  
+#### 4. 圓體
+採用 [Resource-Han-Rounded](https://github.com/CyanoHao/Resource-Han-Rounded) 轉換方法製作。
 
 ### 格式說明
 #### 1. OpenType 格式(OTF/OTC)
