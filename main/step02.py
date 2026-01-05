@@ -229,10 +229,18 @@ def rmlk(tbnm, i):
 	if tbnm=='GSUB':
 		for lkp in font[tbnm].table.LookupList.Lookup:
 			for st in lkp.SubTable:
-				if st.LookupType in (5, 6) and hasattr(st, 'SubstLookupRecord'):
-					for sbrcd in st.SubstLookupRecord:
-						if sbrcd.LookupListIndex>i:
-							sbrcd.LookupListIndex-=1
+				if st.LookupType in (5, 6):
+					if hasattr(st, 'SubstLookupRecord'):
+						for sbrcd in st.SubstLookupRecord:
+							if sbrcd.LookupListIndex>i:
+								sbrcd.LookupListIndex-=1
+					if hasattr(st, 'ChainSubClassSet'):
+						for rul in st.ChainSubClassSet:
+							if hasattr(rul, 'ChainSubClassRule'):
+								for subr in rul.ChainSubClassRule:
+									for sbrcd in subr.SubstLookupRecord:
+										if sbrcd.LookupListIndex>i:
+											sbrcd.LookupListIndex-=1
 def rmft(tbnm, i):
 	font[tbnm].table.FeatureList.FeatureRecord.pop(i)
 	for sr in font[tbnm].table.ScriptList.ScriptRecord:
@@ -449,9 +457,17 @@ def stlks(chrdic, phrdic):
 	sgsb.mapping=sgtb
 	for lkp in font["GSUB"].table.LookupList.Lookup:
 		for st in lkp.SubTable:
-			if st.LookupType in (5, 6) and hasattr(st, 'SubstLookupRecord'):
-				for sbrcd in st.SubstLookupRecord:
-					sbrcd.LookupListIndex+=len(stlkups)
+			if st.LookupType in (5, 6):
+				if hasattr(st, 'SubstLookupRecord'):
+					for sbrcd in st.SubstLookupRecord:
+						sbrcd.LookupListIndex+=len(stlkups)
+	
+				if hasattr(st, 'ChainSubClassSet'):
+					for rul in st.ChainSubClassSet:
+						if hasattr(rul, 'ChainSubClassRule'):
+							for subr in rul.ChainSubClassRule:
+								for sbrcd in subr.SubstLookupRecord:
+									sbrcd.LookupListIndex+=len(stlkups)
 	for ft in font["GSUB"].table.FeatureList.FeatureRecord:
 		ft.Feature.LookupListIndex=[i+len(stlkups) for i in ft.Feature.LookupListIndex]
 	font["GSUB"].table.LookupList.Lookup=stlkups+font["GSUB"].table.LookupList.Lookup

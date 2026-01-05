@@ -1,80 +1,103 @@
-**正體中文** [简体中文](./README-SC.md#shanggu-fonts)
+**正體中文** [简体中文](./README-SC.md#shanggu-fonts-尙古字体)
 
-# Shanggu Fonts
-一套泛中日韓字型，基於[思源黑體](https://github.com/adobe-fonts/source-han-sans)、[思源宋體](https://github.com/adobe-fonts/source-han-serif)、[思源等寬](https://github.com/adobe-fonts/source-han-mono)以及思源系列衍生字型製作，包含黑體、明體、圓體以及簡轉繁字型。
+# Shanggu Fonts 尙古字體
+基於思源系列的傳承字形（舊字形）CJK 字體家族系列
 
-## 預覽
+## 📌 概述
+Shanggu Fonts（尙古字體） 是一套基於[思源黑體](https://github.com/adobe-fonts/source-han-sans)、[思源宋體](https://github.com/adobe-fonts/source-han-serif)與[思源等寬](https://github.com/adobe-fonts/source-han-mono)開發的 CJK 字體家族系列，以傳承字形（舊字形）為核心理念的開源字體專案。字體系列涵蓋黑體、明體與圓體等多種風格，並提供對應的簡轉體字體版本。
+
+## 📺 預覽
 ![image](./pictures/pic0001.png)  
 ![image](./pictures/pic0002.png)  
-## 關於字型
-### 說明
-本專案字型名稱為「 **尙古 Shanggu Fonts** 」。「尙古」通常也寫作「尚古」，*字型安裝後系統顯示字型名稱為「尙古」而非「尚古」*。
-#### 1. [新舊異體字](./main/configs/mulcodechar.dt)（如青-靑 尚-尙 兑-兌 温-溫等）合併為舊字形
-包含一個變體，採用繁體中文置中標點。
-> Shanggu Sans | 尙古黑体 | 尙古黑體，<br />
-> Shanggu Serif | 尙古明体 | 尙古明體，<br />
-> Shanggu Mono | 尙古等宽 | 尙古等寬。<br />
-#### 2. [新舊異體字](./main/configs/mulcodechar.dt)遵從 Unicode 分開編碼
-包含三個變體，根據地區標點和簡化字的不同，分為TC、SC、JP三種。<br />
 
-> Shanggu Sans TC | 尙古黑体TC | 尙古黑體TC，<br />
-> Shanggu Serif TC | 尙古明体TC | 尙古明體TC，<br />
-> Shanggu Mono TC | 尙古等宽TC | 尙古等寬TC<br />
-> Shanggu Sans SC | 尙古黑体SC | 尙古黑體SC，<br />
-> Shanggu Serif SC | 尙古明体SC | 尙古明體SC，<br />
-> Shanggu Mono SC | 尙古等宽SC | 尙古等寬SC，<br />
-> Shanggu Sans JP | 尙古黑体JP | 尙古黑體JP，<br />
-> Shanggu Serif JP | 尙古明体JP | 尙古明體JP，<br />
-> Shanggu Mono JP | 尙古等宽JP | 尙古等寬JP。<br />
+## 📝 命名
+專案名稱統一為「尙古（Shanggu）」。「尚」為「尙」的常用異體字，因此「尙古」亦常被寫作「尚古」。本字體系列實際採用的中文名稱為「尙古」。
 
+### 1. 📚 字體系列
+ | 英文 | 簡體中文 | 繁體中文 |
+ | ---- | ---- | ---- |
+ | Shanggu Sans | 尙古黑体 | 尙古黑體 |
+ | Shanggu Serif | 尙古明体 | 尙古明體 |
+ | Shanggu Mono | 尙古等宽 | 尙古等寬 |
+ | Shanggu Round | 尙古圆体 | 尙古圓體 |
 
-> NOTE1: 字型名稱中的 TC、SC、JP 僅代表地區標點的不同，本字型不使用地區的字形標準。<br />
-> NOTE2: JP 版的「将蒋残浅践写泻惮禅箪蝉恋峦蛮挛栾滦弯湾径茎滞画遥瑶」與其他版本有所不同。
-#### 3. 簡轉繁體
-簡入繁出的字型，可根據文字内容動態匹配一簡多繁的情況。
-> Shanggu Sans ST | 尙古黑体 简转繁 | 尙古黑體 簡轉繁，<br />
-> Shanggu Serif ST | 尙古明体 简转繁 | 尙古明體 簡轉繁。<br />
+### 2. 📘 版本描述
+ | 版本 | 描述 |
+ | :--: | :--: |
+ | 無附加名 | 舊字形增強版 |
+ | TC | 繁體中文標點版 |
+ | SC | 簡體中文標點版 |
+ | JP | 日文標點版 |
+ | ST | 簡轉繁字體 |
 
-▼ 一簡多繁測試，此功能使用 OpenType 特性。<br />
+## 📑 字形規範與異體字處理
+本字體未採用任何特定地區的現代字形標準，而是以更傳統的舊字形為設計基礎。主要參考了[一點字坊](https://github.com/ichitenfont)《[傳承字形標準化文件](https://github.com/ichitenfont/inheritedglyphs)》，**但需說明的是，本字體並未完全遵循該標準**。若您對該標準的符合度有更高要求，建議選用一點字坊出品的相關字體。
+
+### 1. 🔶 舊字形增強版（無附加名版本）
+字體對常見的[新舊異體字](./main/configs/mulcodechar.dt)進行了統一處理，採用舊字形。例如：
+- 青 → 靑
+- 尚 → 尙
+- 兑 → 兌
+- 温 → 溫
+
+舊字形增強版共提供一种變體版本，使用繁體中文置中標點。
+
+### 2. 🌏 地區標點版（TC、SC、JP版本）
+[新舊異體字](./main/configs/mulcodechar.dt)依照 Unicode 的分別編碼處理，不進行字形合併統一。
+
+基於不同地區的標點符號差異，字體提供三種變體版本：
+- TC（繁體）
+- SC（簡體）
+- JP（日文）
+
+中日簡體字差異採用以下處理方式：<br />
+- 中日簡體字位於同一個 Unicode 碼位時，使用不同的變體進行區分。<br />
+![image](./pictures/pic0004.png)  
+- 中日簡體字位於不同 Unicode 碼位時，遵循各自的書寫規範，不作字形上的統一。<br />
+![image](./pictures/pic0005.png)  
+
+### 3. 🔁 自动簡轉繁字體（ST 版本）
+具備「簡入繁出」功能, 可依據文字內容動態匹配一簡多繁的情況（基於 OpenType 特性）。<br />
 ![image](./pictures/pic0003.png)  
-#### 4. 圓體
-採用 [Resource-Han-Rounded](https://github.com/CyanoHao/Resource-Han-Rounded) 轉換方法製作。
 
-### 格式說明
-#### 1. OpenType 格式(OTF/OTC)
-原版格式。
-#### 2. TrueType 格式(TTF/TTC)
-相容性較好。
-#### 3. 可變字型
-包括 OpenType (CFF2) 和 TrueType 格式。
+## 📦 字型格式
+提供多種格式以適應不同使用場景。<br />
+ | 格式 | 描述 |
+ | ---- | ---- |
+ | OTF / OTC | OpenType CFF 原生格式 |
+ | TTF / TTC | TrueType 格式，更高的軟體相容性 |
+ | 可變字型 | 提供 CFF2 與 TrueType 兩種可變格式 |
 
-## 下載字型
-1. 可從本站 [Releases](https://github.com/GuiWonder/Shanggu/releases) 頁面下載字型。
+## 📥 下載方式
+所有字型檔案可於專案的 👉[Releases](https://github.com/GuiWonder/Shanggu/releases) 頁面下載取得。
 
-## 授權
-遵循 [SIL Open Font License 1.1](./LICENSE.txt)。
+## 📜 授權協議 (License)
+本專案所有字型全部採用 [SIL Open Font License 1.1（OFL-1.1）](./LICENSE.txt) 授權：
+- ✅ 免費使用：無論個人或企業，皆可自由下載並用於任何商業設計。
+- ✅ 可衍生：允許在 [OFL-1.1](./LICENSE.txt) 授權條款下進行修改、擴充，並製作衍生字體。
+- ⚠️ 限制事項：不得單獨販售字型檔案本身。
 
-## 特別感謝
-#### 1. 字型
+## 🙏 致謝
+
+### 1. 🔤 字體
 - [思源黑體](https://github.com/adobe-fonts/source-han-sans)
 - [思源宋體](https://github.com/adobe-fonts/source-han-serif)
 - [思源等寬](https://github.com/adobe-fonts/source-han-mono)
 - [秋空󠄁黑體](https://github.com/ChiuMing-Neko/ChiuKongGothic)
-#### 2. 字型處理工具
+
+### 2. 🔨 相關工具
 - [FontTools](https://github.com/fonttools/fonttools)
 - [AFDKO](https://github.com/adobe-type-tools/afdko)
 - [fontmake](https://github.com/googlefonts/fontmake)
 - [otfcc](https://github.com/caryll/otfcc)
-#### 3. 圓體轉換
+
+### 3. ⚪ 圓體轉換
 - [Resource-Han-Rounded](https://github.com/CyanoHao/Resource-Han-Rounded)
-#### 4. 字形參考
+
+### 4. 📖 參考內容
 - [傳承字形標準化文件](https://github.com/ichitenfont/inheritedglyphs) [I.明體](https://github.com/ichitenfont/I.Ming)
 - [zi.tools 字統网](https://zi.tools/)
-- [字形維基(GlyphWiki)](https://glyphwiki.org/)
-#### 5. 簡轉繁參考
 - [OpenCC 開放中文轉換](https://github.com/BYVoid/OpenCC)
-- [《正確實現簡轉繁字型》](https://ayaka.shn.hk/s2tfont/hant/)
-## 關於作者
-- **Email：** chunfengfly@outlook.com
 
-
+## 📬 聯絡方式
+- 📩 Email: chunfengfly@outlook.com
