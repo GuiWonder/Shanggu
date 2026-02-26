@@ -7,15 +7,12 @@ from functools import partial, singledispatch
 from itertools import chain
 from multiprocessing import Pool
 
-from fontTools import configLogger
 from fontTools.misc.cliTools import makeOutputFileName
 from fontTools.pens.cu2quPen import Cu2QuPen
 from fontTools.pens.ttGlyphPen import TTGlyphPen
 from fontTools.ttLib import TTCollection, TTFont, TTLibError, newTable
 from fontTools.ttLib.scaleUpem import scale_upem
 
-log = logging.getLogger()
-configLogger(logger=log)
 
 # default approximation error, measured in UPEM
 MAX_ERR = 1.0
@@ -89,7 +86,7 @@ def otf_to_ttf(ttFont, post_format=POST_FORMAT, **kwargs):
         post.compile(ttFont)
     except OverflowError:
         post.formatType = 3
-        log.warning("Dropping glyph names, they do not fit in 'post' table.")
+        logging.warning("Dropping glyph names, they do not fit in 'post' table.")
 
     ttFont.sfntVersion = "\000\001\000\000"
 
@@ -102,7 +99,7 @@ def _(fonts, **kwargs):
             otf_to_ttf(font, **kwargs)
         except TTLibError as warn:
             skip += 1
-            log.warning(warn)
+            logging.warning(warn)
 
     if skip == len(fonts):
         raise TTLibError("a Font Collection that has Not a OpenType font")
@@ -134,10 +131,10 @@ def run(path, options):
                    max_err=options.max_error,
                    reverse_direction=options.reverse_direction)
     except TTLibError as warn:
-        log.warning(f'"{path}" cannot be converted since it is {warn}.')
+        logging.warning(f'"{path}" cannot be converted since it is {warn}.')
     else:
         if options.new_upem:
-            log.info(f"Scaling UPM to {options.new_upem}...")
+            logging.info(f"Scaling UPM to {options.new_upem}...")
             scale_upem(font=font, new_upem=options.new_upem)
         doother(font)
         font.save(output)

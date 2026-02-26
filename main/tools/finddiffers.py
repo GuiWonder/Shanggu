@@ -74,40 +74,44 @@ def subcff(cfftb, glyphs):
 		fontsub.charset=[g for g in fontsub.charset if g in glyphs]
 		fontsub.numGlyphs=len(fontsub.charset)
 
-def ckgl(cod):
-	g1 = gs1[cmap1[cod]]
-	g2 = gs2[cmap2[cod]]
+def main(args):
+	outfile, fontList=parseflnm(args)
+	file1, file2=fontList[0], fontList[1]
+	font1 = TTFont(file1)
+	font2 = TTFont(file2)
 
-	p1 = RecordingPen()
-	p2 = RecordingPen()
+	font1["cmap"].tables=[table for table in font1["cmap"].tables if table.format!=14]
+	del font1['GSUB']
+	del font1['GPOS']
 
-	g1.draw(p1)
-	g2.draw(p2)
+	cmap1 = font1.getBestCmap()
+	cmap2 = font2.getBestCmap()
+	gs1 = font1.getGlyphSet()
+	gs2 = font2.getGlyphSet()
+	subgl=set()
+	subgl.add('.notdef')
 
-	return p1.value==p2.value
+	def ckgl(cod):
+		g1 = gs1[cmap1[cod]]
+		g2 = gs2[cmap2[cod]]
 
-outfile, fontList=parseflnm(sys.argv[1:])
-file1, file2=fontList[0], fontList[1]
-font1 = TTFont(file1)
-font1["cmap"].tables=[table for table in font1["cmap"].tables if table.format!=14]
+		p1 = RecordingPen()
+		p2 = RecordingPen()
 
-cmap1 = font1.getBestCmap()
-gs1 = font1.getGlyphSet()
-font2 = TTFont(file2)
-cmap2 = font2.getBestCmap()
-gs2 = font2.getGlyphSet()
-subgl=set()
-subgl.add('.notdef')
+		g1.draw(p1)
+		g2.draw(p2)
+		return p1.value==p2.value
 
-print('Check outlines...')
-for cod in cmap2:
-	if not ckgl(cod):
-		subgl.add(cmap1[cod])
-print('Subset...')
-subft(font1, subgl)
-for table in font1["cmap"].tables:
-	table.cmap={cd:table.cmap[cd] for cd in table.cmap if table.cmap[cd] in subgl}
-del font1['GSUB']
-del font1['GPOS']
-print('Saving', outfile)
-font1.save(outfile)
+	print('Check outlines...')
+	for cod in cmap2:
+		if not ckgl(cod):
+			subgl.add(cmap1[cod])
+	print('Subset...')
+	subft(font1, subgl)
+	for table in font1["cmap"].tables:
+		table.cmap={c:g for c,g in table.cmap.items() if g in subgl}
+	print('Saving', outfile)
+	font1.save(outfile)
+
+if __name__ == '__main__':
+	main(sys.argv[1:])

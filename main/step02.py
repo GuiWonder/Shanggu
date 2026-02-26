@@ -1,224 +1,89 @@
-import os, json, sys, copy
+from copy import deepcopy
 from fontTools.ttLib import TTFont, newTable
 from fontTools.ttLib.tables import otTables
 from afdko import otf2otc
+from hpsh import *
+from datetime import datetime
 
-pydir=os.path.abspath(os.path.dirname(__file__))
-cfg=json.load(open(os.path.join(pydir, 'configs/config.json'), 'r', encoding='utf-8'))
+cfg=json.load(open(os.path.join(SCRIPT_DIR, 'configs/config.json'), 'r', encoding='utf-8'))
 
-def setcg(code, glyf):
-	for table in font["cmap"].tables:
-		if (table.format==4 and code<=0xFFFF) or table.format==12 or code in table.cmap:
-			table.cmap[code]=glyf
-def glfrtxt(txt):
-	cmap=font.getBestCmap()
-	glys=list()
-	for ch in txt:
-		if ord(ch) in cmap and cmap[ord(ch)] not in glys:
-			glys.append(cmap[ord(ch)])
-	return glys
-def glyrepl(repdic):
-	for table in font["cmap"].tables:
+def glyrepl(font, repdic):
+	for table in font['cmap'].tables:
 		for cd in table.cmap:
 			if table.cmap[cd] in repdic:
-				table.cmap[cd]=repdic[table.cmap[cd]]
-				print('Remap', chr(cd))
-def locllki(lan):
-	ftl, lkl=list(), list()
-	for sr in font["GSUB"].table.ScriptList.ScriptRecord:
-		for lsr in sr.Script.LangSysRecord:
-			if lsr.LangSysTag.strip()==lan:
-				ftl+=lsr.LangSys.FeatureIndex
-	for ki in ftl:
-		ftg=font["GSUB"].table.FeatureList.FeatureRecord[ki].FeatureTag
-		if ftg=='locl':
-			lkl+=font["GSUB"].table.FeatureList.FeatureRecord[ki].Feature.LookupListIndex
-	return list(dict.fromkeys(lkl))
-def getloclk(lan):
-	locdics=list()
-	for lki in locllki(lan):
-		locrpl=dict()
-		for st in font["GSUB"].table.LookupList.Lookup[lki].SubTable:
-			if st.LookupType==7 and st.ExtSubTable.LookupType==1:
-				tabl=st.ExtSubTable.mapping
-			elif st.LookupType==1:
-				tabl=st.mapping
-			for g1 in tabl:
-				locrpl[g1]=tabl[g1]
-		locdics.append(locrpl)
-	return locdics
-def glfrloc(gl, loclk):
-	for dc in loclk:
-		if gl in dc: return dc[gl]
+				old_glyph=table.cmap[cd]
+				new_glyph=repdic[old_glyph]
+				table.cmap[cd]=new_glyph
+				logging.info(f'Remap U+{cd:04X} ({chr(cd)}) from {old_glyph} to {new_glyph}')
 
-def mkname(locn, ithw=''):
-	if locn: locn=' '+locn
-	if 'VF' in fpsn: return vfname(locn, ithw)
-	else: return nfname(locn, ithw)
-def nfname(locn, ithw=''):
-	if not font["name"].getDebugName(17):
-		wt=font["name"].getDebugName(2)
-	else:
-		wt=font["name"].getDebugName(17)
-	isit='Italic' in wt or 'it' in ithw.lower()
+def givename(oldname, vk, isvf=False):
+	locn=vk[:2].upper()
+	oldps=oldname.getDebugName(6)
+	wt=oldname.getDebugName(17)
+	if not wt: wt=oldname.getDebugName(2)
+	isit='Italic' in wt or 'it' in vk.lower()
 	wt=wt.replace('Italic', '').strip()
 	if not wt: wt='Regular'
-	ishw='HW' in fpsn or 'hw' in ithw.lower()
-	itml, itm, hwm=str(), str(), str()
-	if ishw: hwm=' HW'
-	if isit: itml, itm=' Italic', 'It'
-	locadd=locn.strip()
-	if locadd=='ST':
-		loctc=' 簡轉繁'
-		locsc=' 简转繁'
-	else:
-		loctc=locsc=locadd
-	if 'Sans' in fpsn:
-		fmlName=cfg['fontName']+' Sans'+hwm+locn
-		scn=cfg['fontNameSC']+'黑体'+locsc+hwm
-		tcn=cfg['fontNameTC']+'黑體'+loctc+hwm
-	elif 'Serif' in fpsn:
-		fmlName=cfg['fontName']+' Serif'+hwm+locn
-		scn=cfg['fontNameSC']+'明体'+locsc+hwm
-		tcn=cfg['fontNameTC']+'明體'+loctc+hwm
-	elif 'Mono' in fpsn:
-		fmlName=cfg['fontName']+' Mono'+hwm+locn
-		scn=cfg['fontNameSC']+'等宽'+locsc+hwm
-		tcn=cfg['fontNameTC']+'等寬'+loctc+hwm
-	elif 'Rounded' in fpsn:
-		fmlName=cfg['fontName']+' Round'+hwm+locn
-		scn=cfg['fontNameSC']+'圆体'+locsc+hwm
-		tcn=cfg['fontNameTC']+'圓體'+loctc+hwm
+	ishw='HW' in oldps or 'hw' in vk.lower()
+	if isit: itnm, itps=' Italic', 'It'
+	else: itnm=itps=str()
+	for psty in ['Sans', 'Serif', 'Mono', 'Round']:
+		if psty in oldps:
+			style=psty
+			break
 	else: raise
-	ftName=fmlName
-	ftNamesc=scn
-	ftNametc=tcn
-	if wt not in ('Regular', 'Bold'):
-		ftName+=' '+wt
-		ftNamesc+=' '+wt
-		ftNametc+=' '+wt
-	subfamily='Regular'
-	if isit:
-		if wt=='Bold':
-			subfamily='Bold Italic'
+	nmobj=dict()
+	mylans=['EN', 'TC', 'SC', 'JA']
+	for l in mylans:
+		if l in cfg:
+			ftfml=cfg[l]['Name']+cfg[l][style]
+			if locn!='NM':
+				vloc=' '+cfg[l]['ST'] if locn=='ST' else locn
+				ftfml+=vloc
+			if ishw: ftfml+=' HW'
 		else:
-			subfamily='Italic'
-	elif wt=='Bold':
-		subfamily='Bold'
-	psName=fmlName.replace(' ', '')+'-'+fpsn.split('-')[-1].replace('It', '')+itm
-	uniqID=cfg['fontVersion']+';'+cfg['fontID'].strip()+';'+psName
-	#if wt=='Bold':
-	if wt in ('Regular', 'Bold') and not (isit and wt=='Regular'):
-		fullName=ftName+' '+wt+itml
-		fullNamesc=ftNamesc+' '+wt+itml
-		fullNametc=ftNametc+' '+wt+itml
-	else:
-		fullName=ftName+itml
-		fullNamesc=ftNamesc+itml
-		fullNametc=ftNametc+itml
+			ftfml=cfg['Name']+' '+style
+			if ishw: ftfml+=' HW'
+			if locn!='NM': ftfml+=' '+locn
+		if 'VF' in oldps: ftfml+=' VF'
+		ftnm=ftfml
+		if not isvf and wt not in ('Regular', 'Bold'):
+			ftnm+=' '+wt
+		ftfull=ftfml+' '+wt+itnm
+		nmobj[l]={'fml': ftfml, 'nm': ftnm, 'full': ftfull}
+	lansid={'EN':[1033, ], 'TC':[1028, 3076, 5124], 'SC':[2052, 4100], 'JA':[1041, ]}
+	enlan=1033
+	if isit: subfml='Bold Italic' if wt=='Bold' else 'Italic'
+	else: subfml='Bold' if wt=='Bold' else 'Regular'
+	fmlnm=nmobj['EN']['fml']
+	psname=fmlnm.replace(' ', '')+'-'+oldps.split('-')[-1].replace('It', '')+itps
+	uniqID=cfg['Version']+';'+cfg['ID'].strip()+';'+psname
+	Copyright=cfg['Copyright'].format(name=cfg['Name'], year=datetime.now().year)
 	newnane=newTable('name')
-	newnane.setName(cfg['fontCopyright'], 0, 3, 1, 1033)
-	newnane.setName(ftName, 1, 3, 1, 1033)
-	newnane.setName(subfamily, 2, 3, 1, 1033)
-	newnane.setName(uniqID, 3, 3, 1, 1033)
-	newnane.setName(fullName, 4, 3, 1, 1033)
-	newnane.setName('Version '+cfg['fontVersion'], 5, 3, 1, 1033)
-	newnane.setName(psName, 6, 3, 1, 1033)
-	newnane.setName(cfg['fontDesigner'], 9, 3, 1, 1033)
-	newnane.setName(cfg['fontDiscript'], 10, 3, 1, 1033)
-	newnane.setName(cfg['fontVURL'], 11, 3, 1, 1033)
-	newnane.setName(font["name"].getDebugName(13), 13, 3, 1, 1033)
-	newnane.setName(font["name"].getDebugName(14), 14, 3, 1, 1033)
-	if wt not in ('Regular', 'Bold'):
-		newnane.setName(fmlName, 16, 3, 1, 1033)
-		newnane.setName(wt+itml, 17, 3, 1, 1033)
-	for lanid in (1028, 3076):
-		newnane.setName(ftNametc, 1, 3, 1, lanid)
-		newnane.setName(subfamily, 2, 3, 1, lanid)
-		newnane.setName(fullNametc, 4, 3, 1, lanid)
-		if wt not in ('Regular', 'Bold'):
-			newnane.setName(tcn, 16, 3, 1, lanid)
-			newnane.setName(wt+itml, 17, 3, 1, lanid)
-	newnane.setName(ftNamesc, 1, 3, 1, 2052)
-	newnane.setName(subfamily, 2, 3, 1, 2052)
-	newnane.setName(fullNamesc, 4, 3, 1, 2052)
-	if wt not in ('Regular', 'Bold'):
-		newnane.setName(scn, 16, 3, 1, 2052)
-		newnane.setName(wt+itml, 17, 3, 1, 2052)
+	idmap={0:Copyright, 3:uniqID, 5:'Version '+cfg['Version'], 6:psname,
+		9:cfg['Designer'], 10:cfg['Discript'], 11:cfg['VURL'],
+		13:oldname.getDebugName(13), 14:oldname.getDebugName(14)}
+	for i, v in idmap.items():
+		newnane.setName(v, i, 3, 1, enlan)
+	for l in mylans:
+		for lanid in lansid[l]:
+			newnane.setName(nmobj[l]['nm'], 1, 3, 1, lanid)
+			newnane.setName(nmobj[l]['full'], 4, 3, 1, lanid)
+			newnane.setName(subfml, 2, 3, 1, lanid)
+			if wt not in ('Regular', 'Bold'):
+				newnane.setName(wt+itnm, 17, 3, 1, lanid)
+				if not isvf:
+					newnane.setName(nmobj[l]['fml'], 16, 3, 1, lanid)
+	if isvf:
+		oldnm=oldps.split('-')[0]
+		newnm=fmlnm.replace(' ', '')
+		for n1 in oldname.names:
+			if n1.nameID<255: continue
+			nstr=str(n1).replace(oldnm, newnm)
+			newnane.setName(nstr, n1.nameID, n1.platformID, n1.platEncID, n1.langID)
 	return newnane
-def vfname(locn, hw=''):
-	ishw='hw' in hw.lower()
-	hwm=str()
-	if ishw: hwm=' HW'
-	locadd=locn.strip()
-	if locadd=='ST':
-		loctc=' 簡轉繁'
-		locsc=' 简转繁'
-	else:
-		loctc=locsc=locadd
-	if 'Sans' in fpsn:
-		fmlName=cfg['fontName']+' Sans'+hwm+locn
-		scn=cfg['fontNameSC']+'黑体'+locsc+hwm+' VF'
-		tcn=cfg['fontNameTC']+'黑體'+loctc+hwm+' VF'
-	elif 'Serif' in fpsn:
-		fmlName=cfg['fontName']+' Serif'+hwm+locn
-		scn=cfg['fontNameSC']+'明体'+locsc+hwm+' VF'
-		tcn=cfg['fontNameTC']+'明體'+loctc+hwm+' VF'
-	elif 'Mono' in fpsn:
-		fmlName=cfg['fontName']+' Mono'+hwm+locn
-		scn=cfg['fontNameSC']+'等宽'+locsc+hwm+' VF'
-		tcn=cfg['fontNameTC']+'等寬'+loctc+hwm+' VF'
-	else:
-		raise
-	ftNamesc=scn
-	ftNametc=tcn
 
-	rpln=[
-		('Source Han Sans', fmlName), 
-		('Source Han Serif', fmlName), 
-		('SourceHanSans', fmlName.replace(' ', '')), 
-		('SourceHanSerif', fmlName.replace(' ', '')), 
-	]
-	psName=fpsn
-	for rp in rpln:
-		 psName=psName.replace(rp[0], rp[1])
-	uniqID=cfg['fontVersion']+';'+cfg['fontID'].strip()+';'+psName
-	newnane=newTable('name')
-	newnane.names=list()
-	for n1 in font['name'].names:
-		nstr=str()
-		if n1.langID==0x411:
-			continue
-		if n1.nameID==0:
-			nstr=cfg['fontCopyright']
-		elif n1.nameID==3:
-			nstr=uniqID
-		elif n1.nameID==5:
-			nstr='Version '+cfg['fontVersion']
-		elif n1.nameID==9:
-			nstr=cfg['fontDesigner']
-		elif n1.nameID==10:
-			nstr=cfg['fontDiscript']
-		elif n1.nameID==11:
-			nstr=cfg['fontVURL']
-		elif n1.nameID in (7, 8):
-			continue
-		else:
-			nstr=str(n1)
-			for rp in rpln:
-				 nstr=nstr.replace(rp[0], rp[1])
-		newnane.setName(nstr, n1.nameID, n1.platformID, n1.platEncID, n1.langID)
-	for lanid in (1028, 3076):
-		newnane.setName(ftNametc, 1, 3, 1, lanid)
-		newnane.setName('Regular', 2, 3, 1, lanid)
-		newnane.setName(ftNametc, 4, 3, 1, lanid)
-		newnane.setName('ExtraLight', 17, 3, 1, lanid)
-	newnane.setName(ftNamesc, 1, 3, 1, 2052)
-	newnane.setName('Regular', 2, 3, 1, 2052)
-	newnane.setName(ftNamesc, 4, 3, 1, 2052)
-	newnane.setName('ExtraLight', 17, 3, 1, 2052)
-	return newnane
-def rmlk(tbnm, i):
+def rmlk(font, tbnm, i):
 	font[tbnm].table.LookupList.Lookup.pop(i)
 	for ki in font[tbnm].table.FeatureList.FeatureRecord:
 		newft=list()
@@ -241,7 +106,8 @@ def rmlk(tbnm, i):
 									for sbrcd in subr.SubstLookupRecord:
 										if sbrcd.LookupListIndex>i:
 											sbrcd.LookupListIndex-=1
-def rmft(tbnm, i):
+
+def rmft(font, tbnm, i):
 	font[tbnm].table.FeatureList.FeatureRecord.pop(i)
 	for sr in font[tbnm].table.ScriptList.ScriptRecord:
 		newdl=list()
@@ -255,58 +121,81 @@ def rmft(tbnm, i):
 				if j>i: newln.append(j-1)
 				elif j<i: newln.append(j)
 			lsr.LangSys.FeatureIndex=newln
-def rmloc():
-	loclks, locfts=list(), list()
-	for i in range(len(font["GSUB"].table.FeatureList.FeatureRecord)):
-		if font["GSUB"].table.FeatureList.FeatureRecord[i].FeatureTag=='locl':
-			loclks+=font["GSUB"].table.FeatureList.FeatureRecord[i].Feature.LookupListIndex
-			locfts.append(i)
-	loclks=list(set(loclks))
-	loclks.sort(reverse=True)
-	locfts=list(set(locfts))
-	locfts.sort(reverse=True)
-	for i in locfts: rmft('GSUB', i)
-	for i in loclks: rmlk('GSUB', i)
+
+def rmloc(font):
 	for posub in ('GSUB', 'GPOS'):
+		keepft, keeplk=set(), set()
+		ftrcd=font[posub].table.FeatureList.FeatureRecord
+		lklst=font[posub].table.LookupList.Lookup
 		for sr in font[posub].table.ScriptList.ScriptRecord:
+			for j in sr.Script.DefaultLangSys.FeatureIndex:
+				if ftrcd[j].FeatureTag!='locl': keepft.add(j)
 			sr.Script.LangSysRecord.clear()
-def setpun(pzh, loczh):
-	pg=glfrtxt(pzh)
-	rplg=dict()
-	for tb in loczh:
-		for glin in pg:
-			if glin not in rplg and glin in tb:
-				rplg[glin]=tb[glin]
-	glyrepl(rplg)
-def mkcmp(locn):
+		for i in keepft:
+			for j in ftrcd[i].Feature.LookupListIndex: keeplk.add(j)
+		if posub=='GSUB':
+			for lkp in lklst:
+				for st in lkp.SubTable:
+					if st.LookupType in (5, 6):
+						if hasattr(st, 'SubstLookupRecord'):
+							for sbrcd in st.SubstLookupRecord:
+								keeplk.add(sbrcd.LookupListIndex)
+						if hasattr(st, 'ChainSubClassSet'):
+							for rul in st.ChainSubClassSet:
+								if hasattr(rul, 'ChainSubClassRule'):
+									for subr in rul.ChainSubClassRule:
+										for sbrcd in subr.SubstLookupRecord:
+											keeplk.add(sbrcd.LookupListIndex)
+		locfts={i for i in range(len(ftrcd)) if i not in keepft}
+		loclks={i for i in range(len(lklst)) if i not in keeplk}
+		loclks=sorted(loclks, reverse=True)
+		locfts=sorted(locfts, reverse=True)
+		for i in locfts: rmft(font, posub, i)
+		for i in loclks: rmlk(font, posub, i)
+
+def mkcmp(option, font, k):
 	cmap=font.getBestCmap()
-	if locn=='SC':
-		setpun(pzhs, loczhs)
-		dfltvt('ZHS')
-	elif locn=='TC' or locn=='':
-		setpun(pzht, loczht)
-		dfltvt('ZHT')
-	elif locn=='JP':
-		dfltvt('JAN')
-	#if locn=='SC' or locn=='':
-	if locn!='JP':
+	pgl=set()
+	if 'sc'==k:
+		pgl={cmap[ord(ch)] for ch in p_zhs if ord(ch) in cmap}
+		dfltloc='ZHS'
+	elif k in ('tc', 'nm'):
+		pgl={cmap[ord(ch)] for ch in p_zht if ch not in '’‘”“' and ord(ch) in cmap}
+		dfltloc='ZHT'
+	elif 'jp'==k:
+		dfltloc='JAN'
+	if 'jp'!=k:
+		rplg=dict()
+		for tb in option.loczh[dfltloc]:
+			for glin in pgl:
+				if glin not in rplg and glin in tb:
+					rplg[glin]=tb[glin]
+		glyrepl(font, rplg)
+	dfltvt(font, dfltloc)
+	#if k=='SC' or k=='':
+	if k!='jp':
 		repsp=dict()
-		simpg=glfrtxt(simpcn)
+		simpg={cmap[ord(ch)] for ch in simpch if ord(ch) in cmap}
 		for gc in simpg:
-			repsp[gc]=glfrloc(gc, loczhs)
-		glyrepl(repsp)
-	if locn=='':
-		print('Merging multi-code Chinese characters...')
-		with open(os.path.join(pydir, 'configs/mulcodechar.dt'), 'r', encoding='utf-8') as f:
+			repsp[gc]=glfrloc(gc, option.loczh['ZHS'])
+		glyrepl(font, repsp)
+	if k=='nm':
+		logging.info('Merging multi-code Chinese characters.')
+		with open(os.path.join(SCRIPT_DIR, 'configs/mulcodechar.dt'), 'r', encoding='utf-8') as f:
 			for line in f.readlines():
 				litm=line.split('#')[0].strip()
 				if '-' not in litm: continue
 				s, t=litm.split(' ')[0].split('-')
 				s, t=s.strip(), t.strip()
 				if s and t and s!=t and ord(t) in cmap:
-					print('Processing '+s+'-'+t)
-					setcg(ord(s), cmap[ord(t)])
-def dfltvt(lng):
+					logging.info('Processing '+s+'-'+t)
+					setcg(font['cmap'], ord(s), cmap[ord(t)])
+	for table in font['cmap'].tables:
+		if table.format==6:
+			if k in ('tc', 'nm'): table.platEncID=2
+			elif 'sc'==k: table.platEncID=25
+
+def dfltvt(font, lng):
 	for posub in ('GSUB', 'GPOS'):
 		vtzh=list()
 		for sr in font[posub].table.ScriptList.ScriptRecord:
@@ -321,122 +210,101 @@ def dfltvt(lng):
 				if font[posub].table.FeatureList.FeatureRecord[lsr].FeatureTag=='vert':
 					font[posub].table.FeatureList.FeatureRecord[lsr].Feature.LookupListIndex=vtzh
 					break
-def hwcmp():
-	print('Build HW...')
+
+def hwcmp(font):
+	logging.info('Build HW.')
 	cmap=font.getBestCmap()
-	hw=' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~ ¥­‑₩␣'
+	hw=' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ ¥­‑₩␣'
 	rephw=dict()
 	hwlk=set()
-	for ki in font["GSUB"].table.FeatureList.FeatureRecord:
+	for ki in font['GSUB'].table.FeatureList.FeatureRecord:
 		if ki.FeatureTag=='hwid':
 			hwlk.update(ki.Feature.LookupListIndex)
 	for i in hwlk:
-		for st in font["GSUB"].table.LookupList.Lookup[i].SubTable:
+		for st in font['GSUB'].table.LookupList.Lookup[i].SubTable:
 			assert st.LookupType==1
 			tabl=st.mapping
 			for ch in hw:
 				gl=cmap[ord(ch)]
 				if gl in tabl and gl not in rephw:
-					print('Processing', ch)
+					logging.info(f'Processing HW: {ch}')
 					rephw[gl]=tabl[gl]
 				else:
-					print('No HW glyph for', ch)
-	glyrepl(rephw)
-def hwgps():
+					logging.debug(f'No HW glyph for {ch}')
+	glyrepl(font, rephw)
+
+def hwgps(font):
 	torm=['kern', 'palt', 'vkrn', 'vpal']
 	hwlks, hwfts=list(), list()
-	for i in range(len(font["GPOS"].table.FeatureList.FeatureRecord)):
-		if font["GPOS"].table.FeatureList.FeatureRecord[i].FeatureTag in torm:
-			hwlks+=font["GPOS"].table.FeatureList.FeatureRecord[i].Feature.LookupListIndex
+	for i, ft in enumerate(font['GPOS'].table.FeatureList.FeatureRecord):
+		if ft.FeatureTag in torm:
+			hwlks+=ft.Feature.LookupListIndex
 			hwfts.append(i)
-	hwlks=list(set(hwlks))
-	hwlks.sort(reverse=True)
-	hwfts=list(set(hwfts))
-	hwfts.sort(reverse=True)
-	for i in hwfts: rmft('GPOS', i)
-	for i in hwlks: rmlk('GPOS', i)
-def itcmp():
-	print('Build It...')
+	hwlks=sorted(set(hwlks), reverse=True)
+	hwfts=sorted(set(hwfts), reverse=True)
+	for i in hwfts: rmft(font, 'GPOS', i)
+	for i in hwlks: rmlk(font, 'GPOS', i)
+
+def itcmp(font):
+	logging.info('Build It.')
 	itlk, itft=list(), list()
-	for i in range(len(font["GSUB"].table.FeatureList.FeatureRecord)):
-		if font["GSUB"].table.FeatureList.FeatureRecord[i].FeatureTag=='ital':
-			itlk+=font["GSUB"].table.FeatureList.FeatureRecord[i].Feature.LookupListIndex
-			font["GSUB"].table.FeatureList.FeatureRecord[i].Feature.LookupListIndex.clear()
+	for i, lk in enumerate(font['GSUB'].table.FeatureList.FeatureRecord):
+		if lk.FeatureTag=='ital':
+			itlk+=lk.Feature.LookupListIndex
+			lk.Feature.LookupListIndex.clear()
 			itft.append(i)
-	itlk=list(set(itlk))
-	itlk.sort(reverse=True)
-	itft=list(set(itft))
-	itft.sort(reverse=True)
+	itlk=sorted(set(itlk), reverse=True)
+	itft=sorted(set(itft), reverse=True)
 	for i in itlk:
-		for st in font["GSUB"].table.LookupList.Lookup[i].SubTable:
+		for st in font['GSUB'].table.LookupList.Lookup[i].SubTable:
 			assert st.LookupType==1
 			tabl=st.mapping
-			glyrepl(tabl)
-	for i in itft: rmft('GSUB', i)
-	for i in itlk: rmlk('GSUB', i)
-def stlks(chrdic, phrdic):
+			glyrepl(font, tabl)
+	for i in itft: rmft(font, 'GSUB', i)
+	for i in itlk: rmlk(font, 'GSUB', i)
+
+def stlks(font, chrdic, phrdic):
 	cmap=font.getBestCmap()
 	glod=font.getGlyphOrder()
-	stmul=otTables.Lookup()
-	stsig=otTables.Lookup()
-	stsig1=otTables.Lookup()
-	stsig2=otTables.Lookup()
-	stsig3=otTables.Lookup()
-	stlkups=[stmul, stsig, stsig1, stsig2, stsig3]
-	sgtb, sgtb1, sgtb2, sgtb3=dict(), dict(), dict(), dict()
-	for lk in stlkups[1:]:
-		lk.LookupType=1
-		lk.LookupFlag=0
-	sgsb=otTables.SingleSubst()
-	sgsb1=otTables.SingleSubst()
-	sgsb2=otTables.SingleSubst()
-	sgsb3=otTables.SingleSubst()
-	stsig.SubTable=[sgsb]
-	stsig1.SubTable=[sgsb1]
-	stsig2.SubTable=[sgsb2]
-	stsig3.SubTable=[sgsb3]
-	stmul.SubTable=list()
-	stmul.LookupType=6
-	stmul.LookupFlag=0
-	ltc=dict()
+	def newlk(lktype, flag=0):
+		lk=otTables.Lookup()
+		lk.LookupType=lktype
+		lk.LookupFlag=flag
+		lk.SubTable=list()
+		return lk
+	stmul=newlk(6)
+	stsig=newlk(1)
+	mylkps=[stmul, stsig]
+	exmps=list()
+	tglki=dict()
 	for phdc in phrdic:
 		s, t=phdc['s'], phdc['t']
+		sg, tg=cmap[ord(s)], cmap[ord(t)]
+		if sg!=tg and tg not in tglki:
+			for i, m in enumerate(exmps):
+				if sg not in m:
+					m[sg]=tg
+					tglki[tg]=len(mylkps)+i
+					break
+			else:
+				tglki[tg]=len(mylkps)+len(exmps)
+				exmps.append({sg:tg})
 		dics=phdc['p']
-		sg=cmap[ord(s)]
-		tg=cmap[ord(t)]
 		i=dics.index(s)
 		assert i>-1
 		bkcov=dics[0:i]
 		bkcov.reverse()
 		lahcov=dics[i+1:]
-		if sg!=tg and tg not in ltc:
-			if sg not in sgtb1:
-				sgtb1[sg]=tg
-				ltc[tg]=2
-			elif sg not in sgtb2:
-				sgtb2[sg]=tg
-				ltc[tg]=3
-			elif sg not in sgtb3:
-				sgtb3[sg]=tg
-				ltc[tg]=4
-			else:
-				raise
-		bklst=list()
-		for strs in bkcov:
-			cvobjbk=otTables.Coverage()
-			cvobjbk.glyphs=list(set([cmap[ord(ch)] for ch in strs]))
-			assert len(cvobjbk.glyphs)>0, strs
-			cvobjbk.glyphs=list(sorted([g for g in cvobjbk.glyphs], key=lambda g:glod.index(g)))
-			bklst.append(cvobjbk)
-		ahlst=list()
-		for strs in lahcov:
-			cvobjah=otTables.Coverage()
-			cvobjah.glyphs=list(set([cmap[ord(ch)] for ch in strs]))
-			assert len(cvobjah.glyphs)>0, strs
-			cvobjah.glyphs=list(sorted([g for g in cvobjah.glyphs], key=lambda g:glod.index(g)))
-			ahlst.append(cvobjah)
+		bklst, ahlst=list(), list()
+		for lst, cov in [(bklst, bkcov), (ahlst, lahcov)]:
+			for strs in cov:
+				glyphs=set([cmap[ord(ch)] for ch in strs])
+				assert len(glyphs)>0, strs
+				cvobj=otTables.Coverage()
+				cvobj.glyphs=sorted(glyphs, key=lambda g:glod.index(g))
+				lst.append(cvobj)
 		cvobjip=otTables.Coverage()
-		cvobjip.glyphs=[cmap[ord(s)]]
+		cvobjip.glyphs=[sg]
 		mulsb=otTables.ChainContextSubst()
 		mulsb.Format=3
 		mulsb.BacktrackCoverage=bklst
@@ -445,51 +313,61 @@ def stlks(chrdic, phrdic):
 		if sg!=tg:
 			sblrd=otTables.SubstLookupRecord()
 			sblrd.SequenceIndex=0
-			sblrd.LookupListIndex=ltc[tg]
+			sblrd.LookupListIndex=tglki[tg]
 			mulsb.SubstLookupRecord=[sblrd]
 		stmul.SubTable.append(mulsb)
-	sgsb1.mapping=sgtb1
-	sgsb2.mapping=sgtb2
-	sgsb3.mapping=sgtb3
+	for mp in exmps:
+		exsb=otTables.SingleSubst()
+		exsb.mapping=mp
+		exlk=newlk(1)
+		exlk.SubTable=[exsb]
+		mylkps.append(exlk)
+	sgtb=dict()
 	for s, t in list(chrdic.items()):
 		if ord(s) in cmap and ord(t) in cmap and cmap[ord(s)]!=cmap[ord(t)]:
 			sgtb[cmap[ord(s)]]=cmap[ord(t)]
+	sgsb=otTables.SingleSubst()
 	sgsb.mapping=sgtb
-	for lkp in font["GSUB"].table.LookupList.Lookup:
+	stsig.SubTable=[sgsb]
+	offset=len(mylkps)
+	lklst=font['GSUB'].table.LookupList
+	ftlst=font['GSUB'].table.FeatureList
+	srlst=font['GSUB'].table.ScriptList
+	for lkp in lklst.Lookup:
 		for st in lkp.SubTable:
 			if st.LookupType in (5, 6):
 				if hasattr(st, 'SubstLookupRecord'):
 					for sbrcd in st.SubstLookupRecord:
-						sbrcd.LookupListIndex+=len(stlkups)
-	
+						sbrcd.LookupListIndex+=offset
 				if hasattr(st, 'ChainSubClassSet'):
 					for rul in st.ChainSubClassSet:
 						if hasattr(rul, 'ChainSubClassRule'):
 							for subr in rul.ChainSubClassRule:
 								for sbrcd in subr.SubstLookupRecord:
-									sbrcd.LookupListIndex+=len(stlkups)
-	for ft in font["GSUB"].table.FeatureList.FeatureRecord:
-		ft.Feature.LookupListIndex=[i+len(stlkups) for i in ft.Feature.LookupListIndex]
-	font["GSUB"].table.LookupList.Lookup=stlkups+font["GSUB"].table.LookupList.Lookup
-	stft=otTables.FeatureRecord()
-	stft.Feature=otTables.Feature()
-	stft.FeatureTag='ccmp'
-	stft.Feature.LookupListIndex=[0, 1]
-	font["GSUB"].table.FeatureList.FeatureRecord.insert(0, stft)
-	for sr in font["GSUB"].table.ScriptList.ScriptRecord:
-		sr.Script.DefaultLangSys.FeatureIndex=[i+1 for i in sr.Script.DefaultLangSys.FeatureIndex]
-		sr.Script.DefaultLangSys.FeatureIndex.insert(0, 0)
-		for lsr in sr.Script.LangSysRecord:
-			lsr.LangSys.FeatureIndex=[i+1 for i in lsr.LangSys.FeatureIndex]
-			lsr.LangSys.FeatureIndex.insert(0, 0)
-def stcmp(chrdic):
+									sbrcd.LookupListIndex+=offset
+	lklst.Lookup=mylkps+lklst.Lookup
+	for ft in ftlst.FeatureRecord:
+		ft.Feature.LookupListIndex=[i+offset for i in ft.Feature.LookupListIndex]
+	mytg='ccmp'
+	tgidxs=[i for i, r in enumerate(ftlst.FeatureRecord) if r.FeatureTag==mytg]
+	if tgidxs:
+		for idx in tgidxs:
+			feat=ftlst.FeatureRecord[idx].Feature
+			ftlks={0, 1}
+			ftlks.update(feat.LookupListIndex)
+			feat.LookupListIndex=sorted(ftlks)
+			feat.LookupCount=len(feat.LookupListIndex)
+	else: raise
+
+def stcmp(font, chrdic):
 	cmap=font.getBestCmap()
 	for s, t in list(chrdic.items()):
 		if ord(s) not in cmap and ord(t) in cmap:
-			setcg(ord(s), cmap[ord(t)])
+			setcg(font['cmap'], ord(s), cmap[ord(t)])
+
 def getstdic():
 	newdic=dict()
-	with open(os.path.join(pydir, 'configs/stoneo.dt'),'r',encoding='utf-8') as f:
+	with open(os.path.join(SCRIPT_DIR, 'configs/stoneo.dt'),'r',encoding='utf-8') as f:
 		for line in f.readlines():
 			litm=line.split('#')[0].strip()
 			if '-' not in litm: continue
@@ -497,10 +375,10 @@ def getstdic():
 			s, t=s.strip(), t.strip()
 			if s and t and s!=t:
 				newdic[s]=t
-	for s, t in list(newdic.items()):
-		if t in newdic: newdic[s]=newdic[t]
+	for s in list(newdic.keys()):
+		while newdic[s] in newdic: newdic[s]=newdic[newdic[s]]
 	newlst=list()
-	with open(os.path.join(pydir, 'configs/stonem.dt'),'r',encoding='utf-8') as f:
+	with open(os.path.join(SCRIPT_DIR, 'configs/stonem.dt'),'r',encoding='utf-8') as f:
 		for line in f.readlines():
 			litm=line.split('#')[0].strip()
 			if '-' not in litm: continue
@@ -511,124 +389,118 @@ def getstdic():
 			dic1['p']=ls[1:]
 			newlst.append(dic1)
 	return newdic, newlst
-def flpth(flnm):
-	if 'VF' in flnm:
-		flnm=flnm.split('-')[0].replace('VF', '-VF')
-	return os.path.join(outdir, flnm+'.'+exn)
-def getvarmap(locn):
-	a1=dict()
-	global font
-	font=TTFont(infile)
-	mkcmp(locn)
-	rmloc()
-	a1['name']=mkname(locn, '')
-	a1['file']=flpth(a1['name'].getDebugName(6))
-	a1['GSUB']=copy.deepcopy(font['GSUB'])
-	a1['GPOS']=copy.deepcopy(font['GPOS'])
-	a1['cmap']=copy.deepcopy(font['cmap'])
-	for table in a1['cmap'].tables:
-		if table.format==6:
-			if locn in ('','TC'): table.platEncID=2
-			elif locn=='SC': table.platEncID=25
-	if 'Mono' not in fpsn:
-		hwcmp()
-		hwgps()
-		a1['namehw']=mkname(locn, 'hw')
-		a1['filehw']=flpth(a1['namehw'].getDebugName(6))
-		a1['GSUBhw']=copy.deepcopy(font['GSUB'])
-		a1['GPOShw']=copy.deepcopy(font['GPOS'])
-		a1['cmaphw']=copy.deepcopy(font['cmap'])
-	else:
-		itcmp()
-		a1['nameit']=mkname(locn, 'it')
-		a1['fileit']=flpth(a1['nameit'].getDebugName(6))
-		a1['GSUBit']=copy.deepcopy(font['GSUB'])
-		a1['GPOSit']=copy.deepcopy(font['GPOS'])
-		a1['cmapit']=copy.deepcopy(font['cmap'])
-	font.close()
-	return a1
-def getstmap():
-	font['cmap']=copy.deepcopy(AA['cmap'])
-	font['GSUB']=copy.deepcopy(AA['GSUB'])
-	font['GPOS']=copy.deepcopy(AA['GPOS'])
-	chrdic, phrdic=getstdic()
-	stcmp(chrdic)
-	stlks(chrdic, phrdic)
-	AA['namest']=mkname('ST', '')
-	AA['filest']=flpth(AA['namest'].getDebugName(6))
-	AA['cmapst']=copy.deepcopy(font['cmap'])
-	AA['GSUBst']=copy.deepcopy(font['GSUB'])
-	AA['GPOSst']=copy.deepcopy(AA['GPOS'])
-	if 'Mono' not in fpsn:
-		hwcmp()
-		hwgps()
-		AA['namest2']=mkname('ST', 'hw')
-	else:
-		itcmp()
-		AA['namest2']=mkname('ST', 'it')
-	AA['filest2']=flpth(AA['namest2'].getDebugName(6))
-	AA['cmapst2']=copy.deepcopy(font['cmap'])
-	AA['GSUBst2']=copy.deepcopy(font['GSUB'])
-	AA['GPOSst2']=copy.deepcopy(font['GPOS'])
-def svfont(svcmp, svnm, svgs, svgp, svfile, toit=False):
-	fontsv=TTFont(infile, recalcTimestamp=False)
-	fontsv['OS/2'].achVendID=cfg['fontID']
-	fontsv['head'].fontRevision=float(cfg['fontVersion'])
-	if toit:
-		fontsv['head'].macStyle|=0b10
-		fontsv['OS/2'].fsSelection|=1
-		fontsv['OS/2'].fsSelection&=~0b1000000
-	fontsv['cmap']=svcmp
-	fontsv['name']=svnm
-	fontsv['GSUB']=svgs
-	fontsv['GPOS']=svgp
-	if 'glyf' in fontsv:
-		fontsv["head"].yMax = fontsv["hhea"].ascender
-		fontsv["head"].yMin = fontsv["hhea"].descender
-	print('Saving ', svfile)
-	fontsv.save(svfile)
-	fontsv.close()
-def svfonts():
-	for aa1 in (AA, AATC, AASC, AAJP):
-		svfont(aa1['cmap'], aa1['name'], aa1['GSUB'], aa1['GPOS'], aa1['file'])
-		if 'namehw' in aa1:
-			svfont(aa1['cmaphw'], aa1['namehw'], aa1['GSUBhw'], aa1['GPOShw'], aa1['filehw'])
-		if 'nameit' in aa1:
-			svfont(aa1['cmapit'], aa1['nameit'], aa1['GSUBit'], aa1['GPOSit'], aa1['fileit'], True)
-	if 'namest' in AA:
-		svfont(AA['cmapst'], AA['namest'], AA['GSUBst'], AA['GPOSst'], AA['filest'])
-		svfont(AA['cmapst2'], AA['namest2'], AA['GSUBst2'], AA['GPOSst2'], AA['filest2'])
-	if 'VF' in fpsn: cfnm=AA['file']+'.ttc'
-	else: cfnm=AA['file'][:AA['file'].rindex('.')]+'.ttc'
-	ttcarg=['-o', cfnm]
-	if 'Mono' not in fpsn:
-		ttcarg+=[AA['file'], AA['filehw'], AATC['file'], AATC['filehw'], AASC['file'], AASC['filehw'], AAJP['file'], AAJP['filehw'], AA['filest'], AA['filest2']]
-	else:
-		ttcarg+=[AA['file'], AA['fileit'], AATC['file'], AATC['fileit'], AASC['file'], AASC['fileit'], AAJP['file'], AAJP['fileit']]
-	otf2otc.run(ttcarg)
 
-print('*'*50)
-print('====Build Shanggu Fonts====\n')
-infile=sys.argv[1]
-outdir=sys.argv[2]
-exn=infile.split('.')[-1].lower()
-font=TTFont(infile)
-pen='"\'—‘’‚“”„‼⁇⁈⁉⸺⸻'
-pzhs='·’‘”“•≤≥≮≯！：；？'+pen
-pzht='·’‘”“•、。，．'+pen
-pzht=pzht.replace('’', '').replace('‘', '').replace('”', '').replace('“', '')
-simpcn='蒋将残浅践写泻惮禅箪蝉恋峦蛮挛栾滦弯湾径茎滞画遥瑶'#変与弥称
-fpsn=font["name"].getDebugName(6)
-print('Getting the localized lookups table...')
-locl={'ZHS': getloclk('ZHS'), 'ZHT':getloclk('ZHT')}
-loczhs, loczht=getloclk('ZHS'), getloclk('ZHT')
-font.close()
-AA=getvarmap('')
-AATC=getvarmap('TC')
-AASC=getvarmap('SC')
-AAJP=getvarmap('JP')
-if 'Mono' not in fpsn: getstmap()
-print('Saving fonts...')
-svfonts()
-print('Finished!')
-print('*'*50)
+def buildot(option, k):
+	isvf=option.isvf
+	font=option.vfonts[k]
+	font['name']=givename(option.oldname, k, isvf=isvf)
+	for tb in ('cmap', 'GSUB', 'GPOS'):
+		if 'it' in k or 'hw' in k:
+			upfont=option.vfonts[k[:2]]
+			font[tb]=deepcopy(upfont[tb])
+		elif 'st'==k:
+			font[tb]=deepcopy(option.vfonts['nm'][tb])
+	if 'hw' in k:
+		hwcmp(font)
+		hwgps(font)
+	elif 'it' in k:
+		itcmp(font)
+	elif 'st' in k:
+		chrdic, phrdic=getstdic()
+		stcmp(font, chrdic)
+		stlks(font, chrdic, phrdic)
+	else:
+		uvsfill(font, True)
+		mkcmp(option, font, k)
+		rmloc(font)
+
+def tctfdir(option):
+	ftnm=option.vfonts['nm']['name'].getDebugName(6).split('-')[0]
+	if ftnm.endswith('VF'): ftnm=ftnm[:-2]
+	dirfmt=option.exn.upper()
+	tfdir=ftnm+'VF_'+dirfmt+'s' if option.isvf else ftnm+dirfmt+'s'
+	tcdir=ftnm+'VF_TTCs' if option.isvf else ftnm+dirfmt[0]+'TCs'
+	return os.path.join(option.outdir, tfdir), os.path.join(option.outdir, tcdir)
+
+def saveall(option):
+	tfdir, tcdir=tctfdir(option)
+	os.makedirs(tfdir, exist_ok=True)
+	os.makedirs(tcdir, exist_ok=True)
+	inttc=list()
+	ttcpth=str()
+	for k in option.vks:
+		font=option.vfonts[k]
+		uvsfill(font, False)
+		flnm=font['name'].getDebugName(6)
+		fmlnm=flnm.split('-')[0]
+		dirnm=tfdir if option.isvf else os.path.join(tfdir, fmlnm.replace('HW', ''))
+		os.makedirs(dirnm, exist_ok=True)
+		if 'VF' in flnm: flnm=fmlnm.replace('VF', '-VF')
+		otfpth=os.path.join(dirnm, flnm+'.'+option.exn)
+		if k=='nm':
+			ttcnm=flnm+'.'+option.exn+'.ttc' if option.isvf else flnm+'.ttc'
+			ttcpth=os.path.join(tcdir, ttcnm)
+		inttc.append(otfpth)
+		fontsv=TTFont(option.infile, recalcTimestamp=False)
+		fontsv['OS/2'].achVendID=cfg['ID']
+		fontsv['head'].fontRevision=float(cfg['Version'])
+		if 'it' in k:
+			fontsv['head'].macStyle|=0b10
+			fontsv['OS/2'].fsSelection|=1
+			fontsv['OS/2'].fsSelection&=~0b1000000
+		for tb in ('name', 'cmap', 'GSUB', 'GPOS'):
+			fontsv[tb]=font[tb]
+		if 'glyf' in fontsv:
+			fontsv['head'].yMax=fontsv['hhea'].ascender
+			fontsv['head'].yMin=fontsv['hhea'].descender
+		logging.info(f'Saving {otfpth}')
+		fontsv.save(otfpth)
+		fontsv.close()
+	logging.info(f'Saving {ttcpth}')
+	otf2otc.run(['-o', ttcpth]+inttc)
+
+class Option:
+	def __init__(self):
+		self.infile=None
+		self.outdir=None
+		self.exn=None
+		self.isvf=None
+		self.oldps=None
+		self.oldname=None
+		self.loczh=dict()
+		self.vfonts=dict()
+		self.vks=list()
+
+def main(infile, outdir):
+	logging.info('*'*50)
+	logging.info('====Build Shanggu Fonts====\n')
+	logging.info(f'Input font: {infile}')
+	logging.info(f'Output dir: {outdir}')
+	option=Option()
+	option.infile=infile
+	option.outdir=outdir
+	option.exn=infile.split('.')[-1].lower()
+	with TTFont(option.infile) as font:
+		option.cmap=font.getBestCmap()
+		option.oldname=font['name']
+		option.oldps=font['name'].getDebugName(6)
+		option.isvf='fvar' in font
+		logging.info('Getting the localized lookups table.')
+		for ltg in ('ZHS', 'ZHT'):
+			option.loczh[ltg]=getloclk(font, ltg)
+	notmono='Mono' not in option.oldps
+	varks=['nm', 'tc', 'sc', 'jp']
+	if notmono: varks.append('st')
+	for k in varks:
+		kex=k+'hw' if notmono else k+'it'
+		for k2 in (k, kex):
+			option.vks.append(k2)
+			option.vfonts[k2]=TTFont(option.infile)
+			buildot(option, k2)
+	logging.info('Saving fonts.')
+	saveall(option)
+	logging.info('Finished!')
+	logging.info('*'*50)
+
+if __name__ == '__main__':
+	main(sys.argv[1], sys.argv[2])

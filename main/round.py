@@ -1,4 +1,4 @@
-# Please visit https://github.com/CyanoHao/Resource-Han-Rounded
+# This script is from https://github.com/CyanoHao/Resource-Han-Rounded, and the copyright belongs to the original author.
 
 import json
 import sys
@@ -548,23 +548,24 @@ def RoundFont(otdfl, weight):
 	outStr = json.dumps(baseFont, ensure_ascii=False)
 	with open(otdfl, 'w', encoding='utf-8') as outFile:
 		outFile.write(outStr)
+	del baseFont
+	del outStr
 
-import os, subprocess, tempfile
-pydir = os.path.abspath(os.path.dirname(__file__))
-otfccdump = os.path.join(pydir, 'otfcc/otfccdump')
-otfccbuild = os.path.join(pydir, 'otfcc/otfccbuild')
+import os, subprocess, tempfile, gc
 def NameFont(baseFont):
 	for nm in baseFont['name']:
 		if nm['nameID'] in (1, 3, 4, 6):
 			nm['nameString']=nm['nameString'].replace('Sans', 'Rounded')
-def main():
-	infl, outf, weight=sys.argv[1], sys.argv[2], sys.argv[3]
+def main(infl, outf, weight):
+	pydir = os.path.abspath(os.path.dirname(__file__))
+	otfccdump = os.path.join(pydir, 'otfcc/otfccdump')
+	otfccbuild = os.path.join(pydir, 'otfcc/otfccbuild')
 	tmpfile=tempfile.mktemp('.otd')
 	subprocess.run((otfccdump, '--no-bom', '-o', tmpfile, infl))
 	RoundFont(tmpfile, weight)
+	gc.collect()
 	subprocess.run((otfccbuild, '-s', '--keep-modified-time', '--keep-average-char-width', '-O2', '-q', '-o', outf, tmpfile))
 	os.remove(tmpfile)
 	print('Finished!')
-
 if __name__ == '__main__':
-	main()
+	main(sys.argv[1], sys.argv[2], sys.argv[3])

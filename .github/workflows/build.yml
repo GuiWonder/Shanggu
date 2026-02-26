@@ -3,31 +3,25 @@ name: Build
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
     - uses: actions/checkout@v4
     - name: Install afdko
       run: pip3 install afdko
-    - name: Begin
+    - run: chmod +x ./main/otfcc/*
+
+    - name: Build
       run: python3 ./build/buildstatic.py
 
-    - name: Upload to release
-      uses: ncipollo/release-action@v1
-      with:
-        token: "${{ secrets.GITHUB_TOKEN }}"
-        tag: "test-01"
-        artifacts: |
-          *.zip
-          *.7z
-        allowUpdates: true
-        prerelease: true
-        draft: true
-        name: "Build Test"
-        body: "Shanggu"
+    - name: Upload
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: python3 ./build/upload.py
 
     - uses: actions/upload-artifact@v4
       with:
@@ -38,26 +32,18 @@ jobs:
 
   buildvf:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
     - uses: actions/checkout@v4
     - name: Install afdko
       run: pip3 install afdko
-    - name: Begin
+
+    - name: Build
       run: python3 ./build/buildvf.py
 
-    - name: Upload to release
-      uses: ncipollo/release-action@v1
-      with:
-        token: "${{ secrets.GITHUB_TOKEN }}"
-        tag: "test-01"
-        artifacts: "*.7z"
-        allowUpdates: true
-        prerelease: true
-        draft: true
-        name: "Build Test"
-        body: "Shanggu"
+    - name: Upload
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: python3 ./build/upload.py
 
     - uses: actions/upload-artifact@v4
       with:

@@ -1,11 +1,42 @@
 {
-    "fontName": "Shanggu",
-    "fontNameTC": "尙古",
-    "fontNameSC": "尙古",
-    "fontVersion": "1.027",
-    "fontID": "GUIW",
-    "fontVURL": "https://github.com/GuiWonder/Shanggu",
-    "fontCopyright": "© 2022-2026 Shanggu Fonts.",
-    "fontDesigner": "GuiWonder",
-    "fontDiscript": "Pan-CJK font"
+    "Name": "Shanggu",
+    "Version": "1.028",
+    "ID": "GUIW",
+    "VURL": "https://github.com/GuiWonder/Shanggu",
+    "Copyright": "© 2022-{year} {name} Fonts.",
+    "Designer": "GuiWonder",
+    "Discript": "Pan-CJK font",
+    "TC":
+        {
+            "Name": "尙古",
+            "Sans": "黑體",
+            "Serif": "明體",
+            "Mono": "等寬",
+            "Round": "圓體",
+            "ST": "簡轉繁",
+            "VF": "可變字體",
+            "Format": "格式"
+        },
+    "SC":
+        {
+            "Name": "尙古",
+            "Sans": "黑体",
+            "Serif": "明体",
+            "Mono": "等宽",
+            "Round": "圆体",
+            "ST": "简转繁",
+            "VF": "可变字体",
+            "Format": "格式"
+        },
+    "JA":
+        {
+            "Name": "尙古",
+            "Sans": "角ゴシック",
+            "Serif": "明朝",
+            "Mono": "等幅",
+            "Round": "丸ゴシック",
+            "ST":"簡転繁",
+            "VF": "バリアブル",
+            "Format": "形式"
+        }
 }

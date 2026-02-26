@@ -1,89 +1,114 @@
-import os, json, sys
 from fontTools.ttLib import TTFont
+from hpsh import *
+from fontTools import subset
+from datetime import datetime
 
-pydir=os.path.abspath(os.path.dirname(__file__))
-cfg=json.load(open(os.path.join(pydir, 'configs/config.json'), 'r', encoding='utf-8'))
+CONFIG_JSON='config.json'
+SOURCEHAN_CFG_JSON='sourcehan.json'
+UVS_CFG_JSON='uvs.json'
+SH10_CFG_JSON='sourcehan10.json'
 
-def setcg(cmap, code, glyf):
-	for table in cmap.tables:
-		if (table.format==4 and code<=0xFFFF) or table.format==12 or code in table.cmap:
-			table.cmap[code]=glyf
-def glfrtxt(txt):
-	cmap=font.getBestCmap()
-	glys=list()
-	for ch in txt:
-		if ord(ch) in cmap and cmap[ord(ch)] not in glys:
-			glys.append(cmap[ord(ch)])
-	return glys
-def locllki(ftgsub, lan):
-	ftl, lkl=list(), list()
-	for sr in ftgsub.table.ScriptList.ScriptRecord:
-		for lsr in sr.Script.LangSysRecord:
-			if lsr.LangSysTag.strip()==lan:
-				ftl+=lsr.LangSys.FeatureIndex
-	for ki in ftl:
-		ftg=ftgsub.table.FeatureList.FeatureRecord[ki].FeatureTag
-		if ftg=='locl':
-			lkl+=ftgsub.table.FeatureList.FeatureRecord[ki].Feature.LookupListIndex
-	return list(dict.fromkeys(lkl))
-def getloclk(ckfont, lan):
-	locdics=list()
-	for lki in locllki(ckfont["GSUB"], lan):
-		locrpl=dict()
-		for st in ckfont["GSUB"].table.LookupList.Lookup[lki].SubTable:
-			if st.LookupType==7 and st.ExtSubTable.LookupType==1:
-				tabl=st.ExtSubTable.mapping
-			elif st.LookupType==1:
-				tabl=st.mapping
-			for g1 in tabl:
-				locrpl[g1]=tabl[g1]
-		locdics.append(locrpl)
-	return locdics
-def glfrloc(gl, loclk):
-	for dc in loclk:
-		if gl in dc: return dc[gl]
-def locglrpl(newmap):
+JP_VARIANTS=[
+	('𰰨', '芲'), ('𩑠', '頙'), ('鄉', '鄕'), ('唧', '喞'), ('𥄳', '眔')
+]
+RADICAL_VARIANTS=[
+	('⽉', '月'), ('⻁', '虎'), ('⾳', '音'), ('⿓', '龍'),
+	('⼾', '戶'), ('飠', '𩙿'), ('礻', '⺬')
+]
+SC_VARIANTS=[('𫜹', '彐'), ('𣽽', '潸')]
+
+UVS_MULTIPLE=[
+	('⺼', '月', 'E0100'), ('𱍐', '示', 'E0100'), ('䶹', '屮', 'E0101'),
+	('𠾖', '器', 'E0100'), ('𡐨', '壄', 'E0100'), ('𤥨', '琢', 'E0101'),
+	('𦤀', '臭', 'E0100'), ('𨺓', '隆', 'E0100'), ('𫜸', '叱', 'E0101'),
+	('暨', '曁', 'E0101'), ('廄', '廏', 'E0101'), ('倂', '併', 'E0101')
+]
+
+LOCL_LANG_TAGS={
+	'krgl': 'KOR', 'scgl': 'ZHS', 'tcgl': 'ZHT', 'hcgl': 'ZHH'
+	}
+
+def load_json(js_name):
+	with open(os.path.join(SCRIPT_DIR, 'configs', js_name), 'r', encoding='utf-8') as f:
+		return json.load(f)
+
+def getuvs(cmap):
+	uvs_map={}
+	for subtable in cmap.tables:
+		if subtable.format==14:
+			for selector, records in subtable.uvsDict.items():
+				for code, glyph in records:
+					if code not in uvs_map:
+						uvs_map[code]={}
+					uvs_map[code][selector]=glyph
+	return uvs_map
+
+def cffinfo(font, config):
+	if 'CFF ' in font:
+		cff=font['CFF '].cff
+		cff.fontNames[0]=cff.fontNames[0].replace('SourceHan', config['Name'].replace(' ', ''))
+		cff[0].FamilyName=cff[0].FamilyName.replace('Source Han', config['Name'])
+		cff[0].FullName=cff[0].FullName.replace('Source Han', config['Name'])
+		cff[0].Notice=config['Copyright'].format(name=config['Name'], year=datetime.now().year)
+		cff[0].CIDFontVersion=float(config['Version'])
+		for dic in cff[0].FDArray:
+			dic.FontName=dic.FontName.replace('SourceHan', config['Name'].replace(' ', ''))
+
+def locglrpl(font, new_map, ssty, locl_data):
 	locgls=dict()
-	shset=json.load(open(os.path.join(pydir, 'configs/sourcehan.json'), 'r', encoding='utf-8'))
-	krgl, scgl, tcgl, hcgl=glfrtxt(shset['krgl']), glfrtxt(shset['scgl']), glfrtxt(shset['tcgl']), glfrtxt(shset['hcgl'])
-	for glloc in ((krgl, lockor), (scgl, loczhs), (tcgl, loczht), (hcgl, loczhh)):
-		for g1 in glloc[0]:
-			assert g1 not in locgls, g1
-			g2=glfrloc(g1, glloc[1])
-			if g2: locgls[g1]=g2
+	shset=load_json(SOURCEHAN_CFG_JSON)
 	cmap=font.getBestCmap()
-	for cd in cmap:
-		if cmap[cd] in locgls:
-			assert cd not in newmap, chr(cd)
-			newmap[cd]=locgls[cmap[cd]]
+	for key, lang_tag in LOCL_LANG_TAGS.items():
+		for ch in shset[key]:
+			code=ord(ch)
+			if code not in cmap: continue
+			g1=cmap[code]
+			assert g1 not in locgls, f'Code point U+{code:04X} ({ch}) already remapped'
+			g2=glfrloc(g1, locl_data[lang_tag])
+			if g2: locgls[g1]=g2
+	for code in cmap:
+		if cmap[code] in locgls:
+			assert code not in new_map, f'Code point U+{code:04X} ({chr(cd)}) already remapped'
+			new_map[code]=locgls[cmap[code]]
 	if ssty!='Serif':
 		for ch in shset['sans']:
-			newmap[ord(ch)]=glfrloc(cmap[ord(ch)], loczht)
-	
-def getuvs(cmap):
-	nuv=dict()
-	for table in cmap.tables:
-		if table.format==14:
-			for vsl in table.uvsDict.keys():
-				for cg in table.uvsDict[vsl]:
-					if cg[0] not in nuv:
-						nuv[cg[0]]=dict()
-					nuv[cg[0]][vsl]=cg[1]
-	return nuv
-def setuvs(newmap, uvdic):
-	uvcfg=json.load(open(os.path.join(pydir, 'configs/uvs.json'), 'r', encoding='utf-8'))
-	tv=dict()
-	for ch in uvcfg.keys():
-		tv[ord(ch)]=int(uvcfg[ch], 16)
-	for k in uvdic.keys():
-		if k in tv and tv[k] in uvdic[k]:
-			g=uvdic[k][tv[k]]
-			if k in newmap:
-				if newmap[k]==g: continue
-				else: raise RuntimeError(chr(k), newmap[k], g)
-			newmap[k]=g
-def getother(font2, repdict):
-	print('Processing...')
+			code=ord(ch)
+			new_map[code]=glfrloc(cmap[code], locl_data['ZHT'])
+
+def locvar(font, new_map, locl_data):
+	cmap=font.getBestCmap()
+	for ch1, ch2 in JP_VARIANTS + RADICAL_VARIANTS:
+		code1, code2=ord(ch1), ord(ch2)
+		if code2 in cmap:
+			assert code1 not in new_map, f'Variant {ch1} already mapped'
+			new_map[code1]=cmap[code2]
+	for ch1, ch2 in SC_VARIANTS:
+		code1, code2=ord(ch1), ord(ch2)
+		if code2 in cmap:
+			assert code1 not in new_map, f'Variant {ch1} already mapped'
+			g2=glfrloc(cmap[code2], locl_data['ZHS'])
+			if g2:
+				new_map[code1]=g2
+
+def setuvs(new_map, uvs_dict):
+	uvs_cfg=load_json(UVS_CFG_JSON)
+	tv={ord(ch): int(uv, 16) for ch, uv in uvs_cfg.items()}
+	for c, sel in uvs_dict.items():
+		if c in tv and tv[c] in sel:
+			g=sel[tv[c]]
+			if c in new_map:
+				if new_map[c]==g: continue
+				else: raise RuntimeError(f'UVS mapped diffent glyph at {chr(c)} U+{c:04X}: {new_map[c]} vs {g}')
+			new_map[c]=g
+
+	for ch1, ch2, ch3 in UVS_MULTIPLE:
+		u1, u2, sel=ord(ch1), ord(ch2), int(ch3, 16)
+		if u2 in uvs_dict and sel in uvs_dict[u2]:
+			assert u1 not in new_map, f'UVS variant {ch2} already mapped'
+			new_map[u1]=uvs_dict[u2][sel]
+
+def getother(font, font2, repdict):
+	logging.info('Processing glyphs from other fonts.')
 	if 'CFF ' in font or 'CFF2' in font:
 		if 'CFF2' in font:
 			cff=font['CFF2'].cff
@@ -98,25 +123,117 @@ def getother(font2, repdict):
 			for fontname2 in cff2.keys():
 				fontsub2=cff2[fontname2]
 				cs2=fontsub2.CharStrings
-				for gl in repdict.keys():
-					cs[gl]=cs2[repdict[gl]]
-					font['hmtx'][gl]=font2['hmtx'][repdict[gl]]
-					font['vmtx'][gl]=font2['vmtx'][repdict[gl]]
-					if 'VORG' in font and 'VORG' in font2:
-						if repdict[gl] in set(font2['VORG'].VOriginRecords.keys()):
-							font['VORG'].VOriginRecords[gl]=font2['VORG'].VOriginRecords[repdict[gl]]
-						elif gl in set(font['VORG'].VOriginRecords.keys()):
-							del font['VORG'].VOriginRecords[gl]
-	elif 'glyf' in font:
-		for gl in repdict.keys():
-			font['glyf'].glyphs[gl]=font2['glyf'].glyphs[repdict[gl]]
-			font['hmtx'][gl]=font2['hmtx'][repdict[gl]]
-			font['vmtx'][gl]=font2['vmtx'][repdict[gl]]
-			font['gvar'].variations[gl]=font2['gvar'].variations[repdict[gl]]
-			if 'VORG' in font:
-				font['VORG'].VOriginRecords[gl]=font2['VORG'].VOriginRecords[repdict[gl]]
+				for g1,g2 in repdict.items():
+					cs[g1]=cs2[g2]
+	for g1,g2 in repdict.items():
+		for xmtx in ['hmtx', 'vmtx']:
+			if xmtx in font and xmtx in font2:
+				font[xmtx][g1] = font2[xmtx][g2]
+		if 'VORG' in font and 'VORG' in font2:
+			if g2 in set(font2['VORG'].VOriginRecords.keys()):
+				font['VORG'].VOriginRecords[g1]=font2['VORG'].VOriginRecords[g2]
+			elif g1 in set(font['VORG'].VOriginRecords.keys()):
+				del font['VORG'].VOriginRecords[gl]
+		if 'glyf' in font and 'glyf' in font2:
+			font['glyf'].glyphs[g1]=font2['glyf'].glyphs[g2]
+		if 'gvar' in font and 'gvar' in font2:
+			font['gvar'].variations[g1]=font2['gvar'].variations[g2]
+
+def newglyph(font, ssty, wt, exn, locl_data):
+	cmap=font.getBestCmap()
+	logging.info('Getting glyphs from  new.')
+	filenew=os.path.join(SCRIPT_DIR, f'New/New{ssty}-{wt}.{exn}')
+	if os.path.isfile(filenew):
+		with TTFont(filenew) as font2:
+			getnew=dict()
+			cmap2=font2.getBestCmap()
+			cnsp='写泻画瑶恋峦蛮挛栾滦弯湾'
+			for c, g2 in cmap2.items():
+				if c==0x20 or c not in cmap: continue
+				if c==ord('笄'): continue
+				ch=chr(c)
+				logging.info(f'Found new character: {ch} (U+{c:04X})')
+				if ch in cnsp: g1=glfrloc(cmap[c], locl_data['ZHS'])
+				else: g1=cmap[c]
+				getnew[g1]=g2
+			loczhsnew=getloclk(font2, 'ZHS')
+			for ch in '禅遥':
+				logging.info(f'Found locl character: {ch} (U+{c:04X})')
+				g1=glfrloc(cmap[ord(ch)], locl_data['ZHS'])
+				g2=glfrloc(cmap2[ord(ch)], loczhsnew)
+				getnew[g1]=g2
+			getother(font, font2, getnew)
+			font2.close()
+			for table in font['cmap'].tables:
+				if table.format==14:
+					for uv in table.uvsDict:
+						table.uvsDict[uv]=[cg for cg in table.uvsDict[uv] if cg[1] not in getnew.values()]
+	else: logging.error('New font not found.')
+
+	if wt=='VF': return
+	logging.info('Getting glyphs from SourceHan 1.0x.')
+	file10=os.path.join(SCRIPT_DIR, f'sourcehan10/SourceHan{ssty}-{wt}.{exn}')
+	if os.path.isfile(file10):
+		with TTFont(file10) as font10:
+			get10=dict()
+			sh10set=load_json(SH10_CFG_JSON)
+			subsetter=subset.Subsetter()
+			all10=sh10set[ssty]
+			if ssty+'TC' in sh10set: all10+=sh10set[ssty+'TC']
+			subsetter.populate(text=all10)
+			subsetter.subset(font10)
+			cmap10=font10.getBestCmap()
+			for ch10 in sh10set[ssty]:
+				c=ord(ch10)
+				if c in cmap and c in cmap10:
+					logging.info(f'Found 1.0 character: {ch10} (U+{c:04X})')
+					get10[cmap[c]]=cmap10[c]
+			loczht10=getloclk(font10, 'ZHT')
+			if ssty+'TC' in sh10set:
+				for ch10 in sh10set[ssty+'TC']:
+					c=ord(ch10)
+					gll=glfrloc(cmap10[c], loczht10)
+					if c in cmap and gll:
+						logging.info(f'Found 1.0 TC character: {ch10} (U+{c:04X})')
+						get10[cmap[c]]=gll
+			getother(font, font10, get10)
 	else:
-		raise
+		logging.error('SourceHan 1.0x not found.')
+
+def ckdlg(font, uvs_dict):
+	rplg=dict()
+	for ch in '月成':
+		rplg[uvs_dict[ord(ch)][0xE0100]]=uvs_dict[ord(ch)][0xE0101]
+	dllk=set()
+	for ki in font['GSUB'].table.FeatureList.FeatureRecord:
+		if ki.FeatureTag=='dlig': dllk.update(ki.Feature.LookupListIndex)
+	for i in dllk:
+		for st in font['GSUB'].table.LookupList.Lookup[i].SubTable:
+			if st.LookupType==7: stbl=st.ExtSubTable
+			else: stbl=st
+			if stbl.LookupType!=4: continue
+			for lgg in list(stbl.ligatures):
+				for lg in list(stbl.ligatures[lgg]):
+					for ilin in range(len(lg.Component)):
+						if lg.Component[ilin] in rplg:
+							lg.Component[ilin]=rplg[lg.Component[ilin]]
+
+def cksploc(font, locl_data):
+	cmap=font.getBestCmap()
+	spdic={cmap[ord(ch)]:glfrloc(cmap[ord(ch)], locl_data['ZHS']) for ch in simpch}
+	for lan in ['ZHT', 'ZHH']:
+		for lki in locllki(font['GSUB'], lan):
+			for st in font['GSUB'].table.LookupList.Lookup[lki].SubTable:
+				if st.LookupType==7 and st.ExtSubTable.LookupType==1:
+					tabl=st.ExtSubTable.mapping
+				elif st.LookupType==1:
+					tabl=st.mapping
+				else:
+					continue
+				for spgs in spdic:
+					if spgs in tabl:
+						tabl[spgs]=spdic[spgs]
+
 def subcff(cfftb, glyphs):
 	ftcff=cfftb.cff
 	for fontname in ftcff.keys():
@@ -130,7 +247,7 @@ def subcff(cfftb, glyphs):
 			csi=cs.charStringsIndex
 			csi.items=[csi.items[i] for i in indices]
 			del csi.file, csi.offsets
-			if hasattr(fontsub, "FDSelect"):
+			if hasattr(fontsub, 'FDSelect'):
 				sel=fontsub.FDSelect
 				sel.format=None
 				sel.gidArray=[sel.gidArray[i] for i in indices]
@@ -146,135 +263,35 @@ def subcff(cfftb, glyphs):
 					  if g in glyphs}
 		fontsub.charset=[g for g in fontsub.charset if g in glyphs]
 		fontsub.numGlyphs=len(fontsub.charset)
-def cffinf():
-	if 'CFF ' in font:
-		cff=font["CFF "]
-		cff.cff.fontNames[0]=cff.cff.fontNames[0].replace('SourceHan', cfg['fontName'].replace(' ', ''))
-		cff.cff[0].FamilyName=cff.cff[0].FamilyName.replace('Source Han', cfg['fontName'])
-		cff.cff[0].FullName=cff.cff[0].FullName.replace('Source Han', cfg['fontName'])
-		cff.cff[0].Notice=cfg['fontCopyright']
-		cff.cff[0].CIDFontVersion=float(cfg['fontVersion'])
-		for dic in cff.cff[0].FDArray:
-			dic.FontName=dic.FontName.replace('SourceHan', cfg['fontName'].replace(' ', ''))
-def locvar(newmap):
-	cmap=font.getBestCmap()
-	jpvch=[('𰰨', '芲'), ('𩑠', '頙'), ('鄉', '鄕'), ('唧', '喞'), ('𥄳', '眔')]
-	radic=[('⽉', '月'), ('⻁', '虎'), ('⾳', '音'), ('⿓', '龍'), ('⼾', '戶'), ('飠', '𩙿'), ('礻', '⺬')]
-	for chs in jpvch+radic:
-		if ord(chs[1]) in cmap:
-			c=ord(chs[0])
-			assert c not in newmap, chr(c)
-			newmap[c]=cmap[ord(chs[1])]
-	locscv=[('𫜹', '彐'), ('𣽽', '潸')]
-	for lv1 in locscv:
-		if ord(lv1[1]) in cmap:
-			c=ord(lv1[0])
-			assert c not in newmap, chr(c)
-			gv2=glfrloc(cmap[ord(lv1[1])], loczhs)
-			if gv2:
-				newmap[c]=gv2
 
-def uvsvar(newmap, uvdic):
-	uvsmul=[('⺼', '月', 'E0100'), ('𱍐', '示', 'E0100'), ('䶹', '屮', 'E0101'), ('𠾖', '器', 'E0100'), ('𡐨', '壄', 'E0100'), ('𤥨', '琢', 'E0101'), ('𦤀', '臭', 'E0100'), ('𨺓', '隆', 'E0100'), ('𫜸', '叱', 'E0101'), ('暨', '曁', 'E0101'), ('廄', '廏', 'E0101'), ('倂', '併', 'E0101')]
-	for uvm in uvsmul:
-		u1, u2, usel=ord(uvm[0]), ord(uvm[1]), int(uvm[2], 16)
-		if u2 in uvdic and usel in uvdic[u2]:
-			assert u1 not in newmap, chr(u1)
-			newmap[u1]=uvdic[u2][usel]
-def cksh10():
-	print('Getting glyphs from SourceHan 1.0x...')
+def subgl(font):
 	cmap=font.getBestCmap()
-	file10=os.path.join(pydir, f'sourcehan10/SourceHan{ssty}-{wt}{exn}')
-	if os.path.isfile(file10):
-		get10=dict()
-		sh10set=json.load(open(os.path.join(pydir, 'configs/sourcehan10.json'), 'r', encoding='utf-8'))
-		font10=TTFont(file10)
-		cmap10=font10.getBestCmap()
-		for ch10 in sh10set[ssty]:
-			if ord(ch10) in cmap and ord(ch10) in cmap10:
-				print('Find', ch10)
-				get10[cmap[ord(ch10)]]=cmap10[ord(ch10)]
-		loczht10=getloclk(font10, 'ZHT')
-		if ssty!='Serif':
-			for ch10 in sh10set['SansTC']:
-				gll=glfrloc(cmap10[ord(ch10)], loczht10)
-				if ord(ch10) in cmap and gll:
-					print('Find', ch10)
-					get10[cmap[ord(ch10)]]=gll
-		getother(font10, get10)
-		font10.close()
-	else: print('SourceHan 1.0x Failed!')
-def getnewg():
-	print('Getting new glyphs...')
-	cmap=font.getBestCmap()
-	chdgl=set()
-	file2=os.path.join(pydir, f'New/New{ssty}-{wt}{exn}')
-	if os.path.isfile(file2):
-		getnew=dict()
-		font2=TTFont(file2)
-		cmap2=font2.getBestCmap()
-		cnsp='写泻画瑶恋峦蛮挛栾滦弯湾'
-		for ncd in cmap2.keys():
-			if ncd==0x20 or ncd not in cmap:continue
-			chn=chr(ncd)
-			print('Find', chn)
-			if chn in cnsp:
-				g1=glfrloc(cmap[ncd], loczhs)
-			else:
-				g1=cmap[ncd]
-			chdgl.add(ncd)
-			g2=cmap2[ncd]
-			getnew[g1]=g2
-		loczhsnew=getloclk(font2, 'ZHS')
-		for chn in '禅遥':
-			print('Find', chn)
-			g1=glfrloc(cmap[ord(chn)], loczhs)
-			g2=glfrloc(cmap2[ord(chn)], loczhsnew)
-			getnew[g1]=g2
-		getother(font2, getnew)
-		font2.close()
-		for table in font["cmap"].tables:
-			if table.format==14:
-				for uv in table.uvsDict:
-					table.uvsDict[uv]=[cg for cg in table.uvsDict[uv] if cg[1] not in getnew.values()]
-	else: print('Getting new glyphs Failed!')
-def subgl():
-	cmap=font.getBestCmap()
-	pen='"\'—‘’‚“”„‼⁇⁈⁉⸺⸻'
-	pzhs='·’‘”“•≤≥≮≯！：；？'+pen
-	pzht='·’‘”“•、。，．'+pen
-	simpcn='蒋将残浅践写泻惮禅箪蝉恋峦蛮挛栾滦弯湾径茎滞画遥瑶'#変与弥称
 	usedg=set()
 	usedg.add('.notdef')
 	usedg.update(cmap.values())
+	uvdic=getuvs(font['cmap'])
 	for c in uvdic:
 		for v in uvdic[c]: usedg.add(uvdic[c][v])
-	pungl=glfrtxt(pzhs+pzht+simpcn)
-	print('Checking Lookup table...')
+	useloc={cmap[ord(ch)] for ch in p_zhs+p_zht+simpch if ord(ch) in cmap}
+	logging.info('Checking Lookup table.')
 	loclks=list()
-	for i in range(len(font["GSUB"].table.FeatureList.FeatureRecord)):
-		if font["GSUB"].table.FeatureList.FeatureRecord[i].FeatureTag=='locl':
-			loclks+=font["GSUB"].table.FeatureList.FeatureRecord[i].Feature.LookupListIndex
+	for i in range(len(font['GSUB'].table.FeatureList.FeatureRecord)):
+		if font['GSUB'].table.FeatureList.FeatureRecord[i].FeatureTag=='locl':
+			loclks+=font['GSUB'].table.FeatureList.FeatureRecord[i].Feature.LookupListIndex
 	for lki in set(loclks):
-		for st in font["GSUB"].table.LookupList.Lookup[lki].SubTable:
-			if st.LookupType==7:
-				stbl=st.ExtSubTable
-			else:
-				stbl=st
+		for st in font['GSUB'].table.LookupList.Lookup[lki].SubTable:
+			stbl=st.ExtSubTable if st.LookupType==7 else st
 			assert stbl.LookupType==1
 			tabl=stbl.mapping
 			for k1 in list(tabl.keys()):
-				if k1 in pungl or tabl[k1] in pungl:
+				if k1 in useloc or tabl[k1] in useloc:
 					usedg.add(k1)
 					usedg.add(tabl[k1])
 				else:
 					del tabl[k1]
-	for ki in font["GSUB"].table.LookupList.Lookup:
+	for ki in font['GSUB'].table.LookupList.Lookup:
 		for st in ki.SubTable:
-			if st.LookupType==7:
-				stbl=st.ExtSubTable
-			else:
-				stbl=st
+			stbl=st.ExtSubTable if st.LookupType==7 else st
 			lktp=stbl.LookupType
 			if lktp==1:
 				tabl=stbl.mapping
@@ -312,12 +329,9 @@ def subgl():
 				for tb in stbl.LookAheadCoverage:
 					usedg.update(tb.glyphs)
 			else: raise
-	for ki in font["GPOS"].table.LookupList.Lookup:
+	for ki in font['GPOS'].table.LookupList.Lookup:
 		for st in ki.SubTable:
-			if st.LookupType==9:
-				stbl=st.ExtSubTable
-			else:
-				stbl=st
+			stbl=st.ExtSubTable if st.LookupType==9 else st
 			lktp=stbl.LookupType
 			if lktp==1:
 				coverage=stbl.Coverage
@@ -356,79 +370,62 @@ def subgl():
 	elif 'glyf' in font:
 		font['glyf'].glyphs={g:font['glyf'].glyphs[g] for g in set(nnnd)}
 	font.setGlyphOrder(nnnd)
-def ckdlg(font, uvdic):
-	rplg=dict()
-	for ch in '月成':
-		rplg[uvdic[ord(ch)][0xE0100]]=uvdic[ord(ch)][0xE0101]
-	dllk=set()
-	for ki in font["GSUB"].table.FeatureList.FeatureRecord:
-		if ki.FeatureTag=='dlig': dllk.update(ki.Feature.LookupListIndex)
-	for i in dllk:
-		for st in font["GSUB"].table.LookupList.Lookup[i].SubTable:
-			if st.LookupType==7: stbl=st.ExtSubTable
-			else: stbl=st
-			if stbl.LookupType!=4: continue
-			for lgg in list(stbl.ligatures):
-				for lg in list(stbl.ligatures[lgg]):
-					for ilin in range(len(lg.Component)):
-						if lg.Component[ilin] in rplg:
-							lg.Component[ilin]=rplg[lg.Component[ilin]]
-def uvsnone(font, nonone):
-	cmap=font.getBestCmap()
-	for table in font["cmap"].tables:
-		if table.format==14:
-			for vsl in table.uvsDict.keys():
-				newl=list()
-				for cg in table.uvsDict[vsl]:
-					if cg[1]==None and nonone:
-						newl.append((cg[0], cmap[cg[0]]))
-					elif cg[0] in cmap and cg[1]==cmap[cg[0]] and not nonone:
-						newl.append((cg[0], None))
-					else:
-						newl.append((cg[0], cg[1]))
-				table.uvsDict[vsl]=newl
 
-print('*'*50)
-print('====Build Shanggu Fonts====\n')
-infile=sys.argv[1]
-outfile=sys.argv[2]
+def main(infile, outfile):
+	logging.info('*' * 50)
+	logging.info('==== Build Shanggu Fonts ====')
+	logging.info(f'Input font: {infile}')
+	logging.info(f'Output font: {outfile}')
+	config=load_json(CONFIG_JSON)
+	with TTFont(infile) as font:
+		fpsn=font['name'].getDebugName(6)
+		ssty=str()
+		if 'Sans' in fpsn or 'Mono' in fpsn: ssty='Sans'
+		elif 'Serif' in fpsn: ssty='Serif'
+		else: raise
+		if 'CFF ' in font or 'CFF2' in font: exn='otf'
+		elif 'glyf' in font: exn='ttf'
+		else: raise
+		if 'fvar' in font: wt='VF'
+		else:
+			wtn={250:'ExtraLight', 300:'Light', 350:'Normal', 400:'Regular', 500:'Medium', 600:'SemiBold', 700:'Bold', 900:'Heavy'}
+			wt=wtn[font['OS/2'].usWeightClass]
+		logging.info(f'Detected {ssty} {wt} {exn.upper()} font.')
+		cffinfo(font, config)
+		uvsfill(font, isfill=True)
+		new_map={}
+		logging.info('Extracting locl mappings.')
+		locl_data={
+			lang: getloclk(font, lang)
+			for lang in LOCL_LANG_TAGS.values()
+		}
+		logging.info(f'Loaded locl mappings for languages: {sorted(locl_data.keys())}')
+		logging.info('Extracting uvs mappings.')
+		uvs_dict=getuvs(font['cmap'])
+		logging.info('Processing locl Variant.')
+		locglrpl(font, new_map, ssty, locl_data)
+		logging.info('Processing other Variant.')
+		locvar(font, new_map, locl_data)
+		logging.info('Processing uvs glyphs.')
+		setuvs(new_map, uvs_dict)
+		logging.info('Remap glyphs.')
+		cmap=font.getBestCmap()
+		for c, g in new_map.items():
+			if c in cmap and cmap[c]==g: continue
+			logging.info(f'Remap U+{c:04X} ({chr(c)}) to {g}')
+			setcg(font['cmap'], c, g)
+		logging.info('Checking lookups.')
+		ckdlg(font, uvs_dict)
+		logging.info('Getting glyphs from other fonts.')
+		newglyph(font, ssty, wt, exn, locl_data)
+		cksploc(font, locl_data)
+		logging.info('Checking for unused glyphs.')
+		subgl(font)
+		uvsfill(font, isfill=False)
+		logging.info(f'Saving font to {outfile}')
+		font.save(outfile)
+		logging.info('Done.')
+		logging.info('*'*50)
 
-font=TTFont(infile)
-fpsn=font["name"].getDebugName(6)
-ssty=str()
-if 'Sans' in fpsn or 'Mono' in fpsn: ssty='Sans'
-elif 'Serif' in fpsn: ssty='Serif'
-if 'CFF ' in font or 'CFF2' in font: exn='.otf'
-elif 'glyf' in font: exn='.ttf'
-else: raise
-wtn={250:'ExtraLight', 300:'Light', 350:'Normal', 400:'Regular', 500:'Medium', 600:'SemiBold', 700:'Bold', 900:'Heavy'}
-wt=wtn[font['OS/2'].usWeightClass]
-if 'VF' in fpsn: wt='VF'
-cffinf()
-uvsnone(font, True)
-newmap=dict()
-print('Getting the localized lookups table...')
-lockor, loczhs, loczht, loczhh=getloclk(font, 'KOR'), getloclk(font, 'ZHS'), getloclk(font, 'ZHT'), getloclk(font, 'ZHH')
-locglrpl(newmap)
-print('Getting uvs...')
-uvdic=getuvs(font['cmap'])
-print('Processing locl Variant ...')
-locvar(newmap)
-print('Processing uvs glyphs...')
-setuvs(newmap, uvdic)
-print('Processing uvs Variant...')
-uvsvar(newmap, uvdic)
-for c, g in newmap.items():
-	print('Remap', chr(c))
-	setcg(font['cmap'], c, g)
-ckdlg(font, uvdic)
-print('Getting glyphs from other fonts...')
-getnewg()
-cksh10()
-print('Checking for unused glyphs...')
-subgl()
-uvsnone(font, False)
-print('Saving font...')
-font.save(outfile)
-print('Finished!')
-print('*'*50)
+if __name__ == '__main__':
+	main(sys.argv[1], sys.argv[2])

@@ -1,111 +1,94 @@
-import os, json, threading
+import os, json, sys
 from shutil import copy, rmtree
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
-os.makedirs('./tmp')
-os.makedirs('./tmp/tmpotf')
-os.makedirs('./tmp/tmpttf')
-os.makedirs('./tmp/tmprd')
-os.makedirs('./src')
-os.makedirs('./main/sourcehan10')
+main_path=os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'main'))
+if main_path not in sys.path:
+	sys.path.append(main_path)
+
+from step01 import main as step01
+from step02 import main as step02
+from tottf import main as tottf
+from round import main as toround
+
+cfg=json.load(open('./main/configs/config.json', 'r', encoding='utf-8'))
+fnm=cfg['Name'].replace(' ', '')
+
+tmpotf, tmpttf, tmprd='./tmpotf', './tmpttf', './tmprd'
+tmps=[tmpotf, tmpttf, tmprd]
+tmpsh='./tmpsh'
+for t in tmps: os.makedirs(t)
+os.makedirs(tmpsh)
+sh10='./main/sourcehan10'
+os.makedirs(sh10)
+
 wtsans=['Bold', 'ExtraLight', 'Heavy', 'Light', 'Medium', 'Normal', 'Regular']
 wtserif=['Bold', 'ExtraLight', 'Heavy', 'Light', 'Medium', 'Regular', 'SemiBold']
 
+def down(pth, url):
+	os.system(f'wget -nv -P {pth} {url}')
+
 for wt in wtsans:
-	os.system(f'wget -P ./src https://github.com/adobe-fonts/source-han-sans/raw/release/OTF/Japanese/SourceHanSans-{wt}.otf')
-	os.system(f'wget -P ./src https://github.com/adobe-fonts/source-han-mono/raw/master/{wt}/OTC/SourceHanMono-{wt}.otf')
-	os.system(f'wget -P ./main/sourcehan10 https://github.com/adobe-fonts/source-han-sans/raw/1.004R/OTF/Japanese/SourceHanSans-{wt}.otf')
+	down(tmpsh, f'https://github.com/adobe-fonts/source-han-sans/raw/release/OTF/Japanese/SourceHanSans-{wt}.otf')
+	down(tmpsh, f'https://github.com/adobe-fonts/source-han-mono/raw/master/{wt}/OTC/SourceHanMono-{wt}.otf')
+	down(sh10, f'https://github.com/adobe-fonts/source-han-sans/raw/1.004R/OTF/Japanese/SourceHanSans-{wt}.otf')
 for wt in wtserif:
-	os.system(f'wget -P ./src https://github.com/adobe-fonts/source-han-serif/raw/release/OTF/Japanese/SourceHanSerif-{wt}.otf')
-	os.system(f'wget -P ./main/sourcehan10 https://github.com/adobe-fonts/source-han-serif/raw/1.001R/OTF/Japanese/SourceHanSerif-{wt}.otf')
+	down(tmpsh, f'https://github.com/adobe-fonts/source-han-serif/raw/release/OTF/Japanese/SourceHanSerif-{wt}.otf')
+	down(sh10, f'https://github.com/adobe-fonts/source-han-serif/raw/1.001R/OTF/Japanese/SourceHanSerif-{wt}.otf')
 
-cfg=json.load(open('./main/configs/config.json', 'r', encoding = 'utf-8'))
-fnm=cfg['fontName'].replace(' ', '')
-sstyles=('Mono', 'Sans', 'Serif', 'Round')
+def build1(item):
+	shpth=f'{tmpsh}/{item}'
+	otfpth=f'{tmpotf}/{item}'
+	ttfname=item.split('.')[0]+'.ttf'
+	ttfpth=f'{tmpttf}/{ttfname}'
+	step01(shpth, otfpth)
+	tottf(['--post-format', '3.0', '-o',ttfpth, otfpth])
 
-step01='python3 ./main/step01.py'
-step02='python3 ./main/step02.py'
-tottfbin='python3 ./main/tottf.py --post-format 3.0'
-tord='python3 ./main/round.py'
-os.system('chmod +x ./main/otfcc/*')
-for item in os.listdir('./src'):
-	if item.lower().split('.')[-1]=='otf':
-		os.system(f"{step01} ./src/{item} ./tmp/tmpotf/{item}")
-rmtree('./src')
+def buildrd(item):
+	ttfpth=f'{tmpttf}/{item}'
+	rdpth=f'{tmprd}/{item}'
+	wt=item.split('.')[0].split('-')[-1]
+	toround(ttfpth, rdpth, wt)
 
-def tottf(stl):
-	for item in os.listdir('./tmp/tmpotf'):
-		if stl in item and item.lower().split('.')[-1]=='otf':
-			ttfout=item.split('.')[0]+'.ttf'
-			os.system(f'{tottfbin} -o ./tmp/tmpttf/{ttfout} ./tmp/tmpotf/{item}')
-			if stl=='Sans':
-				wt=item.split('.')[0].split('-')[-1]
-				os.system(f"{tord} ./tmp/tmpttf/{ttfout} ./tmp/tmprd/{ttfout} {wt}")
+def convert(fs, builder, max_workers):
+	with ThreadPoolExecutor(max_workers=max_workers) as ex:
+		futures = [ex.submit(builder, f) for f in fs]
+		for future in as_completed(futures):
+			try:
+				future.result()
+			except Exception as e:
+				ex.shutdown(wait=False, cancel_futures=True)
+				print(f'Error: Convert faild {e}')
+				sys.exit(1)
 
-thsans=threading.Thread(target=tottf, args=('Sans', ))
-thserif=threading.Thread(target=tottf, args=('Serif', ))
-thmono=threading.Thread(target=tottf, args=('Mono', ))
-thsans.start()
-thserif.start()
-thmono.start()
-thsans.join()
-thserif.join()
-thmono.join()
+shotfs=[f for f in os.listdir(tmpsh) if f.endswith('.otf')]
+convert(shotfs, build1, 4)
+rmtree(tmpsh)
 
-tfdirs=list()
-for fmt in('otf', 'ttf', 'rd'):
-	if fmt=='otf': xtc='OTC'
-	else: xtc='TTC'
+ttfsans=[f for f in os.listdir(tmpttf) if 'Sans' in f and f.endswith('.ttf')]
+convert(ttfsans, buildrd, 2)
 
-	for nv in ['', 'TC', 'SC', 'JP', f'{xtc}s', 'FANTI']:
-		if fmt=='rd':
-			tfdirs.append(f'./fonts/{fmt}/{fnm}Round{nv}/')
-		else:
-			tfdirs.append(f'./fonts/{fmt}/{fnm}Sans{nv}/')
-			tfdirs.append(f'./fonts/{fmt}/{fnm}Serif{nv}/')
-			if nv!='FANTI':
-				tfdirs.append(f'./fonts/{fmt}/{fnm}Mono{nv}/')
+outs='./fonts'
+os.makedirs(outs)
 
-for drr in tfdirs:
-	os.makedirs(drr)
-	copy('./LICENSE.txt', drr)
+for xdir in tmps:
+	for item in os.listdir(xdir):
+		if item.lower().split('.')[-1] in ('otf', 'ttf'):
+			step02(f'{xdir}/{item}', outs)
+	rmtree(xdir)
 
-for fmt in('otf', 'ttf', 'rd'):
-	if fmt=='otf': xtc='OTC'
-	else: xtc='TTC'
-	for item in os.listdir(f'./tmp/tmp{fmt}'):
-		aan=item.replace('SourceHan', fnm)
-		if fmt=='rd': aan=aan.replace('Sans', 'Round')
-		fn1, fn2=aan.split('-')
-		os.system(f"{step02} ./tmp/tmp{fmt}/{item} ./fonts/{fmt}/{fn1}")
-		for m, t in (('*.ttc', f'{xtc}s'), ('*TC*', 'TC'), ('*SC*', 'SC'), ('*JP*', 'JP'), ('*ST*', 'FANTI')):
-			tfd=f'./fonts/{fmt}/{fn1}{t}/'
-			if os.path.exists(tfd):
-				os.system(f'mv ./fonts/{fmt}/{fn1}/{m} {tfd}')
-	if fmt!='rd':
-		stls=('Mono', 'Sans', 'Serif')
-	else:
-		stls=('Round', )
+for item in os.listdir(outs):
+	pth=f'{outs}/{item}'
+	if os.path.isdir(pth):
+		copy('./LICENSE.txt', pth)
+		os.system(f'7z a ./{item}.7z {pth}/* -mx=9 -mfb=256 -md=512m -mmt=2')
 
-	for stl in stls:
-		os.system(f'7z a ./{fnm}{stl}{xtc}s.7z ./fonts/{fmt}/{fnm}{stl}{xtc}s/* -mmt=2')
-		otfs=list()
-		for vr in ['', 'TC', 'SC', 'JP']:
-			otfs.append(f'./fonts/{fmt}/{fnm}{stl}{vr}')
-		if stl!='Mono':
-			otfs.append(f'./fonts/{fmt}/{fnm}{stl}FANTI')
-		otff=' '.join(otfs)
-		os.system(f'7z a ./{fnm}{stl}{fmt.replace("rd", "ttf").upper()}s.7z {otff} -mx=9 -mfb=256 -md=512m -mmt=2')
-
-	rmtree(f'./tmp/tmp{fmt}')
-
-
+from tools.finddiffers import main as finddiffers
 # os.makedirs('./subset-differs-from-SHS-JP')
 os.makedirs('./subset-differs-from-SHS-KR')
-finddiffers='python3 ./main/tools/finddiffers.py'
 for wt in wtsans:
-	os.system(f'wget -P ./src https://github.com/adobe-fonts/source-han-sans/raw/release/OTF/Korean/SourceHanSansK-{wt}.otf')
-	# os.system(f"{finddiffers} -o ./subset-differs-from-SHS-JP/{fnm}SansTC-{wt}-subset.otf ./fonts/otf/{fnm}SansTC/{fnm}SansTC-{wt}.otf ./src/SourceHanSans-{wt}.otf")
-	os.system(f"{finddiffers} -o ./subset-differs-from-SHS-KR/{fnm}SansTC-{wt}-subset.otf ./fonts/otf/{fnm}SansTC/{fnm}SansTC-{wt}.otf ./src/SourceHanSansK-{wt}.otf")
+	down(tmpsh, f'https://github.com/adobe-fonts/source-han-sans/raw/release/OTF/Korean/SourceHanSansK-{wt}.otf')
+	# finddiffers(['-o', f'./subset-differs-from-SHS-JP/{fnm}SansTC-{wt}-subset.otf', f'{outs}/{fnm}SansOTFs/{fnm}SansTC/{fnm}SansTC-{wt}.otf', f'{tmpsh}/SourceHanSans-{wt}.otf'])
+	finddiffers(['-o', f'./subset-differs-from-SHS-KR/{fnm}SansTC-{wt}-subset.otf', f'{outs}/{fnm}SansOTFs/{fnm}SansTC/{fnm}SansTC-{wt}.otf', f'{tmpsh}/SourceHanSansK-{wt}.otf'])
 # os.system(f'7z a ./subset-differs-from-SHS-JP.zip ./subset-differs-from-SHS-JP/*')
 os.system(f'7z a ./subset-differs-from-SHS-KR.zip ./subset-differs-from-SHS-KR/*')
-
