@@ -31,7 +31,6 @@ for f in os.listdir():
 	if f.split('.')[-1].lower() in ['7z', 'zip']:
 		tgnm=str() if f.lower().endswith('.zip') else locnm(f, LAN)
 		cmdup=f'gh release upload "{TAG}" "{f}'
-		cmdup=f'gh release upload "{TAG}" "{f}'
 		if tgnm: cmdup+=f'#{tgnm}" --clobber'
 		else: cmdup+=f'" --clobber'
 		os.system(cmdup)
