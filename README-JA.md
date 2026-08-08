@@ -1,10 +1,10 @@
 [English](./README-EN.md#shanggu-fonts-尙古字體) [简体中文](./README-SC.md#shanggu-fonts-尙古字体) [繁體中文](../../#shanggu-fonts-尙古字體) **日本語**
 
 # Shanggu Fonts 尙古フォント（しょうこフォント）
-源ノシリーズに基づいた、伝承字形（旧字形）CJKフォントファミリー
+源ノシリーズに基づいた、伝統的な旧字形（伝承字形）CJKフォントファミリー
 
 ## 📌 概要
-<b>Shanggu Fonts（尙古フォント）</b>は、[源ノ角ゴシック（Source Han Sans）](https://github.com/adobe-fonts/source-han-sans)、[源ノ明朝（Source Han Serif）](https://github.com/adobe-fonts/source-han-serif)、[源ノ等幅（Source Han Mono）](https://github.com/adobe-fonts/source-han-mono)をベースに開発された、<b>伝承字形（旧字形）</b>を核心コンセプトとするオープンソースのCJKフォントファミリープロジェクトです。ゴシック体、明朝体、丸ゴシック体など多岐にわたるスタイルを網羅し、簡体字から繁体字への動的変換（簡転繁）バージョンも提供しています。
+<b>Shanggu Fonts（尙古フォント）</b>は、[源ノ角ゴシック（Source Han Sans）](https://github.com/adobe-fonts/source-han-sans)、[源ノ明朝（Source Han Serif）](https://github.com/adobe-fonts/source-han-serif)、[源ノ等幅（Source Han Mono）](https://github.com/adobe-fonts/source-han-mono)をベースに開発された、<b>伝統的な旧字形</b>を核心コンセプトとするオープンソースのCJKフォントファミリープロジェクトです。ゴシック体、明朝体、丸ゴシック体など多岐にわたるスタイルを網羅し、簡体字から繁体字への動的変換（簡転繁）バージョンも提供しています。
 
 ## 📺 プレビュー
 ![image](./pictures/pic0001.png)  
@@ -57,7 +57,8 @@
 ![image](./pictures/pic0005.png)  
 
 ### 3. 🔁 自動簡繁変換フォント（STバージョン）
-「簡体字入力・繁体字出力」機能を備え、OpenType機能を利用して文脈に応じた一簡多繁（一つの簡体字に対し複数の繁体字候補がある場合）の動的マッチングが可能です。  
+**※本機能は中国語における簡体字・繁体字間の変換に適用されるものであり、日本語の漢字変換には対応していません。**  
+このフォントは「簡体字から繁体字への変換」機能を備えています。「一簡対多繁（一つの簡体字に複数の繁体字が対応するケース）」を処理する際、フォントはOpenTypeの特性を活用し、文脈（コンテキスト）に応じた「一簡対多繁」の動的マッチングを実現します。例えば「干」という文字の場合、後ろに「活」という文字が続くと、システムは自動的に「干→幹」の方向性置換をトリガーし、「幹活」と出力します。一方、後ろに「燥」という文字が続く場合は「干→乾」の置換を実行し、「乾燥」と出力します。このような文脈に基づく動的な字形呼び出しにより、テキスト変換の精度が効果的に向上しています。  
 ![image](./pictures/pic0003.png)  
 
 ## 📦 フォント形式
@@ -76,6 +77,10 @@
 - ✅ **無料利用**: 個人・法人を問わず、あらゆる商業デザインに自由にダウンロードして利用可能です。
 - ✅ **派生可能**: [OFL-1.1](./LICENSE.txt) の条項の下で、修正、拡張、および派生フォントの制作が許可されています。
 - ⚠️ **禁止事項**: フォントファイル単体での販売は禁止されています。
+
+## 📦 フォントの制作プロセス
+[源ノ角ゴシック (Source Han Sans)](https://github.com/adobe-fonts/source-han-sans)、[源ノ明朝 (Source Han Serif)](https://github.com/adobe-fonts/source-han-serif)の日本語版をベースに、locl（ローカライズ）機能とUVS（異体字セレクタ）データテーブルを活用。フォントライブラリの底層に隠されていた、伝統的な規範に準拠する異体字の字形を選出して呼び出し、デフォルトの表示字形として底層のcmap（文字マッピングテーブル）に書き換えました。<br />
+マッピング関係の確立後、さらに多くの描き直し（リドロー）字形を追加しました。そのうち、ゴシック体は6,537個の字形を追加（[秋空󠄁ゴシック (ChiuKong Gothic)](https://github.com/ChiuMing-Neko/ChiuKongGothic)の字形を直接導入した817個を含む）、明朝体は同時に6,659個の字形の描き直しを完了しました。
 
 ## 🙏 謝辞
 

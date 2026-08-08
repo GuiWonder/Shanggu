@@ -57,7 +57,7 @@ Differences between Chinese and Japanese simplified characters are handled as fo
 ![image](./pictures/pic0005.png)  
 
 ### 3. 🔁 Automatic Simplified-to-Traditional Font (ST Version)
-Features "Simplified Input, Traditional Output" functionality, which dynamically matches "one-to-many" (one simplified character to multiple traditional variants) scenarios based on OpenType features.  
+The font features a "Simplified-to-Traditional" conversion capability. When handling cases where one Simplified character maps to multiple Traditional characters, the font leverages OpenType features to achieve dynamic contextual matching. Take the character "干" (gān) as an example: when the system detects that it is followed by "活" (huó), it automatically triggers a targeted substitution from "干" to "幹", outputting "幹活" (working). Conversely, when it is followed by "燥" (zào), it executes the substitution from "干" to "乾", outputting "乾燥" (dry). This context-based dynamic glyph substitution effectively improves the accuracy of text conversion.  
 ![image](./pictures/pic0003.png)  
 
 ## 📦 Font Formats
@@ -76,6 +76,10 @@ All fonts in this project are licensed under the [SIL Open Font License 1.1 (OFL
 - ✅ **Free to Use**: Both individuals and enterprises can freely download and use the fonts for any commercial design.
 - ✅ **Derivatives Permitted**: Modification, extension, and the creation of derivative fonts are allowed under the [OFL-1.1](./LICENSE.txt) terms.
 - ⚠️ **Restrictions**: Selling the font files individually is prohibited.
+
+## 📦 Font Production Process
+Based on the Japanese version of [Source Han Sans](https://github.com/adobe-fonts/source-han-sans) and [Source Han Serif](https://github.com/adobe-fonts/source-han-serif), the font leverages "locl" (Localized Forms) features and UVS (Unicode Variation Sequence) data tables to select and retrieve hidden, tradition-compliant variant glyphs from the underlying font library. These are then rewritten into the core cmap (Character Code Mapping Table) as the default display glyphs.<br />
+Once the mapping relationships were established, many redrawn glyphs were further added. Among them, the Sans-serif style added 6,537 glyphs (including 817 glyphs directly introduced from [ChiuKong Gothic](https://github.com/ChiuMing-Neko/ChiuKongGothic)), while the Serif style simultaneously completed the redrawing of 6,659 glyphs
 
 ## 🙏 Acknowledgments
 
