@@ -105,4 +105,4 @@
 - [OpenCC (Open Chinese Convert)](https://github.com/BYVoid/OpenCC)
 
 ## 📬 連絡先
-- 📩 Email: chunfengfly@outlook.com
+https://github.com/GuiWonder

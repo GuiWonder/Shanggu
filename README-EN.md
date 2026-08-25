@@ -104,4 +104,4 @@ Once the mapping relationships were established, many redrawn glyphs were furthe
 - [OpenCC (Open Chinese Convert)](https://github.com/BYVoid/OpenCC)
 
 ## 📬 Contact
-- 📩 Email: chunfengfly@outlook.com
+https://github.com/GuiWonder

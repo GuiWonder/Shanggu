@@ -104,4 +104,4 @@
 - [OpenCC 開放中文轉換](https://github.com/BYVoid/OpenCC)
 
 ## 📬 聯絡方式
-- 📩 Email: chunfengfly@outlook.com
+https://github.com/GuiWonder
